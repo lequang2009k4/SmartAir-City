@@ -1,3 +1,6 @@
+// © 2025 SmartAir City Team
+// Licensed under the MIT License. See LICENSE file for details.
+
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import Header from './components/Header';

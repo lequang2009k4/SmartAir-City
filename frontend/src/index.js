@@ -1,3 +1,6 @@
+// © 2025 SmartAir City Team
+// Licensed under the MIT License. See LICENSE file for details.
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';

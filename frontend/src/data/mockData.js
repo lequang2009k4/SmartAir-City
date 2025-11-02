@@ -1,5 +1,5 @@
-// Mock data cho các trạm đo IoT
-// Trong thực tế, dữ liệu này sẽ được lấy từ API backend
+// © 2025 SmartAir City Team
+// Licensed under the MIT License. See LICENSE file for details.
 
 export const generateMockStations = () => {
   const stations = [
