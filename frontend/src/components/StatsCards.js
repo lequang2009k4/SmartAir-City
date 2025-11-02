@@ -5,7 +5,7 @@ import React from 'react';
 import './StatsCards.css';
 
 const StatsCards = ({ stations }) => {
-  // Tính toán thống kê từ dữ liệu stations
+  // Calculate statistics from stations data
   const calculateStats = () => {
     if (!stations || stations.length === 0) {
       return {

@@ -41,9 +41,9 @@ export const generateMockStations = () => {
   }));
 };
 
-// Hàm tạo dữ liệu cảm biến ngẫu nhiên
+// Generate random sensor data
 const generateSensorData = () => {
-  const baseAQI = 50 + Math.random() * 100; // AQI từ 50 đến 150
+  const baseAQI = 50 + Math.random() * 100; // AQI from 50 to 150
   
   return {
     aqi: baseAQI,
@@ -56,13 +56,13 @@ const generateSensorData = () => {
   };
 };
 
-// Hàm tạo dữ liệu lịch sử (24 giờ gần nhất)
+// Generate historical data (last 24 hours)
 export const generateHistoricalData = () => {
   const data = [];
   const now = new Date();
   
   for (let i = 23; i >= 0; i--) {
-    const time = new Date(now - i * 3600000); // Mỗi giờ
+    const time = new Date(now - i * 3600000); // Every hour
     const baseAQI = 60 + Math.sin(i / 4) * 30 + Math.random() * 20;
     
     data.push({
@@ -76,7 +76,7 @@ export const generateHistoricalData = () => {
   return data;
 };
 
-// Hàm cập nhật dữ liệu real-time (mô phỏng)
+// Update station data for real-time simulation
 export const updateStationData = (stations) => {
   return stations.map(station => ({
     ...station,
@@ -84,17 +84,17 @@ export const updateStationData = (stations) => {
   }));
 };
 
-// Hàm xác định màu theo AQI
+// Determine color based on AQI level
 export const getAQIColor = (aqi) => {
-  if (aqi <= 50) return '#00e400'; // Tốt - Xanh lá
-  if (aqi <= 100) return '#ffff00'; // Trung bình - Vàng
-  if (aqi <= 150) return '#ff7e00'; // Kém - Cam
-  if (aqi <= 200) return '#ff0000'; // Xấu - Đỏ
-  if (aqi <= 300) return '#8f3f97'; // Rất xấu - Tím
-  return '#7e0023'; // Nguy hại - Nâu đỏ
+  if (aqi <= 50) return '#00e400'; // Good - Green
+  if (aqi <= 100) return '#ffff00'; // Moderate - Yellow
+  if (aqi <= 150) return '#ff7e00'; // Unhealthy for Sensitive Groups - Orange
+  if (aqi <= 200) return '#ff0000'; // Unhealthy - Red
+  if (aqi <= 300) return '#8f3f97'; // Very Unhealthy - Purple
+  return '#7e0023'; // Hazardous - Maroon
 };
 
-// Hàm xác định mức độ chất lượng không khí
+// Determine air quality level text
 export const getAQILevel = (aqi) => {
   if (aqi <= 50) return 'Tốt';
   if (aqi <= 100) return 'Trung bình';

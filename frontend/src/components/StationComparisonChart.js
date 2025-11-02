@@ -15,7 +15,7 @@ import { Bar } from 'react-chartjs-2';
 import { getAQIColor } from '../data/mockData';
 import './StationComparisonChart.css';
 
-// Đăng ký các components của Chart.js
+// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -26,7 +26,7 @@ ChartJS.register(
 );
 
 const StationComparisonChart = ({ stations }) => {
-  // Chuẩn bị dữ liệu cho biểu đồ
+  // Prepare data for the chart
   const chartData = {
     labels: stations.map(s => s.name),
     datasets: [
@@ -35,7 +35,7 @@ const StationComparisonChart = ({ stations }) => {
         data: stations.map(s => s.aqi),
         backgroundColor: stations.map(s => {
           const color = getAQIColor(s.aqi);
-          // Chuyển hex sang rgba với opacity 0.7
+          // Convert hex to rgba with opacity 0.7
           const r = parseInt(color.slice(1, 3), 16);
           const g = parseInt(color.slice(3, 5), 16);
           const b = parseInt(color.slice(5, 7), 16);
@@ -49,7 +49,7 @@ const StationComparisonChart = ({ stations }) => {
     ]
   };
 
-  // Cấu hình biểu đồ
+  // Chart configuration
   const options = {
     responsive: true,
     maintainAspectRatio: false,

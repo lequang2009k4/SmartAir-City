@@ -16,7 +16,7 @@ import {
 import { Line } from 'react-chartjs-2';
 import './AirQualityChart.css';
 
-// Đăng ký các components của Chart.js
+// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -29,7 +29,7 @@ ChartJS.register(
 );
 
 const AirQualityChart = ({ historicalData }) => {
-  // Chuẩn bị dữ liệu cho biểu đồ
+  // Prepare data for the chart
   const chartData = {
     labels: historicalData.map(d => 
       new Date(d.timestamp).toLocaleTimeString('vi-VN', { 
@@ -63,7 +63,7 @@ const AirQualityChart = ({ historicalData }) => {
     ]
   };
 
-  // Cấu hình biểu đồ
+  // Chart configuration
   const options = {
     responsive: true,
     maintainAspectRatio: false,

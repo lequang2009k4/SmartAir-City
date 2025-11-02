@@ -14,7 +14,7 @@ function App() {
   const [stations, setStations] = useState([]);
   const [historicalData, setHistoricalData] = useState([]);
 
-  // Khởi tạo dữ liệu khi component mount
+  // Initialize data when component mounts
   useEffect(() => {
     const initialStations = generateMockStations();
     const initialHistory = generateHistoricalData();
