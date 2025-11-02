@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Header from './components/Header';
 import StatsCards from './components/StatsCards';
+import AirQualityChart from './components/AirQualityChart';
 import { generateMockStations, generateHistoricalData } from './data/mockData';
 
 function App() {
@@ -35,6 +36,8 @@ function App() {
         </div>
 
         <StatsCards stations={stations} />
+
+        <AirQualityChart historicalData={historicalData} />
 
         <div className="data-preview">
           <h3>📊 Dữ liệu chi tiết</h3>
