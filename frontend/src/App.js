@@ -8,6 +8,7 @@ import StatsCards from './components/StatsCards';
 import AirQualityChart from './components/AirQualityChart';
 import StationComparisonChart from './components/StationComparisonChart';
 import AirQualityMap from './components/AirQualityMap';
+import AlertBanner from './components/AlertBanner';
 import { generateMockStations, generateHistoricalData } from './data/mockData';
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
               <p className="page-subtitle">Tổng quan chất lượng không khí thành phố</p>
             </div>
 
+            <AlertBanner stations={stations} />
             <StatsCards stations={stations} />
             <AirQualityChart historicalData={historicalData} />
             <StationComparisonChart stations={stations} />
@@ -59,6 +61,7 @@ function App() {
               </p>
             </div>
 
+            <AlertBanner stations={stations} />
             <AirQualityMap stations={stations} onStationClick={handleStationClick} />
           </>
         );
