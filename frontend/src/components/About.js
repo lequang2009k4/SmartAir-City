@@ -15,7 +15,7 @@ const About = () => {
       <div className="about-content">
         {/* Introduction Section */}
         <section className="about-section">
-          <h2>📖 Introduction</h2>
+          <h2>Introduction</h2>
           <p>
             SmartAir City is an advanced IoT platform designed to monitor and analyze 
             air quality in real-time for smart cities. The system uses a network of 
@@ -26,7 +26,7 @@ const About = () => {
 
         {/* Goals Section */}
         <section className="about-section">
-          <h2>🎯 Goals</h2>
+          <h2>Goals</h2>
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon">🔍</div>
@@ -53,7 +53,7 @@ const About = () => {
 
         {/* Technology Stack */}
         <section className="about-section">
-          <h2>🛠️ Technology Stack</h2>
+          <h2>Technology Stack</h2>
           <div className="tech-stack">
             <div className="tech-category">
               <h3>Frontend</h3>
@@ -84,7 +84,7 @@ const About = () => {
 
         {/* Metrics Section */}
         <section className="about-section">
-          <h2>📈 Measured Indicators</h2>
+          <h2>Measured Indicators</h2>
           <div className="metrics-list">
             <div className="metric-item">
               <strong>AQI (Air Quality Index):</strong> Comprehensive air quality index
@@ -109,7 +109,7 @@ const About = () => {
 
         {/* AQI Scale */}
         <section className="about-section">
-          <h2>🎨 AQI Scale</h2>
+          <h2>AQI Scale</h2>
           <div className="aqi-legend">
             <div className="legend-item" style={{ backgroundColor: '#00e400' }}>
               <span className="legend-range">0-50</span>
@@ -140,7 +140,7 @@ const About = () => {
 
         {/* Social Impact */}
         <section className="about-section">
-          <h2>🌍 Social Impact</h2>
+          <h2>Social Impact</h2>
           <p>
             SmartAir City helps raise community awareness about air pollution, 
             provides scientific data for policy makers, and supports citizens 
@@ -150,15 +150,15 @@ const About = () => {
 
         {/* Contact Section */}
         <section className="about-section contact-section">
-          <h2>📞 Contact</h2>
+          <h2>Contact</h2>
           <p>
             For more information or collaboration opportunities, please contact us 
             via email or follow the project on GitHub.
           </p>
           <div className="contact-buttons">
-            <button className="contact-btn">📧 Email</button>
-            <button className="contact-btn">🐙 GitHub</button>
-            <button className="contact-btn">💬 Feedback</button>
+            <button className="contact-btn">Email</button>
+            <button className="contact-btn">GitHub</button>
+            <button className="contact-btn">Feedback</button>
           </div>
         </section>
       </div>
