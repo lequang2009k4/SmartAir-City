@@ -9,6 +9,7 @@ import AirQualityChart from './components/AirQualityChart';
 import StationComparisonChart from './components/StationComparisonChart';
 import AirQualityMap from './components/AirQualityMap';
 import AlertBanner from './components/AlertBanner';
+import APIDataViewer from './components/APIDataViewer';
 import { generateMockStations, generateHistoricalData } from './data/mockData';
 
 function App() {
@@ -63,6 +64,13 @@ function App() {
 
             <AlertBanner stations={stations} />
             <AirQualityMap stations={stations} onStationClick={handleStationClick} />
+          </>
+        );
+      
+      case 'data':
+        return (
+          <>
+            <APIDataViewer stations={stations} />
           </>
         );
       
