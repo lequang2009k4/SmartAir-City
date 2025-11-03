@@ -11,6 +11,7 @@ import AirQualityMap from './components/AirQualityMap';
 import AlertBanner from './components/AlertBanner';
 import APIDataViewer from './components/APIDataViewer';
 import About from './components/About';
+import Footer from './components/Footer';
 import { generateMockStations, generateHistoricalData, updateStationData } from './data/mockData';
 
 function App() {
@@ -173,6 +174,8 @@ function App() {
 
         {renderContent()}
       </div>
+      
+      <Footer />
     </div>
   );
 }
