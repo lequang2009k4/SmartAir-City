@@ -14,12 +14,14 @@ import About from './components/About';
 import Footer from './components/Footer';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorMessage from './components/ErrorMessage';
+import SearchFilter from './components/SearchFilter';
 import { generateMockStations, generateHistoricalData, updateStationData } from './data/mockData';
 import { downloadCSV, downloadJSON } from './utils/exportUtils';
 
 function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [stations, setStations] = useState([]);
+  const [filteredStations, setFilteredStations] = useState([]);
   const [historicalData, setHistoricalData] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -40,6 +42,7 @@ function App() {
         const initialHistory = generateHistoricalData();
         
         setStations(initialStations);
+        setFilteredStations(initialStations); // Initialize filtered stations
         setHistoricalData(initialHistory);
         
         console.log('Stations loaded:', initialStations);
@@ -66,6 +69,7 @@ function App() {
       setStations(prevStations => {
         const updatedStations = updateStationData(prevStations);
         console.log('Stations updated:', updatedStations);
+        setFilteredStations(updatedStations); // Update filtered stations too
         return updatedStations;
       });
       
@@ -91,10 +95,14 @@ function App() {
               <p className="page-subtitle">Tổng quan chất lượng không khí thành phố</p>
             </div>
 
-            <AlertBanner stations={stations} />
-            <StatsCards stations={stations} />
+            <SearchFilter 
+              stations={stations} 
+              onFilterChange={setFilteredStations}
+            />
+            <AlertBanner stations={filteredStations} />
+            <StatsCards stations={filteredStations} />
             <AirQualityChart historicalData={historicalData} />
-            <StationComparisonChart stations={stations} />
+            <StationComparisonChart stations={filteredStations} />
           </>
         );
       
@@ -108,8 +116,12 @@ function App() {
               </p>
             </div>
 
-            <AlertBanner stations={stations} />
-            <AirQualityMap stations={stations} onStationClick={handleStationClick} />
+            <SearchFilter 
+              stations={stations} 
+              onFilterChange={setFilteredStations}
+            />
+            <AlertBanner stations={filteredStations} />
+            <AirQualityMap stations={filteredStations} onStationClick={handleStationClick} />
           </>
         );
       
@@ -140,6 +152,7 @@ function App() {
       setStations(prevStations => {
         const updatedStations = updateStationData(prevStations);
         console.log('Stations manually updated:', updatedStations);
+        setFilteredStations(updatedStations); // Update filtered stations too
         return updatedStations;
       });
       
@@ -162,6 +175,7 @@ function App() {
         const initialHistory = generateHistoricalData();
         
         setStations(initialStations);
+        setFilteredStations(initialStations); // Update filtered stations too
         setHistoricalData(initialHistory);
         setLoading(false);
       } catch (err) {
