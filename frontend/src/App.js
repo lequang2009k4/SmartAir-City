@@ -27,6 +27,16 @@ function App() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Load dark mode preference from localStorage
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem('darkMode');
+    if (savedDarkMode === 'true') {
+      setDarkMode(true);
+      document.body.classList.add('dark-mode');
+    }
+  }, []);
 
   // Initialize data when component mounts
   useEffect(() => {
@@ -192,6 +202,23 @@ function App() {
     console.log('Auto-refresh toggled:', !autoRefresh);
   };
 
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setDarkMode(prev => {
+      const newMode = !prev;
+      localStorage.setItem('darkMode', newMode.toString());
+      
+      if (newMode) {
+        document.body.classList.add('dark-mode');
+      } else {
+        document.body.classList.remove('dark-mode');
+      }
+      
+      console.log('Dark mode toggled:', newMode);
+      return newMode;
+    });
+  };
+
   // Export data handlers
   const handleExportCSV = () => {
     const result = downloadCSV(stations);
@@ -227,6 +254,15 @@ function App() {
   return (
     <div className="App">
       <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+      
+      {/* Dark Mode Toggle Button */}
+      <button 
+        className="dark-mode-toggle" 
+        onClick={toggleDarkMode}
+        title={darkMode ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'}
+      >
+        {darkMode ? '☀️' : '🌙'}
+      </button>
       
       <div className="main-content">
         {/* Show loading state */}

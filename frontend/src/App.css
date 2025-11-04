@@ -9,6 +9,139 @@
 .App {
   min-height: 100vh;
   background: linear-gradient(to bottom, #f5f7fa 0%, #c3cfe2 100%);
+  transition: background 0.3s ease;
+}
+
+/* Dark Mode Toggle Button */
+.dark-mode-toggle {
+  position: fixed;
+  top: 100px;
+  right: 2rem;
+  z-index: 1000;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 1.8rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dark-mode-toggle:hover {
+  transform: scale(1.1) rotate(15deg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Dark Mode Styles */
+body.dark-mode {
+  background: #1a1a2e;
+  color: #e0e0e0;
+}
+
+body.dark-mode .App {
+  background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%);
+}
+
+body.dark-mode .main-content {
+  color: #e0e0e0;
+}
+
+body.dark-mode .page-header h2,
+body.dark-mode .page-header .page-subtitle {
+  color: #e0e0e0;
+}
+
+body.dark-mode .refresh-panel,
+body.dark-mode .search-filter,
+body.dark-mode .chart-container,
+body.dark-mode .comparison-chart-container,
+body.dark-mode .data-preview,
+body.dark-mode .stat-card,
+body.dark-mode .about-section,
+body.dark-mode .station-selector,
+body.dark-mode .data-display {
+  background: #0f3460;
+  color: #e0e0e0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .refresh-text,
+body.dark-mode .stat-info h3,
+body.dark-mode .stat-value,
+body.dark-mode .about-section h2,
+body.dark-mode .about-section p,
+body.dark-mode .station-selector h3,
+body.dark-mode .data-display h3 {
+  color: #e0e0e0;
+}
+
+body.dark-mode .last-update,
+body.dark-mode .stat-label {
+  color: #b0b0b0;
+}
+
+body.dark-mode .search-input {
+  background: #16213e;
+  border-color: #4a5568;
+  color: #e0e0e0;
+}
+
+body.dark-mode .search-input::placeholder {
+  color: #888;
+}
+
+body.dark-mode .search-input:focus {
+  border-color: #667eea;
+  background: #1a1a2e;
+}
+
+body.dark-mode .filter-btn {
+  background: #16213e;
+  border-color: #4a5568;
+  color: #e0e0e0;
+}
+
+body.dark-mode .filter-btn:hover {
+  border-color: #667eea;
+  background: #0f3460;
+}
+
+body.dark-mode .station-button {
+  background: #16213e;
+  color: #e0e0e0;
+}
+
+body.dark-mode .station-button:hover {
+  background: #1a1a2e;
+}
+
+body.dark-mode .station-button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+body.dark-mode .data-table td:first-child {
+  color: #b0b0b0;
+}
+
+body.dark-mode .api-info {
+  background: #16213e;
+  border-left-color: #667eea;
+}
+
+body.dark-mode .api-info h4,
+body.dark-mode .api-info p,
+body.dark-mode .api-info ul {
+  color: #e0e0e0;
 }
 
 .main-content {
@@ -187,6 +320,14 @@
     padding: 1.5rem;
   }
   
+  .dark-mode-toggle {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    right: 1.5rem;
+    top: 90px;
+  }
+  
   .refresh-panel {
     padding: 0.9rem 1.2rem;
   }
@@ -203,6 +344,14 @@
 @media (max-width: 768px) {
   .main-content {
     padding: 1rem;
+  }
+  
+  .dark-mode-toggle {
+    width: 48px;
+    height: 48px;
+    font-size: 1.4rem;
+    right: 1rem;
+    top: 80px;
   }
   
   .refresh-panel {
@@ -268,8 +417,20 @@
     background: #f5f7fa;
   }
   
+  body.dark-mode .App {
+    background: #1a1a2e;
+  }
+  
   .main-content {
     padding: 0.75rem;
+  }
+  
+  .dark-mode-toggle {
+    width: 45px;
+    height: 45px;
+    font-size: 1.3rem;
+    right: 0.75rem;
+    top: 75px;
   }
   
   .refresh-panel {
