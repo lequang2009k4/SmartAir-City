@@ -12,6 +12,8 @@ import AlertBanner from './components/AlertBanner';
 import APIDataViewer from './components/APIDataViewer';
 import About from './components/About';
 import Footer from './components/Footer';
+import LoadingSpinner from './components/LoadingSpinner';
+import ErrorMessage from './components/ErrorMessage';
 import { generateMockStations, generateHistoricalData, updateStationData } from './data/mockData';
 
 function App() {
@@ -20,17 +22,37 @@ function App() {
   const [historicalData, setHistoricalData] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Initialize data when component mounts
   useEffect(() => {
-    const initialStations = generateMockStations();
-    const initialHistory = generateHistoricalData();
+    const loadInitialData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        const initialStations = generateMockStations();
+        const initialHistory = generateHistoricalData();
+        
+        setStations(initialStations);
+        setHistoricalData(initialHistory);
+        
+        console.log('Stations loaded:', initialStations);
+        console.log('Historical data loaded:', initialHistory);
+        
+        setLoading(false);
+      } catch (err) {
+        console.error('Error loading data:', err);
+        setError('Không thể tải dữ liệu ban đầu. Vui lòng thử lại.');
+        setLoading(false);
+      }
+    };
     
-    setStations(initialStations);
-    setHistoricalData(initialHistory);
-    
-    console.log('Stations loaded:', initialStations);
-    console.log('Historical data loaded:', initialHistory);
+    loadInitialData();
   }, []);
 
   // Auto-refresh data every 30 seconds
@@ -113,13 +135,40 @@ function App() {
   const handleManualRefresh = () => {
     console.log('Manual refresh triggered');
     
-    setStations(prevStations => {
-      const updatedStations = updateStationData(prevStations);
-      console.log('Stations manually updated:', updatedStations);
-      return updatedStations;
-    });
+    try {
+      setStations(prevStations => {
+        const updatedStations = updateStationData(prevStations);
+        console.log('Stations manually updated:', updatedStations);
+        return updatedStations;
+      });
+      
+      setLastUpdate(new Date());
+      setError(null); // Clear any existing errors
+    } catch (err) {
+      console.error('Error refreshing data:', err);
+      setError('Không thể cập nhật dữ liệu. Vui lòng thử lại.');
+    }
+  };
+
+  // Retry loading initial data
+  const handleRetry = () => {
+    setError(null);
+    setLoading(true);
     
-    setLastUpdate(new Date());
+    setTimeout(() => {
+      try {
+        const initialStations = generateMockStations();
+        const initialHistory = generateHistoricalData();
+        
+        setStations(initialStations);
+        setHistoricalData(initialHistory);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error retrying data load:', err);
+        setError('Không thể tải dữ liệu. Vui lòng kiểm tra kết nối mạng.');
+        setLoading(false);
+      }
+    }, 1000);
   };
 
   // Toggle auto-refresh
@@ -142,37 +191,56 @@ function App() {
       <Header activeTab={activeTab} setActiveTab={setActiveTab} />
       
       <div className="main-content">
-        {/* Auto-refresh control panel */}
-        <div className="refresh-panel">
-          <div className="refresh-info">
-            <span className="refresh-icon">{autoRefresh ? '🔄' : '⏸️'}</span>
-            <span className="refresh-text">
-              {autoRefresh ? 'Tự động cập nhật: Bật' : 'Tự động cập nhật: Tắt'}
-            </span>
-            <span className="last-update">
-              Cập nhật lần cuối: {formatUpdateTime()}
-            </span>
-          </div>
-          
-          <div className="refresh-controls">
-            <button 
-              className="refresh-btn toggle-btn" 
-              onClick={toggleAutoRefresh}
-              title={autoRefresh ? 'Tắt tự động cập nhật' : 'Bật tự động cập nhật'}
-            >
-              {autoRefresh ? '⏸️ Tạm dừng' : '▶️ Kích hoạt'}
-            </button>
-            <button 
-              className="refresh-btn manual-btn" 
-              onClick={handleManualRefresh}
-              title="Cập nhật ngay"
-            >
-              🔄 Cập nhật ngay
-            </button>
-          </div>
-        </div>
+        {/* Show loading state */}
+        {loading ? (
+          <LoadingSpinner 
+            message="Đang tải dữ liệu từ các trạm đo..." 
+            size="large"
+          />
+        ) : error ? (
+          /* Show error state with retry */
+          <ErrorMessage 
+            title="Lỗi tải dữ liệu"
+            message={error}
+            onRetry={handleRetry}
+            type="error"
+          />
+        ) : (
+          /* Show normal content */
+          <>
+            {/* Auto-refresh control panel */}
+            <div className="refresh-panel">
+              <div className="refresh-info">
+                <span className="refresh-icon">{autoRefresh ? '🔄' : '⏸️'}</span>
+                <span className="refresh-text">
+                  {autoRefresh ? 'Tự động cập nhật: Bật' : 'Tự động cập nhật: Tắt'}
+                </span>
+                <span className="last-update">
+                  Cập nhật lần cuối: {formatUpdateTime()}
+                </span>
+              </div>
+              
+              <div className="refresh-controls">
+                <button 
+                  className="refresh-btn toggle-btn" 
+                  onClick={toggleAutoRefresh}
+                  title={autoRefresh ? 'Tắt tự động cập nhật' : 'Bật tự động cập nhật'}
+                >
+                  {autoRefresh ? '⏸️ Tạm dừng' : '▶️ Kích hoạt'}
+                </button>
+                <button 
+                  className="refresh-btn manual-btn" 
+                  onClick={handleManualRefresh}
+                  title="Cập nhật ngay"
+                >
+                  🔄 Cập nhật ngay
+                </button>
+              </div>
+            </div>
 
-        {renderContent()}
+            {renderContent()}
+          </>
+        )}
       </div>
       
       <Footer />
