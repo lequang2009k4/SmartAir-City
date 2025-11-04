@@ -15,6 +15,7 @@ import Footer from './components/Footer';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorMessage from './components/ErrorMessage';
 import { generateMockStations, generateHistoricalData, updateStationData } from './data/mockData';
+import { downloadCSV, downloadJSON } from './utils/exportUtils';
 
 function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -177,6 +178,29 @@ function App() {
     console.log('Auto-refresh toggled:', !autoRefresh);
   };
 
+  // Export data handlers
+  const handleExportCSV = () => {
+    const result = downloadCSV(stations);
+    if (result.success) {
+      console.log('CSV exported successfully:', result.filename);
+      alert(`✅ Đã xuất file CSV: ${result.filename}`);
+    } else {
+      console.error('CSV export failed:', result.error);
+      alert(`❌ Lỗi xuất CSV: ${result.error}`);
+    }
+  };
+
+  const handleExportJSON = () => {
+    const result = downloadJSON(stations, true);
+    if (result.success) {
+      console.log('JSON exported successfully:', result.filename);
+      alert(`✅ Đã xuất file JSON: ${result.filename}`);
+    } else {
+      console.error('JSON export failed:', result.error);
+      alert(`❌ Lỗi xuất JSON: ${result.error}`);
+    }
+  };
+
   // Format last update time
   const formatUpdateTime = () => {
     return lastUpdate.toLocaleTimeString('vi-VN', { 
@@ -221,6 +245,20 @@ function App() {
               </div>
               
               <div className="refresh-controls">
+                <button 
+                  className="refresh-btn export-btn" 
+                  onClick={handleExportCSV}
+                  title="Xuất dữ liệu CSV"
+                >
+                  📊 CSV
+                </button>
+                <button 
+                  className="refresh-btn export-btn" 
+                  onClick={handleExportJSON}
+                  title="Xuất dữ liệu JSON"
+                >
+                  📄 JSON
+                </button>
                 <button 
                   className="refresh-btn toggle-btn" 
                   onClick={toggleAutoRefresh}

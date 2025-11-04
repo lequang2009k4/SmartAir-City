@@ -107,6 +107,17 @@
   box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
 }
 
+.export-btn {
+  background: #ff6b6b;
+  color: white;
+}
+
+.export-btn:hover {
+  background: #ee5a52;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
 .refresh-btn:active {
   transform: translateY(0);
 }
@@ -222,6 +233,10 @@
     justify-content: center;
   }
   
+  .export-btn {
+    flex: 0.8;
+  }
+  
   .page-header {
     margin-bottom: 0.75rem;
   }
@@ -277,6 +292,17 @@
   .refresh-btn {
     padding: 0.6rem 1rem;
     font-size: 0.85rem;
+  }
+  
+  .refresh-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .export-btn {
+    padding: 0.5rem 0.8rem;
   }
   
   .page-header h2 {
