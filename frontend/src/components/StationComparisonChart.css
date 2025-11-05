@@ -1,0 +1,47 @@
+/* Station Comparison Chart Component */
+
+.comparison-chart-container {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 2rem 0;
+}
+
+.comparison-chart-wrapper {
+  height: 400px;
+  position: relative;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .comparison-chart-container {
+    margin: 1.5rem 0;
+  }
+  
+  .comparison-chart-wrapper {
+    height: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .comparison-chart-container {
+    padding: 1rem;
+    margin: 1.5rem 0;
+  }
+  
+  .comparison-chart-wrapper {
+    height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .comparison-chart-container {
+    padding: 0.75rem;
+    margin: 1rem 0;
+  }
+  
+  .comparison-chart-wrapper {
+    height: 250px;
+  }
+}

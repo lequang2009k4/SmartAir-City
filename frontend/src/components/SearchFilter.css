@@ -1,0 +1,229 @@
+/* Search Filter Component */
+
+.search-filter {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+/* Search Box */
+.search-box {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  color: #999;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.85rem 3rem 0.85rem 3rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.clear-search {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.clear-search:hover {
+  background: #c82333;
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* Filter Buttons */
+.filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.filter-btn {
+  padding: 0.6rem 1.2rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 20px;
+  background: white;
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+  transform: translateY(-2px);
+}
+
+.filter-btn.active {
+  color: white;
+  border-color: transparent;
+}
+
+/* AQI Level Colors */
+.filter-btn.good.active {
+  background: #00e400;
+}
+
+.filter-btn.moderate.active {
+  background: #ffff00;
+  color: #333;
+}
+
+.filter-btn.unhealthy-sensitive.active {
+  background: #ff7e00;
+}
+
+.filter-btn.unhealthy.active {
+  background: #ff0000;
+}
+
+.filter-btn.very-unhealthy.active {
+  background: #8f3f97;
+}
+
+.filter-btn.hazardous.active {
+  background: #7e0023;
+}
+
+.filter-btn:first-child.active {
+  background: #667eea;
+}
+
+/* Clear Filters Button */
+.clear-filters-btn {
+  margin-top: 1rem;
+  padding: 0.7rem 1.5rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.clear-filters-btn:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.clear-filters-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .search-filter {
+    padding: 1.2rem;
+  }
+  
+  .filter-btn {
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-filter {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .search-box {
+    margin-bottom: 1rem;
+  }
+  
+  .search-input {
+    padding: 0.75rem 2.5rem;
+    font-size: 0.95rem;
+  }
+  
+  .filter-buttons {
+    gap: 0.6rem;
+  }
+  
+  .filter-btn {
+    flex: 1 1 calc(50% - 0.6rem);
+    min-width: 140px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+    text-align: center;
+  }
+  
+  .clear-filters-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-filter {
+    padding: 0.85rem;
+  }
+  
+  .search-input {
+    padding: 0.7rem 2.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .search-icon {
+    font-size: 1rem;
+    left: 0.85rem;
+  }
+  
+  .clear-search {
+    width: 22px;
+    height: 22px;
+    font-size: 0.8rem;
+    right: 0.85rem;
+  }
+  
+  .filter-btn {
+    flex: 1 1 100%;
+    padding: 0.65rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .clear-filters-btn {
+    padding: 0.65rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}

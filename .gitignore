@@ -5,3 +5,5 @@ obj/
 # Node
 node_modules/
 .env
+
+backend/
