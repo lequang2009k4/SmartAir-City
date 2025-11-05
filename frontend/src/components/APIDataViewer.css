@@ -1,0 +1,348 @@
+/* API Data Viewer Component */
+
+.api-data-viewer {
+  padding: 1rem 0;
+}
+
+.api-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.api-header h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.8rem;
+}
+
+.api-description {
+  margin: 0;
+  opacity: 0.95;
+  line-height: 1.6;
+}
+
+.api-content {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+}
+
+.station-selector {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+}
+
+.station-selector h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.station-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.station-button {
+  background: #f5f5f5;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.station-button:hover {
+  background: #e8e8e8;
+  transform: translateX(4px);
+}
+
+.station-button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: #667eea;
+}
+
+.station-name {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.station-aqi {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.data-display {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.data-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.view-toggle {
+  background: #f5f5f5;
+  border: 2px solid transparent;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.view-toggle:hover {
+  background: #e8e8e8;
+}
+
+.view-toggle.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.copy-button {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-left: auto;
+}
+
+.copy-button:hover {
+  background: #218838;
+}
+
+.raw-data h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table tr {
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.data-table td {
+  padding: 0.75rem;
+}
+
+.data-table td:first-child {
+  width: 200px;
+  color: #666;
+}
+
+.aqi-value {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #667eea;
+}
+
+.json-ld-view h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.json-code {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 1.5rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.api-info {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.api-info h4 {
+  margin: 0 0 0.75rem 0;
+  color: #333;
+}
+
+.api-info p {
+  margin: 0 0 1rem 0;
+  line-height: 1.6;
+  color: #555;
+}
+
+.api-info ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  line-height: 1.8;
+  color: #555;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .api-content {
+    grid-template-columns: 260px 1fr;
+    gap: 1.5rem;
+  }
+  
+  .station-selector {
+    padding: 1.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .api-header {
+    padding: 1.5rem;
+  }
+  
+  .api-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .api-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .station-selector {
+    order: -1;
+  }
+  
+  .station-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .data-controls {
+    flex-wrap: wrap;
+  }
+  
+  .copy-button {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .json-code {
+    font-size: 0.85rem;
+    padding: 1rem;
+    max-height: 500px;
+  }
+}
+
+@media (max-width: 480px) {
+  .api-data-viewer {
+    padding: 0.5rem 0;
+  }
+  
+  .api-header {
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .api-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .api-description {
+    font-size: 0.95rem;
+  }
+  
+  .station-selector {
+    padding: 1rem;
+  }
+  
+  .station-selector h3 {
+    font-size: 1.1rem;
+  }
+  
+  .station-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .station-button {
+    padding: 0.85rem;
+  }
+  
+  .data-display {
+    padding: 1rem;
+  }
+  
+  .data-controls {
+    gap: 0.75rem;
+  }
+  
+  .view-toggle {
+    flex: 1;
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .copy-button {
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .data-table td {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+  
+  .data-table td:first-child {
+    width: 140px;
+    font-size: 0.85rem;
+  }
+  
+  .json-code {
+    font-size: 0.8rem;
+    padding: 0.85rem;
+    max-height: 400px;
+  }
+  
+  .api-info {
+    padding: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  .api-info h4 {
+    font-size: 1rem;
+  }
+  
+  .api-info p {
+    font-size: 0.9rem;
+  }
+  
+  .api-info ul {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+}
+
+@media (max-width: 968px) {
+  .api-content {
+    grid-template-columns: 1fr;
+  }
+}
