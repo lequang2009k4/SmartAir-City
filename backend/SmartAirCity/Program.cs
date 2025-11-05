@@ -9,11 +9,7 @@ using SmartAirCity.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
-Console.WriteLine("=== Environment Variables Check ===");
-Console.WriteLine($"MongoDb: {builder.Configuration["ConnectionStrings:MongoDb"]}");
-Console.WriteLine($"Database: {builder.Configuration["Mongo:Database"]}");
-Console.WriteLine($"OpenAQ Key: {builder.Configuration["OpenAQ:ApiKey"]}");
-Console.WriteLine("===================================");
+
 
 // Add services
 builder.Services.AddControllers();
