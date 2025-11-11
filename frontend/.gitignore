@@ -13,11 +13,17 @@
 
 # misc
 .DS_Store
+
+# Environment files
+# Only ignore .env and .env.local (contains real secrets)
+# Keep .env.development and .env.production (templates for team)
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*.local
+
+# Uncomment below if you want to ignore development/production env too
+# .env.development
+# .env.production
 
 npm-debug.log*
 yarn-debug.log*
