@@ -125,9 +125,9 @@ namespace MyMongoApi.Controllers
             try
             {
                 // ⚙️ Cấu hình SMTP
-                var fromAddress = new MailAddress("smartaircity@gmail.com", "SmartCity Notification");
+                var fromAddress = new MailAddress("your-mail", "SmartCity Notification");
                 var toAddress = new MailAddress(request.Email, user.Name);
-                const string fromPassword = "miwq gnlq oljw lgdr"; // Dùng App Password, không phải password thật
+                const string fromPassword = "your-app-password"; // Dùng App Password, không phải password thật
                 string subject = "Cảnh báo: Chất lượng không khí đang ở mức xấu";  // Cố định tiêu đề
                 string body = request.Message;
 
