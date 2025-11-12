@@ -17,6 +17,7 @@ import ErrorMessage from './components/ErrorMessage';
 import SearchFilter from './components/SearchFilter';
 import ApiTestComponent from './components/ApiTestComponent';
 import AirQualityServiceTest from './components/AirQualityServiceTest';
+import DevicesUsersServiceTest from './components/DevicesUsersServiceTest';
 import { generateMockStations, generateHistoricalData, updateStationData } from './data/mockData';
 import { downloadCSV, downloadJSON } from './utils/exportUtils';
 
@@ -152,6 +153,9 @@ function App() {
       
       case 'aqtest':
         return <AirQualityServiceTest />;
+      
+      case 'dutest':
+        return <DevicesUsersServiceTest />;
       
       default:
         return (

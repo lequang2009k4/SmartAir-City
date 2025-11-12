@@ -44,7 +44,8 @@ const DEVICE_STATUS = ['active', 'inactive', 'maintenance'];
 export const generateDevice = (options = {}) => {
   const location = options.location || randomChoice(HANOI_LOCATIONS);
   const deviceType = options.type || randomChoice(DEVICE_TYPES);
-  const id = options.id || `device-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const index = options.index !== undefined ? options.index : Math.floor(Math.random() * 1000);
+  const id = options.id || `device-${String(index).padStart(3, '0')}`; // Fixed format: device-001, device-002, etc.
   
   return {
     id: id,
@@ -79,13 +80,13 @@ export const generateDevices = (count = 10) => {
   
   HANOI_LOCATIONS.forEach((location, index) => {
     if (index < count) {
-      devices.push(generateDevice({ location }));
+      devices.push(generateDevice({ location, index: index + 1 })); // Pass index for fixed IDs
     }
   });
   
   // Fill remaining if needed
   while (devices.length < count) {
-    devices.push(generateDevice());
+    devices.push(generateDevice({ index: devices.length + 1 }));
   }
   
   return devices;

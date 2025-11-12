@@ -47,7 +47,7 @@ const Header = ({ activeTab, setActiveTab }) => {
             style={{ backgroundColor: '#ff9800', color: 'white' }}
             title="Phase 2 - API Testing"
           >
-            🧪 API Test
+            API Test
           </button>
           <button 
             className={`nav-item ${activeTab === 'aqtest' ? 'active' : ''}`}
@@ -55,7 +55,15 @@ const Header = ({ activeTab, setActiveTab }) => {
             style={{ backgroundColor: '#4CAF50', color: 'white' }}
             title="Phase 3 - Air Quality Service Testing"
           >
-            ✅ AQ Service
+            AQ Service
+          </button>
+          <button 
+            className={`nav-item ${activeTab === 'dutest' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dutest')}
+            style={{ backgroundColor: '#9C27B0', color: 'white' }}
+            title="Phase 4 - Devices & Users Service Testing"
+          >
+            👥 D&U Service
           </button>
         </nav>
       </div>

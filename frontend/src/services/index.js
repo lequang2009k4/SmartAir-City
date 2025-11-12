@@ -75,9 +75,47 @@ export {
   getDateRange,
 } from './api/airQualityService';
 
-// Will be added in Phase 4:
-// export { default as devicesService } from './api/devicesService';
-// export { default as usersService } from './api/usersService';
+// ============================================
+// DEVICES SERVICE (Phase 4)
+// ============================================
+export { default as devicesService } from './api/devicesService';
+
+export {
+  getAll as getDevicesAll,
+  update as updateDevice,
+  remove as removeDevice,
+  getStatusInfo as getDeviceStatusInfo,
+  getTypeInfo as getDeviceTypeInfo,
+  filterByStatus as filterDevicesByStatus,
+  filterByType as filterDevicesByType,
+  getStatistics as getDevicesStatistics,
+} from './api/devicesService';
+
+// ============================================
+// USERS SERVICE (Phase 4)
+// ============================================
+export { default as usersService } from './api/usersService';
+
+export {
+  getAll as getUsersAll,
+  signup,
+  login,
+  logout,
+  verifyEmail,
+  remove as removeUser,
+  saveToken,
+  getToken,
+  removeToken,
+  saveUser,
+  getUser,
+  isAuthenticated,
+  isAdmin,
+  getRoleInfo,
+  validateEmail,
+  validatePassword,
+  filterByRole as filterUsersByRole,
+  getStatistics as getUsersStatistics,
+} from './api/usersService';
 
 // ============================================
 // WEBSOCKET SERVICES (Will be added in Phase 5)
