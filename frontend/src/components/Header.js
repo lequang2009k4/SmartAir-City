@@ -89,6 +89,14 @@ const Header = ({ activeTab, setActiveTab }) => {
           >
             📡 Devices
           </button>
+          <button 
+            className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
+            onClick={() => setActiveTab('users')}
+            style={{ backgroundColor: '#E91E63', color: 'white' }}
+            title="Phase 9 - User Management UI"
+          >
+            👥 Users
+          </button>
         </nav>
       </div>
     </header>

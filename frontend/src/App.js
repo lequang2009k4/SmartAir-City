@@ -21,6 +21,7 @@ import DevicesUsersServiceTest from './components/DevicesUsersServiceTest';
 import WebSocketTest from './components/WebSocketTest';
 import Phase6Test from './components/Phase6Test';
 import DeviceManagement from './components/DeviceManagement'; // Phase 8
+import UserManagement from './components/UserManagement'; // Phase 9
 // No longer using mockData.js - all data from MSW + Hooks
 // import { downloadCSV, downloadJSON } from './utils/exportUtils'; // Tạm disabled - cần update với hooks
 
@@ -137,6 +138,9 @@ function App() {
       
       case 'devices':
         return <DeviceManagement />;
+      
+      case 'users':
+        return <UserManagement />;
       
       default:
         return (

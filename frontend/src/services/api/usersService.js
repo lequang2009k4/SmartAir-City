@@ -147,6 +147,13 @@ export const getAll = async (transform = true) => {
 };
 
 /**
+ * Alias for getAll (for hook compatibility)
+ */
+export const getAllUsers = async () => {
+  return await getAll(true);
+};
+
+/**
  * User signup
  * @param {object} userData - User registration data
  * @param {string} userData.email - Email
@@ -226,6 +233,13 @@ export const verifyEmail = async (token) => {
  */
 export const remove = async (id) => {
   await coreApiAxios.delete(`/api/Users/${id}`);
+};
+
+/**
+ * Alias for remove (for hook compatibility)
+ */
+export const deleteUser = async (id) => {
+  return await remove(id);
 };
 
 /**
@@ -396,11 +410,13 @@ export const getStatistics = (users) => {
 const usersService = {
   // API methods
   getAll,
+  getAllUsers,
   signup,
   login,
   logout,
   verifyEmail,
   remove,
+  deleteUser,
   
   // Hook-compatible methods
   getCurrentUser,
