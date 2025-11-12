@@ -39,6 +39,7 @@ export {
 // ============================================
 export { default as axiosInstances } from './api/axiosInstance';
 export { default as errorHandler } from './api/errorHandler';
+export { default as airQualityService } from './api/airQualityService';
 
 export {
   airQualityAxios,
@@ -62,8 +63,19 @@ export {
   isNotFound,
 } from './api/errorHandler';
 
-// Will be added in Phase 3-4:
-// export { default as airQualityService } from './api/airQualityService';
+export {
+  getAll as getAirQualityAll,
+  getLatest as getAirQualityLatest,
+  getHistory as getAirQualityHistory,
+  postIotData,
+  transformAirQualityData,
+  transformAirQualityArray,
+  getAQILevel,
+  calculateAverageAQI,
+  getDateRange,
+} from './api/airQualityService';
+
+// Will be added in Phase 4:
 // export { default as devicesService } from './api/devicesService';
 // export { default as usersService } from './api/usersService';
 

@@ -49,6 +49,14 @@ const Header = ({ activeTab, setActiveTab }) => {
           >
             🧪 API Test
           </button>
+          <button 
+            className={`nav-item ${activeTab === 'aqtest' ? 'active' : ''}`}
+            onClick={() => setActiveTab('aqtest')}
+            style={{ backgroundColor: '#4CAF50', color: 'white' }}
+            title="Phase 3 - Air Quality Service Testing"
+          >
+            ✅ AQ Service
+          </button>
         </nav>
       </div>
     </header>

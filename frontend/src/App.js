@@ -16,6 +16,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import ErrorMessage from './components/ErrorMessage';
 import SearchFilter from './components/SearchFilter';
 import ApiTestComponent from './components/ApiTestComponent';
+import AirQualityServiceTest from './components/AirQualityServiceTest';
 import { generateMockStations, generateHistoricalData, updateStationData } from './data/mockData';
 import { downloadCSV, downloadJSON } from './utils/exportUtils';
 
@@ -148,6 +149,9 @@ function App() {
       
       case 'apitest':
         return <ApiTestComponent />;
+      
+      case 'aqtest':
+        return <AirQualityServiceTest />;
       
       default:
         return (
