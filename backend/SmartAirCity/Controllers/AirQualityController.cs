@@ -1,4 +1,3 @@
-
 //  SPDX-License-Identifier: MIT
 //  © 2025 SmartAir City Team
  
@@ -71,7 +70,7 @@ public class AirQualityController : ControllerBase
   [HttpGet("airquality/history")]
     public async Task<IActionResult> GetHistory([FromQuery] DateTime from, [FromQuery] DateTime to, CancellationToken ct)
     {
-        // Nếu chỉ nhập ngày, tự động set đầu và cuối ngày
+        // neu chi nhap ngay, tu dong set đau và cuoi ngay
         if (from.TimeOfDay == TimeSpan.Zero)
             from = from.Date; // 00:00:00
 
