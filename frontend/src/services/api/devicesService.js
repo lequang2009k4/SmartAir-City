@@ -94,6 +94,45 @@ export const getAll = async (transform = true) => {
 };
 
 /**
+ * Alias for getAll (for hook compatibility)
+ */
+export const getAllDevices = async (params = {}) => {
+  return await getAll(true);
+};
+
+/**
+ * Get device by ID
+ * @param {string} id - Device ID
+ * @returns {Promise<object>} Device data
+ */
+export const getDeviceById = async (id) => {
+  const data = await coreApiAxios.get(`/api/Devices/${id}`);
+  return transformDevice(data);
+};
+
+/**
+ * Create new device
+ * @param {object} deviceData - Device data
+ * @returns {Promise<object>} Created device
+ */
+export const createDevice = async (deviceData) => {
+  const backendData = transformDeviceToBackend(deviceData);
+  const data = await coreApiAxios.post('/api/Devices', backendData);
+  return transformDevice(data);
+};
+
+/**
+ * Update device by ID
+ * @param {string} id - Device ID
+ * @param {object} deviceData - Device data to update
+ * @param {boolean} transform - Transform response to frontend format (default: true)
+ * @returns {Promise<object>} Updated device
+ */
+export const updateDevice = async (id, deviceData) => {
+  return await update(id, deviceData, true);
+};
+
+/**
  * Update device by ID
  * @param {string} id - Device ID
  * @param {object} deviceData - Device data to update
@@ -113,6 +152,13 @@ export const update = async (id, deviceData, transform = true) => {
  */
 export const remove = async (id) => {
   await coreApiAxios.delete(`/api/Devices/${id}`);
+};
+
+/**
+ * Alias for remove (for hook compatibility)
+ */
+export const deleteDevice = async (id) => {
+  return await remove(id);
 };
 
 // ============================================
@@ -202,9 +248,19 @@ export const getStatistics = (devices) => {
 
 // Default export
 const devicesService = {
+  // Original methods
   getAll,
   update,
   remove,
+  
+  // Hook-compatible aliases
+  getAllDevices,
+  getDeviceById,
+  createDevice,
+  updateDevice,
+  deleteDevice,
+  
+  // Helpers
   getStatusInfo,
   getTypeInfo,
   filterByStatus,

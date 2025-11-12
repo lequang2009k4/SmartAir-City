@@ -13,6 +13,7 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { getAQIColor } from '../data/mockData';
+import { useAirQuality } from '../hooks';
 import './StationComparisonChart.css';
 
 // Register Chart.js components
@@ -25,10 +26,18 @@ ChartJS.register(
   Legend
 );
 
-const StationComparisonChart = ({ stations }) => {
+const StationComparisonChart = ({ stations: stationsProp }) => {
+  // Use the hook for data
+  const { latestData } = useAirQuality({
+    enableWebSocket: false, // No need WebSocket for comparison chart
+  });
+
+  // Use prop data if provided, otherwise use hook data
+  const stations = stationsProp || latestData;
+
   // Prepare data for the chart
   const chartData = {
-    labels: stations.map(s => s.name),
+    labels: stations.map(s => s.id?.split(':').pop() || 'Unknown'),
     datasets: [
       {
         label: 'AQI',

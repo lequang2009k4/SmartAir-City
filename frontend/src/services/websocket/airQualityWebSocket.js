@@ -117,22 +117,26 @@ class AirQualityWebSocket {
         // Stop polling when connected
         this.stopPolling();
         this.notifyListeners('connected', info);
+        this.notifyListeners('connectionChanged', true);
         break;
 
       case 'disconnected':
         // Start polling when disconnected
         this.startPolling();
         this.notifyListeners('disconnected', info);
+        this.notifyListeners('connectionChanged', false);
         break;
 
       case 'reconnecting':
         this.notifyListeners('reconnecting', info);
+        this.notifyListeners('connectionChanged', false);
         break;
 
       case 'error':
         // Fallback to polling on error
         this.startPolling();
         this.notifyListeners('error', info);
+        this.notifyListeners('connectionChanged', false);
         break;
 
       default:
@@ -193,6 +197,13 @@ class AirQualityWebSocket {
   }
 
   /**
+   * Alias for subscribe (for compatibility with hooks)
+   */
+  on(eventType, callback) {
+    return this.subscribe(eventType, callback);
+  }
+
+  /**
    * Unsubscribe from Air Quality updates
    */
   unsubscribe(eventType, callback) {
@@ -204,6 +215,20 @@ class AirQualityWebSocket {
       listeners.splice(index, 1);
       console.log(`[AirQualityWS] Unsubscribed from ${eventType}`);
     }
+  }
+
+  /**
+   * Alias for unsubscribe (for compatibility with hooks)
+   */
+  off(eventType, callback) {
+    this.unsubscribe(eventType, callback);
+  }
+
+  /**
+   * Connect to WebSocket (alias for initialize)
+   */
+  async connect() {
+    return await this.initialize();
   }
 
   /**

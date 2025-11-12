@@ -5,28 +5,29 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Header from './components/Header';
 import StatsCards from './components/StatsCards';
-import AirQualityChart from './components/AirQualityChart';
-import StationComparisonChart from './components/StationComparisonChart';
+import AirQualityChart from './components/AirQualityChart'; // Updated to use hooks
+import StationComparisonChart from './components/StationComparisonChart'; // Updated to use hooks
 import AirQualityMap from './components/AirQualityMap';
 import AlertBanner from './components/AlertBanner';
-import APIDataViewer from './components/APIDataViewer';
+// import APIDataViewer from './components/APIDataViewer'; // Cần update để dùng hooks
 import About from './components/About';
 import Footer from './components/Footer';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorMessage from './components/ErrorMessage';
-import SearchFilter from './components/SearchFilter';
+// import SearchFilter from './components/SearchFilter'; // Tạm comment - dùng mockData
 import ApiTestComponent from './components/ApiTestComponent';
 import AirQualityServiceTest from './components/AirQualityServiceTest';
 import DevicesUsersServiceTest from './components/DevicesUsersServiceTest';
 import WebSocketTest from './components/WebSocketTest';
-import { generateMockStations, generateHistoricalData, updateStationData } from './data/mockData';
-import { downloadCSV, downloadJSON } from './utils/exportUtils';
+import Phase6Test from './components/Phase6Test';
+// import { generateMockStations, generateHistoricalData, updateStationData } from './data/mockData'; // Không dùng nữa - chuyển sang MSW
+// import { downloadCSV, downloadJSON } from './utils/exportUtils'; // Tạm disabled - cần update với hooks
 
 function App() {
   const [activeTab, setActiveTab] = useState('home');
-  const [stations, setStations] = useState([]);
-  const [filteredStations, setFilteredStations] = useState([]);
-  const [historicalData, setHistoricalData] = useState([]);
+  // const [stations, setStations] = useState([]); // Không dùng mockData nữa
+  // const [filteredStations, setFilteredStations] = useState([]); // Không dùng mockData nữa
+  // const [historicalData, setHistoricalData] = useState([]); // Không dùng mockData nữa
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -42,56 +43,14 @@ function App() {
     }
   }, []);
 
-  // Initialize data when component mounts
+  // ==========================================
+  // NOW USING MSW + HOOKS - No more mockData.js
+  // ==========================================
+
+  // Set loading to false immediately (hooks will handle their own loading)
   useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        const initialStations = generateMockStations();
-        const initialHistory = generateHistoricalData();
-        
-        setStations(initialStations);
-        setFilteredStations(initialStations); // Initialize filtered stations
-        setHistoricalData(initialHistory);
-        
-        console.log('Stations loaded:', initialStations);
-        console.log('Historical data loaded:', initialHistory);
-        
-        setLoading(false);
-      } catch (err) {
-        console.error('Error loading data:', err);
-        setError('Không thể tải dữ liệu ban đầu. Vui lòng thử lại.');
-        setLoading(false);
-      }
-    };
-    
-    loadInitialData();
+    setLoading(false);
   }, []);
-
-  // Auto-refresh data every 30 seconds
-  useEffect(() => {
-    if (!autoRefresh) return;
-
-    const intervalId = setInterval(() => {
-      console.log('Auto-refreshing station data...');
-      
-      setStations(prevStations => {
-        const updatedStations = updateStationData(prevStations);
-        console.log('Stations updated:', updatedStations);
-        setFilteredStations(updatedStations); // Update filtered stations too
-        return updatedStations;
-      });
-      
-      setLastUpdate(new Date());
-    }, 30000); // 30 seconds
-
-    return () => clearInterval(intervalId);
-  }, [autoRefresh]);
 
   // Handle station click on map
   const handleStationClick = (station) => {
@@ -105,18 +64,22 @@ function App() {
         return (
           <>
             <div className="page-header">
-              <h2>🏠 Trang chủ - Dashboard</h2>
+              <h2>Trang chủ - Hệ thống giám sát chất lượng không khí</h2>
               <p className="page-subtitle">Tổng quan chất lượng không khí thành phố</p>
             </div>
 
-            <SearchFilter 
+            {/* Tạm comment SearchFilter vì dùng mockData */}
+            {/* <SearchFilter 
               stations={stations} 
               onFilterChange={setFilteredStations}
-            />
-            <AlertBanner stations={filteredStations} />
-            <StatsCards stations={filteredStations} />
-            <AirQualityChart historicalData={historicalData} />
-            <StationComparisonChart stations={filteredStations} />
+            /> */}
+            {/* AlertBanner và StatsCards sẽ tự lấy data từ useAirQuality hook */}
+            <AlertBanner />
+            <StatsCards />
+            {/* AirQualityChart sẽ tự lấy data từ useAirQuality hook */}
+            <AirQualityChart />
+            {/* StationComparisonChart sẽ tự lấy data từ useAirQuality hook */}
+            <StationComparisonChart />
           </>
         );
       
@@ -130,19 +93,26 @@ function App() {
               </p>
             </div>
 
-            <SearchFilter 
+            {/* Tạm comment SearchFilter vì dùng mockData */}
+            {/* <SearchFilter 
               stations={stations} 
               onFilterChange={setFilteredStations}
-            />
-            <AlertBanner stations={filteredStations} />
-            <AirQualityMap stations={filteredStations} onStationClick={handleStationClick} />
+            /> */}
+            {/* AlertBanner và AirQualityMap sẽ tự lấy data từ useAirQuality hook */}
+            <AlertBanner />
+            <AirQualityMap onStationClick={handleStationClick} />
           </>
         );
       
       case 'data':
         return (
           <>
-            <APIDataViewer stations={stations} />
+            {/* APIDataViewer cần update để dùng hooks */}
+            {/* <APIDataViewer stations={stations} /> */}
+            <div className="page-header">
+              <h2>API Data Viewer - Đang cập nhật...</h2>
+              <p>Component này sẽ được cập nhật để sử dụng hooks</p>
+            </div>
           </>
         );
       
@@ -161,6 +131,9 @@ function App() {
       case 'wstest':
         return <WebSocketTest />;
       
+      case 'phase6':
+        return <Phase6Test />;
+      
       default:
         return (
           <div className="page-header">
@@ -170,46 +143,18 @@ function App() {
     }
   };
 
-  // Manual refresh function
+  // Manual refresh function - Now handled by hooks
   const handleManualRefresh = () => {
-    console.log('Manual refresh triggered');
-    
-    try {
-      setStations(prevStations => {
-        const updatedStations = updateStationData(prevStations);
-        console.log('Stations manually updated:', updatedStations);
-        setFilteredStations(updatedStations); // Update filtered stations too
-        return updatedStations;
-      });
-      
-      setLastUpdate(new Date());
-      setError(null); // Clear any existing errors
-    } catch (err) {
-      console.error('Error refreshing data:', err);
-      setError('Không thể cập nhật dữ liệu. Vui lòng thử lại.');
-    }
+    console.log('Manual refresh triggered - hooks will auto-refresh');
+    setLastUpdate(new Date());
+    setError(null);
   };
 
-  // Retry loading initial data
+  // Retry loading - Now handled by hooks
   const handleRetry = () => {
+    console.log('Retry triggered - hooks will reload data');
     setError(null);
-    setLoading(true);
-    
-    setTimeout(() => {
-      try {
-        const initialStations = generateMockStations();
-        const initialHistory = generateHistoricalData();
-        
-        setStations(initialStations);
-        setFilteredStations(initialStations); // Update filtered stations too
-        setHistoricalData(initialHistory);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error retrying data load:', err);
-        setError('Không thể tải dữ liệu. Vui lòng kiểm tra kết nối mạng.');
-        setLoading(false);
-      }
-    }, 1000);
+    setLoading(false);
   };
 
   // Toggle auto-refresh
@@ -235,27 +180,17 @@ function App() {
     });
   };
 
-  // Export data handlers
+  // Export data handlers - Tạm thời disabled, cần update để dùng hooks
   const handleExportCSV = () => {
-    const result = downloadCSV(stations);
-    if (result.success) {
-      console.log('CSV exported successfully:', result.filename);
-      alert(`Đã xuất file CSV: ${result.filename}`);
-    } else {
-      console.error('CSV export failed:', result.error);
-      alert(`Lỗi xuất CSV: ${result.error}`);
-    }
+    console.log('Export CSV - Feature disabled, needs hook integration');
+    alert('Tính năng xuất CSV sẽ sớm được cập nhật với hooks');
+    // const result = downloadCSV(stations);
   };
 
   const handleExportJSON = () => {
-    const result = downloadJSON(stations, true);
-    if (result.success) {
-      console.log('JSON exported successfully:', result.filename);
-      alert(`Đã xuất file JSON: ${result.filename}`);
-    } else {
-      console.error('JSON export failed:', result.error);
-      alert(`Lỗi xuất JSON: ${result.error}`);
-    }
+    console.log('Export JSON - Feature disabled, needs hook integration');
+    alert('Tính năng xuất JSON sẽ sớm được cập nhật với hooks');
+    // const result = downloadJSON(stations, true);
   };
 
   // Format last update time

@@ -170,6 +170,102 @@ export const postIotData = async (iotData) => {
   return data;
 };
 
+/**
+ * Get latest air quality data for all locations (alias for compatibility)
+ * @param {object} params - Query parameters (location, limit, etc.)
+ * @returns {Promise<array>} Array of latest air quality records
+ */
+export const getLatestData = async (params = {}) => {
+  const limit = params.limit || 50;
+  const data = await getAll(limit, true);
+  
+  // Filter by location if provided
+  if (params.location) {
+    return Array.isArray(data) 
+      ? data.filter(item => item.location?.coordinates?.toString().includes(params.location))
+      : [];
+  }
+  
+  return Array.isArray(data) ? data : [];
+};
+
+/**
+ * Get historical air quality data for a specific location
+ * @param {string} locationId - Location ID or coordinates
+ * @param {string|Date} startDate - Start date
+ * @param {string|Date} endDate - End date
+ * @returns {Promise<array>} Array of historical records
+ */
+export const getHistoricalData = async (locationId, startDate, endDate) => {
+  const data = await getHistory(startDate, endDate, true);
+  
+  // Filter by location if provided
+  if (locationId && Array.isArray(data)) {
+    return data.filter(item => 
+      item.id === locationId || 
+      item.location?.coordinates?.toString().includes(locationId)
+    );
+  }
+  
+  return Array.isArray(data) ? data : [];
+};
+
+/**
+ * Get air quality data for a specific location
+ * @param {string} locationId - Location ID
+ * @returns {Promise<object>} Air quality data for the location
+ */
+export const getLocationData = async (locationId) => {
+  const data = await getAll(1, true);
+  
+  // Find the location
+  if (Array.isArray(data)) {
+    const location = data.find(item => item.id === locationId);
+    return location || null;
+  }
+  
+  return null;
+};
+
+/**
+ * Get air quality alerts (high AQI warnings)
+ * @param {object} params - Query parameters
+ * @returns {Promise<array>} Array of alerts
+ */
+export const getAlerts = async (params = {}) => {
+  const data = await getAll(50, true);
+  
+  if (!Array.isArray(data)) return [];
+  
+  // Generate alerts for high AQI values
+  const alerts = data
+    .filter(item => item.aqi > 100) // Only AQI > 100
+    .map(item => {
+      const level = getAQILevel(item.aqi);
+      return {
+        id: `alert-${item.id}-${item.timestamp}`,
+        locationId: item.id,
+        locationName: item.id.split(':').pop() || 'Unknown',
+        aqi: item.aqi,
+        level: level.level,
+        severity: item.aqi > 200 ? 'critical' : item.aqi > 150 ? 'high' : 'medium',
+        message: `${level.label}: AQI ${Math.round(item.aqi)} tại ${item.id.split(':').pop()}`,
+        timestamp: item.dateObserved || new Date().toISOString(),
+        pollutants: {
+          pm25: item.pm25,
+          pm10: item.pm10,
+          o3: item.o3,
+          no2: item.no2,
+          so2: item.so2,
+          co: item.co,
+        }
+      };
+    })
+    .sort((a, b) => b.aqi - a.aqi); // Sort by AQI descending
+  
+  return alerts;
+};
+
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
@@ -265,6 +361,12 @@ const airQualityService = {
   getLatest,
   getHistory,
   postIotData,
+  
+  // Extended methods (for hooks compatibility)
+  getLatestData,
+  getHistoricalData,
+  getLocationData,
+  getAlerts,
   
   // Transformers
   transformAirQualityData,

@@ -228,6 +228,51 @@ export const remove = async (id) => {
   await coreApiAxios.delete(`/api/Users/${id}`);
 };
 
+/**
+ * Get current user (from token)
+ * @returns {Promise<object>} Current user data
+ */
+export const getCurrentUser = async () => {
+  // In production, this would call /api/users/me or similar
+  // For now, get from localStorage
+  const user = getUser();
+  
+  if (!user) {
+    throw new Error('No user logged in');
+  }
+  
+  return user;
+};
+
+/**
+ * Register new user (alias for signup)
+ * @param {object} userData - User registration data
+ * @returns {Promise<object>} Response with user and token
+ */
+export const register = async (userData) => {
+  return await signup(userData);
+};
+
+/**
+ * Update user
+ * @param {string} userId - User ID
+ * @param {object} userData - User data to update
+ * @returns {Promise<object>} Updated user
+ */
+export const updateUser = async (userId, userData) => {
+  const response = await coreApiAxios.put(`/api/Users/${userId}`, userData);
+  
+  const transformedUser = transformUser(response);
+  
+  // Update localStorage if updating current user
+  const currentUser = getUser();
+  if (currentUser && currentUser.id === userId) {
+    saveUser(transformedUser);
+  }
+  
+  return transformedUser;
+};
+
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
@@ -356,6 +401,11 @@ const usersService = {
   logout,
   verifyEmail,
   remove,
+  
+  // Hook-compatible methods
+  getCurrentUser,
+  register,
+  updateUser,
   
   // Auth helpers
   saveToken,

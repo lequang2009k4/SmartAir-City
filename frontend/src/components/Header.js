@@ -73,6 +73,14 @@ const Header = ({ activeTab, setActiveTab }) => {
           >
             🌐 WebSocket
           </button>
+          <button 
+            className={`nav-item ${activeTab === 'phase6' ? 'active' : ''}`}
+            onClick={() => setActiveTab('phase6')}
+            style={{ backgroundColor: '#E91E63', color: 'white' }}
+            title="Phase 6 - React Hooks Integration Testing"
+          >
+            🎣 Phase 6
+          </button>
         </nav>
       </div>
     </header>

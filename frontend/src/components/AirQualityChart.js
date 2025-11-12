@@ -1,7 +1,7 @@
 // © 2025 SmartAir City Team
 // Licensed under the MIT License. See LICENSE file for details.
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,6 +14,7 @@ import {
   Filler
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { useAirQuality } from '../hooks';
 import './AirQualityChart.css';
 
 // Register Chart.js components
@@ -28,10 +29,41 @@ ChartJS.register(
   Filler
 );
 
-const AirQualityChart = ({ historicalData }) => {
+const AirQualityChart = ({ historicalData: historicalDataProp, locationId, dateRange }) => {
+  const [localHistoricalData, setLocalHistoricalData] = useState([]);
+  
+  // Use the hook for fetching historical data
+  const { 
+    historicalData: hookHistoricalData, 
+    latestData,
+    fetchHistoricalData,
+    isLoading,
+    error 
+  } = useAirQuality({
+    enableWebSocket: false, // No need WebSocket for historical chart
+  });
+
+  // Fetch historical data when locationId or dateRange changes
+  useEffect(() => {
+    if (locationId && dateRange) {
+      const { startDate, endDate } = dateRange;
+      fetchHistoricalData(locationId, startDate, endDate)
+        .then(data => setLocalHistoricalData(data))
+        .catch(err => console.error('Failed to fetch historical data:', err));
+    }
+  }, [locationId, dateRange, fetchHistoricalData]);
+
+  // Use prop data if provided, otherwise use hook data or local data
+  const historicalData = historicalDataProp || localHistoricalData || hookHistoricalData;
+
+  // If no historical data, use latest data for basic chart
+  const displayData = historicalData.length > 0 
+    ? historicalData 
+    : latestData.slice(0, 24); // Show first 24 stations if no historical data
+  
   // Prepare data for the chart
   const chartData = {
-    labels: historicalData.map(d => 
+    labels: displayData.map(d => 
       new Date(d.timestamp).toLocaleTimeString('vi-VN', { 
         hour: '2-digit', 
         minute: '2-digit' 
@@ -40,7 +72,7 @@ const AirQualityChart = ({ historicalData }) => {
     datasets: [
       {
         label: 'AQI',
-        data: historicalData.map(d => d.aqi),
+        data: displayData.map(d => d.aqi),
         borderColor: 'rgb(75, 192, 192)',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
         fill: true,
@@ -51,7 +83,7 @@ const AirQualityChart = ({ historicalData }) => {
       },
       {
         label: 'PM2.5',
-        data: historicalData.map(d => d.pm25),
+        data: displayData.map(d => d.pm25),
         borderColor: 'rgb(255, 99, 132)',
         backgroundColor: 'rgba(255, 99, 132, 0.2)',
         fill: true,
@@ -152,9 +184,47 @@ const AirQualityChart = ({ historicalData }) => {
 
   return (
     <div className="chart-container">
-      <div className="chart-wrapper">
-        <Line data={chartData} options={options} />
-      </div>
+      {error && (
+        <div style={{
+          padding: '16px',
+          backgroundColor: '#fff3cd',
+          border: '1px solid #ffc107',
+          borderRadius: '4px',
+          marginBottom: '16px',
+          color: '#856404',
+          fontSize: '14px'
+        }}>
+          ⚠️ {error}
+        </div>
+      )}
+      
+      {isLoading && displayData.length === 0 ? (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '300px',
+          fontSize: '14px',
+          color: '#666'
+        }}>
+          ⏳ Đang tải dữ liệu biểu đồ...
+        </div>
+      ) : displayData.length === 0 ? (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '300px',
+          fontSize: '14px',
+          color: '#999'
+        }}>
+          📊 Chưa có dữ liệu để hiển thị
+        </div>
+      ) : (
+        <div className="chart-wrapper">
+          <Line data={chartData} options={options} />
+        </div>
+      )}
     </div>
   );
 };

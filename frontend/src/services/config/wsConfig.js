@@ -42,21 +42,32 @@ export const WS_ENDPOINTS = {
  * These should match backend event names
  */
 export const WS_EVENTS = {
-  // Client → Server (Send)
-  SUBSCRIBE: 'SubscribeToAirQuality',
-  UNSUBSCRIBE: 'UnsubscribeFromAirQuality',
+  // Air Quality events
+  AIR_QUALITY: {
+    NEW_DATA: 'ReceiveAirQualityUpdate',
+    UPDATE: 'ReceiveAirQualityUpdate', // Same as NEW_DATA
+    LATEST_DATA: 'ReceiveLatestData',
+    ALERT: 'ReceiveAlert',
+    SUBSCRIBE: 'SubscribeToAirQuality',
+    UNSUBSCRIBE: 'UnsubscribeFromAirQuality',
+  },
   
-  // Server → Client (Receive)
-  NEW_DATA: 'ReceiveAirQualityUpdate',
-  LATEST_DATA: 'ReceiveLatestData',
-  ALERT: 'ReceiveAlert',
+  // Device events
+  DEVICES: {
+    STATUS_CHANGED: 'ReceiveDeviceStatusChanged',
+    NEW_DEVICE: 'ReceiveNewDevice',
+    UPDATED: 'ReceiveDeviceUpdated',
+    DELETED: 'ReceiveDeviceDeleted',
+  },
   
   // Connection events
-  CONNECTED: 'Connected',
-  DISCONNECTED: 'Disconnected',
-  RECONNECTING: 'Reconnecting',
-  RECONNECTED: 'Reconnected',
-  ERROR: 'Error',
+  CONNECTION: {
+    CONNECTED: 'Connected',
+    DISCONNECTED: 'Disconnected',
+    RECONNECTING: 'Reconnecting',
+    RECONNECTED: 'Reconnected',
+    ERROR: 'Error',
+  },
 };
 
 // ============================================
