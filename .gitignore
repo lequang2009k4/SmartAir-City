@@ -8,6 +8,8 @@ TestResults/
 .vscode/
 
 # User secrets & local configs
+appsettings.Development.json
+appsettings.Production.json
 appsettings.*.local.json
 secrets.json
 .env
@@ -25,3 +27,7 @@ Thumbs.db
 *.suo
 *.userosscache
 *.sln.docstates
+
+
+
+docs/api/openapi.yaml
