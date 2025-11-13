@@ -194,6 +194,22 @@
   background: #e0e0e0;
 }
 
+.dropdown-divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 4px 0;
+}
+
+.dropdown-logout {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.dropdown-logout:hover {
+  background: #fee;
+  color: #c0392b;
+}
+
 .btn-login,
 .btn-logout {
   background: white;
@@ -233,7 +249,11 @@
   }
   
   .logo-text h1 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
+  }
+  
+  .logo-text p {
+    display: none;
   }
   
   .nav-item {
@@ -268,12 +288,8 @@
     height: 50px;
   }
   
-  .logo-text h1 {
-    font-size: 1.3rem;
-  }
-  
-  .logo-text p {
-    font-size: 0.75rem;
+  .logo-text {
+    display: none;
   }
   
   .nav-menu {
@@ -323,12 +339,8 @@
     height: 40px;
   }
   
-  .logo-text h1 {
-    font-size: 1.1rem;
-  }
-  
-  .logo-text p {
-    font-size: 0.7rem;
+  .logo-text {
+    display: none;
   }
   
   .nav-item {

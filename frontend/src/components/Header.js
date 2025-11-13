@@ -81,37 +81,47 @@ const Header = ({ activeTab, setActiveTab, user, onLoginClick, onLogout }) => {
                     <span className="dropdown-arrow">{showAdminMenu ? '▲' : '▼'}</span>
                   </div>
 
-                  {/* Admin Dropdown Menu */}
-                  {showAdminMenu && user.role === 'admin' && (
+                  {/* User Dropdown Menu */}
+                  {showAdminMenu && (
                     <div className="admin-dropdown-menu">
-                      <div className="dropdown-header">
-                        🔧 Quản lý hệ thống
-                      </div>
+                      {user.role === 'admin' && (
+                        <>
+                          <div className="dropdown-header">
+                            🔧 Quản lý hệ thống
+                          </div>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => {
+                              setActiveTab('devices');
+                              setShowAdminMenu(false);
+                            }}
+                          >
+                            📡 Quản lý thiết bị
+                          </button>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => {
+                              setActiveTab('users');
+                              setShowAdminMenu(false);
+                            }}
+                          >
+                            👥 Quản lý người dùng
+                          </button>
+                          <div className="dropdown-divider"></div>
+                        </>
+                      )}
                       <button
-                        className="dropdown-item"
+                        className="dropdown-item dropdown-logout"
                         onClick={() => {
-                          setActiveTab('devices');
                           setShowAdminMenu(false);
+                          onLogout();
                         }}
                       >
-                        📡 Quản lý thiết bị
-                      </button>
-                      <button
-                        className="dropdown-item"
-                        onClick={() => {
-                          setActiveTab('users');
-                          setShowAdminMenu(false);
-                        }}
-                      >
-                        👥 Quản lý người dùng
+                        🚪 Đăng xuất
                       </button>
                     </div>
                   )}
                 </div>
-
-                <button className="btn-logout" onClick={onLogout}>
-                  🚪 Đăng xuất
-                </button>
               </>
             ) : (
               <button className="btn-login" onClick={onLoginClick}>

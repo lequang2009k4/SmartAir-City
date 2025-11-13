@@ -61,15 +61,6 @@ const DeviceManagement = () => {
     setEditingDevice(null);
     setIsFormOpen(true);
   };
-
-  /**
-   * Handle Edit Device
-   */
-  const handleEditDevice = (device) => {
-    setEditingDevice(device);
-    setIsFormOpen(true);
-  };
-
   /**
    * Handle Toggle Device Status
    */
