@@ -1,4 +1,3 @@
-
 //  SPDX-License-Identifier: MIT
 //  © 2025 SmartAir City Team
  
@@ -9,7 +8,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SmartAirCity.Models;
 using SmartAirCity.Services;
-using System.Text.Json;
 
 namespace SmartAirCity.Controllers;
 
@@ -18,30 +16,16 @@ namespace SmartAirCity.Controllers;
 public class AirQualityController : ControllerBase
 {
     private readonly AirQualityService _service;
-    private readonly DataNormalizationService _normalizer;
     private readonly ILogger<AirQualityController> _logger;
 
     public AirQualityController(
         AirQualityService service,
-        DataNormalizationService normalizer,
         ILogger<AirQualityController> logger)
     {
         _service = service;
-        _normalizer = normalizer;
         _logger = logger;
     }
 
-    // === POST /api/iot-data ===
-    [HttpPost("iot-data")]
-    public async Task<IActionResult> PostIot([FromBody] JsonElement data, CancellationToken ct)
-    {
-        var entity = _normalizer.NormalizeFromIotJson(data.GetRawText());
-        if (entity is null)
-            return BadRequest(new { message = "Payload IoT không hợp lệ (JSON-LD NGSI-LD)." });
-
-        await _service.InsertAsync(entity, ct);
-        return Ok(new { message = "✅ Đã nhận & lưu IoT JSON-LD", id = entity.Id });
-    }
 
     // === GET /api/airquality ===
     [HttpGet("airquality")]
@@ -71,7 +55,7 @@ public class AirQualityController : ControllerBase
   [HttpGet("airquality/history")]
     public async Task<IActionResult> GetHistory([FromQuery] DateTime from, [FromQuery] DateTime to, CancellationToken ct)
     {
-        // Nếu chỉ nhập ngày, tự động set đầu và cuối ngày
+        // neu chi nhap ngay, tu dong set đau và cuoi ngay
         if (from.TimeOfDay == TimeSpan.Zero)
             from = from.Date; // 00:00:00
 

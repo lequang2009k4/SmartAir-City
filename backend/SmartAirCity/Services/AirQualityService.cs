@@ -14,13 +14,12 @@ namespace SmartAirCity.Services;
 public class AirQualityService
 {
     private readonly MongoDbContext _db;
-    private readonly OpenAQLiveClient _openAq;
+   // private readonly OpenAQLiveClient _openAq;
     private readonly ILogger<AirQualityService> _logger;
 
-    public AirQualityService(MongoDbContext db, OpenAQLiveClient openAq, ILogger<AirQualityService> logger)
+    public AirQualityService(MongoDbContext db, ILogger<AirQualityService> logger)
     {
         _db = db;
-        _openAq = openAq;
         _logger = logger;
     }
 
@@ -41,34 +40,6 @@ public class AirQualityService
         data.MadeBySensor ??= "urn:ngsi-ld:Device:mq135-hn01";
         data.HasFeatureOfInterest ??= "urn:ngsi-ld:Air:urban-hanoi";
         data.DateObserved = new DateTimeProperty { Type = "Property", Value = DateTime.UtcNow };
-
-        // --- Kết hợp dữ liệu OpenAQ ---
-        var lon = data.Location.Value.Coordinates[0];
-        var lat = data.Location.Value.Coordinates[1];
-        var tuple = await _openAq.GetNearestAsync(lat, lon, ct);
-
-        if (tuple is null)
-        {
-            _logger.LogWarning("⚠️ Không tìm thấy dữ liệu OpenAQ gần vị trí ({Lat},{Lon})", lat, lon);
-        }
-        else
-        {
-            var (pm25, pm10, o3, no2, so2, co) = tuple.Value;
-            var obsAt = DateTime.UtcNow;
-
-            if (pm25.HasValue)
-                data.Pm25 = new NumericProperty { Value = pm25, UnitCode = "µg/m³", ObservedAt = obsAt };
-            if (pm10.HasValue)
-                data.Pm10 = new NumericProperty { Value = pm10, UnitCode = "µg/m³", ObservedAt = obsAt };
-            if (o3.HasValue)
-                data.O3 = new NumericProperty { Value = o3, UnitCode = "µg/m³", ObservedAt = obsAt };
-            if (no2.HasValue)
-                data.No2 = new NumericProperty { Value = no2, UnitCode = "µg/m³", ObservedAt = obsAt };
-            if (so2.HasValue)
-                data.So2 = new NumericProperty { Value = so2, UnitCode = "µg/m³", ObservedAt = obsAt };
-            if (co.HasValue)
-                data.Co = new NumericProperty { Value = co, UnitCode = "µg/m³", ObservedAt = obsAt };
-        }
 
         await _db.AirQuality.InsertOneAsync(data, cancellationToken: ct);
     }
