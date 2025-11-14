@@ -12,11 +12,54 @@ const EmailModal = ({ isOpen, onClose, recipient, users = [] }) => {
   const [isSending, setIsSending] = useState(false);
   const { latestData } = useAirQualityContext();
 
+  // Reverse geocoding to get location name from coordinates
+  const getLocationName = async (lat, lng) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&accept-language=vi`,
+        {
+          headers: {
+            'User-Agent': 'SmartAir-City/1.0'
+          }
+        }
+      );
+      const data = await response.json();
+      
+      // Build readable address in Vietnamese
+      const address = data.address;
+      const parts = [];
+      
+      if (address.road) parts.push(address.road);
+      if (address.suburb || address.neighbourhood) parts.push(address.suburb || address.neighbourhood);
+      if (address.city || address.town) parts.push(address.city || address.town);
+      
+      return parts.length > 0 ? parts.join(', ') : `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    }
+  };
+
   // Generate default AQI message
   useEffect(() => {
-    if (isOpen && latestData) {
-      const defaultMessage = `Thông báo chất lượng không khí:\n\nChỉ số AQI hiện tại: ${latestData.aqi || 'N/A'}\n${getAQIDescription(latestData.aqi)}\n\nCác chỉ số chi tiết:\n- PM2.5: ${latestData.pm25 || 'N/A'} µg/m³\n- PM10: ${latestData.pm10 || 'N/A'} µg/m³\n- CO: ${latestData.co || 'N/A'} ppm\n- SO2: ${latestData.so2 || 'N/A'} µg/m³\n- NO2: ${latestData.no2 || 'N/A'} µg/m³\n- O3: ${latestData.o3 || 'N/A'} µg/m³\n\nCập nhật lúc: ${new Date().toLocaleString('vi-VN')}`;
-      setMessage(defaultMessage);
+    if (isOpen && latestData && latestData.length > 0) {
+      // Get the first station data (most recent)
+      const station = latestData[0];
+      
+      // Get location name from coordinates
+      const lat = station.location?.lat || station.latitude;
+      const lng = station.location?.lng || station.longitude;
+      
+      if (lat && lng) {
+        getLocationName(lat, lng).then(name => {
+          const defaultMessage = `Thông báo chất lượng không khí:\n\nChỉ số AQI hiện tại: ${station.aqi || 'N/A'}\n${getAQIDescription(station.aqi)}\n\nCác chỉ số chi tiết:\n- PM2.5: ${station.pm25 || 'N/A'} µg/m³\n- PM10: ${station.pm10 || 'N/A'} µg/m³\n- CO: ${station.co || 'N/A'} µg/m³\n- SO2: ${station.so2 || 'N/A'} µg/m³\n- NO2: ${station.no2 || 'N/A'} µg/m³\n- O3: ${station.o3 || 'N/A'} µg/m³\n\nCập nhật lúc: ${new Date(station.dateObserved || station.timestamp).toLocaleString('vi-VN')}\n\nTrạm quan trắc: ${station.name || 'N/A'}\nĐịa điểm: ${name}`;
+          setMessage(defaultMessage);
+        });
+      } else {
+        // No coordinates, use fallback
+        const defaultMessage = `Thông báo chất lượng không khí:\n\nChỉ số AQI hiện tại: ${station.aqi || 'N/A'}\n${getAQIDescription(station.aqi)}\n\nCác chỉ số chi tiết:\n- PM2.5: ${station.pm25 || 'N/A'} µg/m³\n- PM10: ${station.pm10 || 'N/A'} µg/m³\n- CO: ${station.co || 'N/A'} µg/m³\n- SO2: ${station.so2 || 'N/A'} µg/m³\n- NO2: ${station.no2 || 'N/A'} µg/m³\n- O3: ${station.o3 || 'N/A'} µg/m³\n\nCập nhật lúc: ${new Date(station.dateObserved || station.timestamp).toLocaleString('vi-VN')}\n\nTrạm quan trắc: ${station.name || 'N/A'}`;
+        setMessage(defaultMessage);
+      }
     }
   }, [isOpen, latestData]);
 
