@@ -196,16 +196,20 @@
 
 .btn-toggle {
   padding: 0.5rem 1rem;
-  background: #f0f0f0;
-  border: 1px solid #ddd;
+  background: white;
+  border: 2px solid #667eea;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.875rem;
+  font-weight: 500;
+  color: #667eea;
   transition: all 0.2s ease;
 }
 
 .btn-toggle:hover {
-  background: #e0e0e0;
+  background: #f0f4ff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
 }
 
 .btn-toggle.active {
