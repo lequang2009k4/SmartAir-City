@@ -9,6 +9,7 @@ using MQTTnet.Client.Options;
 using MyMongoApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseUrls("http://0.0.0.0:8080");
 
 builder.Services.Configure<MongoDbSettings>(
 builder.Configuration.GetSection("MongoDbSettings"));
@@ -20,7 +21,7 @@ builder.Services.AddSingleton<IMqttClient>(provider =>
 
     var options = new MqttClientOptionsBuilder()
         .WithTcpServer("localhost", 1883) // Broker địa chỉ
-        .WithCredentials("usn", "pw") // User và Password
+        .WithCredentials("us", "pw") // User và Password
         .Build();
 
     client.ConnectAsync(options).Wait(); // Kết nối ngay khi ứng dụng khởi động
@@ -33,6 +34,15 @@ builder.Services.AddSingleton<DeviceService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
@@ -41,6 +51,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("AllowReactApp");
 
 app.MapControllers();
 app.Run();
