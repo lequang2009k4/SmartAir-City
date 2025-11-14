@@ -196,7 +196,7 @@
 
 .btn-toggle {
   padding: 0.5rem 1rem;
-  background: white;
+  background: rgb(119, 170, 232);
   border: 2px solid #667eea;
   border-radius: 6px;
   cursor: pointer;
@@ -207,7 +207,7 @@
 }
 
 .btn-toggle:hover {
-  background: #f0f4ff;
+  background: #78bfe9;
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
 }
