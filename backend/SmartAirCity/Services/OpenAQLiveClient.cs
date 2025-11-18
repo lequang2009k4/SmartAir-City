@@ -27,21 +27,26 @@ public class OpenAQLiveClient
     public async Task<(double? pm25, double? pm10, double? o3, double? no2, double? so2, double? co)?>
         GetNearestAsync(double lat, double lon, CancellationToken ct = default)
     {
+
+
         var client = _http.CreateClient();
         client.BaseAddress = new Uri("https://api.openaq.org/v3/");
         var apiKey = _config["OpenAQ:ApiKey"];
         if (!string.IsNullOrEmpty(apiKey))
             client.DefaultRequestHeaders.Add("X-API-Key", apiKey);
 
-        // --- Dùng cố định trạm có dữ liệu đầy đủ ---
+        // --- Dung co đinh tram co du lieu đay đu ---
         int locationId = 4946811; // 556 Nguyễn Văn Cừ – Hanoi
         var latestUrl = $"locations/{locationId}/latest";
-        _logger.LogInformation("🌍 Fetching OpenAQ data for fixed locationId={LocationId}", locationId);
+        _logger.LogInformation("Fetching OpenAQ data for fixed locationId={LocationId}", locationId);
 
+
+    
         var latestRes = await client.GetAsync(latestUrl, ct);
+        
         if (!latestRes.IsSuccessStatusCode)
         {
-            _logger.LogWarning("⚠️ OpenAQ latest failed: {Status}", latestRes.StatusCode);
+            _logger.LogWarning("OpenAQ latest failed: {Status}", latestRes.StatusCode);
             return null;
         }
 
@@ -51,11 +56,11 @@ public class OpenAQLiveClient
         if (!latestDoc.RootElement.TryGetProperty("results", out var latestArr) ||
             latestArr.GetArrayLength() == 0)
         {
-            _logger.LogWarning("⚠️ No latest data from location {LocId}", locationId);
+            _logger.LogWarning("No latest data from location {LocId}", locationId);
             return null;
         }
 
-        // Ánh xạ sensorsId -> parameter name (cố định cho VN AQ trạm 556 Nguyễn Văn Cừ)
+        // anh xa sensorsId -> parameter name (cố định cho VN AQ trạm 556 Nguyễn Văn Cừ)
         var map = new Dictionary<int, string>
         {
             { 13502150, "pm25" },
@@ -90,12 +95,12 @@ public class OpenAQLiveClient
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("⚠️ Lỗi khi đọc 1 cảm biến: {Msg}", ex.Message);
+                _logger.LogWarning("Lỗi khi đọc 1 cảm biến: {Msg}", ex.Message);
             }
         }
 
         _logger.LogInformation(
-            "✅ OpenAQ values -> PM2.5:{Pm25}, PM10:{Pm10}, O3:{O3}, NO2:{No2}, SO2:{So2}, CO:{Co}",
+            "OpenAQ values -> PM2.5:{Pm25}, PM10:{Pm10}, O3:{O3}, NO2:{No2}, SO2:{So2}, CO:{Co}",
             pm25, pm10, o3, no2, so2, co);
 
         return (pm25, pm10, o3, no2, so2, co);

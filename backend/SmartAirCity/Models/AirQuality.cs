@@ -66,7 +66,7 @@ public class AirQuality
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
-    [JsonIgnore] // ❌ Không hiển thị MongoId ra JSON NGSI-LD
+    [JsonIgnore] // Không hiển thị MongoId ra JSON NGSI-LD
     public string? MongoId { get; set; }
 
     [BsonElement("id")]

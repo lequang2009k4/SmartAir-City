@@ -23,13 +23,13 @@ public class AirQualityService
         _logger = logger;
     }
 
-    // === Insert dữ liệu từ IoT + OpenAQ ===
+    // === Insert du lieu tu IoT + OpenAQ ===
     public async Task InsertAsync(AirQuality data, CancellationToken ct = default)
     {
-        // Sinh ID NGSI-LD nếu thiếu
+        // Sinh ID NGSI-LD neu chua co
         data.Id ??= $"urn:ngsi-ld:AirQualityObserved:station-hn01:{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ssZ}";
 
-        // Thiết lập thuộc tính chuẩn NGSI-LD
+        // thiet lap thuoc tinh chuan NGSI-LD
         data.Type = "AirQualityObserved";
         data.Context = new object[]
         {
@@ -44,7 +44,7 @@ public class AirQualityService
         await _db.AirQuality.InsertOneAsync(data, cancellationToken: ct);
     }
 
-    // === Các hàm truy vấn ===
+    // cac ham truy van
     public async Task<List<AirQuality>> GetAllAsync(CancellationToken ct = default) =>
         await _db.AirQuality
             .Find(FilterDefinition<AirQuality>.Empty)

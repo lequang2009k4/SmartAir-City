@@ -54,17 +54,17 @@ public class DataNormalizationService
                 entity.So2 = CreateNumericProperty(openaqData.Value.so2, "µg/m³");
                 entity.Co = CreateNumericProperty(openaqData.Value.co, "µg/m³");
                 
-                _logger.LogInformation("✅ Merged IoT + OpenAQ: PM2.5={Pm25}, PM10={Pm10}", 
+                _logger.LogInformation("Merged IoT + OpenAQ: PM2.5={Pm25}, PM10={Pm10}", 
                     openaqData.Value.pm25, openaqData.Value.pm10);
             }
             else
             {
-                _logger.LogWarning("⚠️ OpenAQ returned null, using IoT data only");
+                _logger.LogWarning("OpenAQ returned null, using IoT data only");
             }
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "⚠️ Failed to fetch OpenAQ data, using IoT data only");
+            _logger.LogWarning(ex, "Failed to fetch OpenAQ data, using IoT data only");
         }
         
         return entity;
@@ -147,11 +147,11 @@ public class DataNormalizationService
             if (root.TryGetProperty("sosa:hasFeatureOfInterest", out var foi))
                 entity.HasFeatureOfInterest = foi.GetString();
 
-            _logger.LogDebug("✅ Parsed IoT data successfully");
+            _logger.LogDebug("Parsed IoT data successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "❌ Error parsing IoT data");
+            _logger.LogError(ex, "Error parsing IoT data");
         }
 
         return entity;

@@ -45,10 +45,11 @@ public class MqttSubscriberService : BackgroundService
             return;
         }
 
-        // Đăng ký sự kiện nhận message
+        // dang ki su kien message , khi có message den se goi ham xu ly
         _mqttClient.ApplicationMessageReceivedAsync += async args =>
         {
-            await HandleMqttMessageAsync(args);
+            // goi ham xu ly message
+            await HandleMqttMessageAsync(args);  
             return;
         };
 
@@ -80,15 +81,16 @@ public class MqttSubscriberService : BackgroundService
             var normalization = scope.ServiceProvider.GetRequiredService<DataNormalizationService>();
             var airQualitySvc = scope.ServiceProvider.GetRequiredService<AirQualityService>();
 
+            // doc json tu iot
             var payload = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
             _logger.LogInformation("MQTT Payload: {Payload}", payload);
 
             var jsonDoc = JsonDocument.Parse(payload);
 
-            // Normalize + Merge
+            // chuan hoa va hop nhat
             var merged = await normalization.NormalizeAndMergeAsync(jsonDoc.RootElement);
 
-            // Save MongoDB
+            // luu vao db
             await airQualitySvc.InsertAsync(merged);
 
             // Push lên SignalR

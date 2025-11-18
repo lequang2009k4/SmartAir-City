@@ -19,21 +19,21 @@ public class AirQualityHub : Hub
     }
 
     /// <summary>
-    /// Được gọi khi client kết nối
+    /// Duoc goi khi client ket noi
     /// </summary>
     public override async Task OnConnectedAsync()
     {
         var connectionId = Context.ConnectionId;
         var userAgent = Context.GetHttpContext()?.Request.Headers["User-Agent"].ToString();
         
-        _logger.LogInformation("✅ SignalR client connected: {ConnectionId} | UserAgent: {UserAgent}", 
+        _logger.LogInformation("SignalR client connected: {ConnectionId} | UserAgent: {UserAgent}", 
             connectionId, userAgent);
         
         await base.OnConnectedAsync();
     }
 
     /// <summary>
-    /// Được gọi khi client ngắt kết nối
+    /// duoc goi khi client ngat ket noi
     /// </summary>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
@@ -41,11 +41,11 @@ public class AirQualityHub : Hub
         
         if (exception != null)
         {
-            _logger.LogWarning(exception, "⚠️ SignalR client disconnected with error: {ConnectionId}", connectionId);
+            _logger.LogWarning(exception, "SignalR client disconnected with error: {ConnectionId}", connectionId);
         }
         else
         {
-            _logger.LogInformation("❌ SignalR client disconnected: {ConnectionId}", connectionId);
+            _logger.LogInformation("SignalR client disconnected: {ConnectionId}", connectionId);
         }
         
         await base.OnDisconnectedAsync(exception);

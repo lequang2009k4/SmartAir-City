@@ -55,7 +55,7 @@ var app = builder.Build();
     app.UseSwaggerUI();
 
 
-// THỨ TỰ MIDDLEWARE ĐÚNG
+
 app.UseCors();  
 
 app.UseRouting();
@@ -63,6 +63,8 @@ app.UseAuthorization();
 
 // MAP ENDPOINTS
 app.MapControllers();
+
+// anh xa SignalR Hub vao duong dan /airqualityhub
 app.MapHub<AirQualityHub>("/airqualityhub");
 
 Console.WriteLine("SignalR Hub mapped at: /airqualityhub");
