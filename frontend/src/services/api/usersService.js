@@ -426,6 +426,7 @@ const usersService = {
   verifyEmail,
   remove,
   deleteUser,
+  sendEmail,  // ← Added missing function
   
   // Hook-compatible methods
   getCurrentUser,

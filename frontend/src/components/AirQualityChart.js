@@ -38,7 +38,6 @@ const AirQualityChart = () => {
       // Check if cache expired (older than 10 minutes)
       const age = Date.now() - parseInt(savedTimestamp);
       if (age > CACHE_EXPIRY_MS) {
-        console.log('📊 [Chart] Cache expired, starting fresh');
         localStorage.removeItem(CHART_DATA_KEY);
         localStorage.removeItem(CHART_TIMESTAMP_KEY);
         return [];
@@ -276,7 +275,7 @@ const AirQualityChart = () => {
 
       <div className="chart-info">
         <p>
-          💡 Biểu đồ hiển thị {maxDataPoints} điểm dữ liệu gần nhất, tự động cập
+          Biểu đồ hiển thị {maxDataPoints} điểm dữ liệu gần nhất, tự động cập
           nhật khi có dữ liệu mới
         </p>
       </div>
