@@ -107,6 +107,7 @@ cp .env.example .env
 ```
 
 4. Start the development server:
+
 ```bash
 npm start
 ```
@@ -217,6 +218,7 @@ Ensure MongoDB is running on your system. The default connection string points t
 ### OpenAQ API
 The system can optionally integrate with OpenAQ for additional air quality data. Register for a free API key at [openaq.org](https://openaq.org/) and add it to your configuration.
 
+
 ### Frontend Environment Variables
 Create a `.env` file in the frontend directory based on `.env.example`:
 
@@ -229,6 +231,7 @@ REACT_APP_MAP_DEFAULT_ZOOM=12
 ```
 
 **Important:** Never commit `.env` files to version control. Use `.env.example` as a template only.
+
 
 ## Usage
 
@@ -262,7 +265,9 @@ Backend:
 dotnet publish -c Release
 ```
 
+
 Frontend (Standard):
+
 ```bash
 npm run build
 ```
@@ -292,6 +297,7 @@ docker-compose up -d --build
 ```
 
 For detailed instructions, see [frontend/README.md](frontend/README.md).
+
 
 ## Contributing
 
