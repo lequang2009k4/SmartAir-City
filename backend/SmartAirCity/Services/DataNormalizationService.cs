@@ -24,13 +24,13 @@ public class DataNormalizationService
 
 
     /// <summary>
-    /// Normalize IoT data từ MQTT + Merge với OpenAQ API data
+    /// Normalize IoT data tu MQTT + Merge voi OpenAQ API data
     /// </summary>
-    /// <param name="rawIotJson">JSON từ MQTT broker (MQ135 sensor)</param>
-    /// <returns>AirQuality entity đã merge IoT + OpenAQ</returns>
+    /// <param name="rawIotJson">JSON tu MQTT broker (MQ135 sensor)</param>
+    /// <returns>AirQuality entity da merge IoT + OpenAQ</returns>
     public async Task<AirQuality> NormalizeAndMergeAsync(JsonElement rawIotJson)
     {
-        // 1. Parse IoT data (chỉ có AQI từ MQ135)
+        // 1. Parse IoT data (chi co AQI tu MQ135)
         var entity = ParseIotData(rawIotJson);
         
         _logger.LogInformation("Parsed IoT: AQI={Aqi}, Location=[{Lon},{Lat}]", 
@@ -38,15 +38,15 @@ public class DataNormalizationService
             entity.Location?.Value?.Coordinates?[0],
             entity.Location?.Value?.Coordinates?[1]);
 
-        // 2. Fetch OpenAQ data để bổ sung PM2.5, PM10, O3, NO2, SO2, CO
+        // 2. Fetch OpenAQ data de bo sung PM2.5, PM10, O3, NO2, SO2, CO
         try
         {
-            // Sử dụng tọa độ trạm 556 Nguyễn Văn Cừ, Hanoi (locationId: 4946811)
+            // Su dung toa đo tram 556 Nguyen Van Cu, Hanoi (locationId: 4946811)
             var openaqData = await _openAqClient.GetNearestAsync(21.028511, 105.804817);
             
             if (openaqData.HasValue)
             {
-                // Merge OpenAQ data vào entity
+                // Merge OpenAQ data vao entity
                 entity.Pm25 = CreateNumericProperty(openaqData.Value.pm25, "µg/m³");
                 entity.Pm10 = CreateNumericProperty(openaqData.Value.pm10, "µg/m³");
                 entity.O3 = CreateNumericProperty(openaqData.Value.o3, "µg/m³");
@@ -71,7 +71,7 @@ public class DataNormalizationService
     }
 
     /// <summary>
-    /// Parse IoT JSON từ MQTT message
+    /// Parse IoT JSON tu MQTT message
     /// </summary>
     private AirQuality ParseIotData(JsonElement root)
     {
@@ -124,7 +124,7 @@ public class DataNormalizationService
                 };
             }
 
-            // AQI (Air Quality Index) - từ MQ135 sensor
+            // AQI (Air Quality Index) - tu MQ135 sensor
             if (root.TryGetProperty("airQualityIndex", out var aqi))
             {
                 if (aqi.TryGetProperty("value", out var aqiValue))
@@ -158,7 +158,7 @@ public class DataNormalizationService
     }
 
     /// <summary>
-    /// Helper: Tạo NumericProperty từ value và unit
+    /// Helper: Tao NumericProperty tu value va unit
     /// </summary>
     private NumericProperty? CreateNumericProperty(double? value, string unitCode)
     {

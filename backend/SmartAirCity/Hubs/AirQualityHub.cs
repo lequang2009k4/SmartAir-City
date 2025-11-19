@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 namespace SmartAirCity.Hubs;
 
 /// <summary>
-/// SignalR Hub để push realtime air quality data tới frontend
+/// SignalR Hub de push realtime air quality data toi frontend
 /// </summary>
 public class AirQualityHub : Hub
 {
@@ -33,7 +33,7 @@ public class AirQualityHub : Hub
     }
 
     /// <summary>
-    /// duoc goi khi client ngat ket noi
+    /// Duoc goi khi client ngat ket noi
     /// </summary>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {

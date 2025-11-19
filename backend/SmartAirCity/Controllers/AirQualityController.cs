@@ -27,7 +27,7 @@ public class AirQualityController : ControllerBase
     }
 
 
-    // === GET /api/airquality ===
+    // GET /api/airquality 
     [HttpGet("airquality")]
     public async Task<IActionResult> GetAll([FromQuery] int? limit, CancellationToken ct)
     {
@@ -41,21 +41,21 @@ public class AirQualityController : ControllerBase
         return Ok(all);
     }
 
-    // === GET /api/airquality/latest ===
+    // GET /api/airquality/latest 
     [HttpGet("airquality/latest")]
     public async Task<IActionResult> GetLatest(CancellationToken ct)
     {
         var data = await _service.GetLatestAsync(ct);
         if (data == null)
-            return NotFound(new { message = "Không có dữ liệu." });
+            return NotFound(new { message = "Khong co du lieu" });
         return Ok(data);
     }
 
-    // === GET /api/airquality/history?from=...&to=... ===
+    // GET /api/airquality/history?from=...&to=... 
   [HttpGet("airquality/history")]
     public async Task<IActionResult> GetHistory([FromQuery] DateTime from, [FromQuery] DateTime to, CancellationToken ct)
     {
-        // neu chi nhap ngay, tu dong set đau và cuoi ngay
+        // neu chi nhap ngay, tu dong set dau và cuoi ngay
         if (from.TimeOfDay == TimeSpan.Zero)
             from = from.Date; // 00:00:00
 
@@ -63,7 +63,7 @@ public class AirQualityController : ControllerBase
             to = to.Date.AddDays(1).AddSeconds(-1); // 23:59:59
 
         if (from >= to)
-            return BadRequest(new { message = "Thời gian 'from' phải nhỏ hơn 'to'." });
+            return BadRequest(new { message = "Thoi gian 'from' phai nho hon 'to'." });
 
         var data = await _service.GetByTimeRangeAsync(from, to, ct);
         return Ok(data);

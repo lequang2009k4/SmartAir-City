@@ -51,7 +51,7 @@ public class MqttSubscriberService : BackgroundService
             return;
         }
 
-        // dang ki su kien message , khi có message den se goi ham xu ly
+        // dang ki su kien message , khi co message den se goi ham xu ly
         _mqttClient.ApplicationMessageReceivedAsync += async args =>
         {
             // goi ham xu ly message
@@ -99,7 +99,7 @@ public class MqttSubscriberService : BackgroundService
             // luu vao db
             await airQualitySvc.InsertAsync(merged);
 
-            // Push lên SignalR
+            // Push len SignalR
             await _signalRHub.Clients.All.SendAsync("NewAirQualityData", merged);
 
             _logger.LogInformation("Message processed OK");

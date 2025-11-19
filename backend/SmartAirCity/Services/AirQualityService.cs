@@ -29,7 +29,7 @@ public class AirQualityService
         // Sinh ID NGSI-LD neu chua co
         data.Id ??= $"urn:ngsi-ld:AirQualityObserved:station-hn01:{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ssZ}";
 
-        // thiet lap thuoc tinh chuan NGSI-LD
+        // Thiet lap thuoc tinh chuan NGSI-LD
         data.Type = "AirQualityObserved";
         data.Context = new object[]
         {

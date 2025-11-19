@@ -6,7 +6,6 @@ obj/
 node_modules/
 .env
 
-backend/
 
 openapi.yaml
 openapi (1).yaml

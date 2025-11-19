@@ -30,12 +30,12 @@ builder.Services.AddHostedService<MqttSubscriberService>();
 // SignalR
 builder.Services.AddSignalR();
 
-// ĐỌC AllowedOrigins TỪ appsettings.json
+// Doc AllowedOrigins tu appsettings.json
 var allowedOrigins = builder.Configuration
     .GetSection("AllowedOrigins")
     .Get<string[]>() ?? Array.Empty<string>();
 
-// CORS - SỬA LẠI ĐÚNG
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -64,7 +64,7 @@ app.UseAuthorization();
 // MAP ENDPOINTS
 app.MapControllers();
 
-// anh xa SignalR Hub vao duong dan /airqualityhub
+// Anh xa SignalR Hub vao duong dan /airqualityhub
 app.MapHub<AirQualityHub>("/airqualityhub");
 
 Console.WriteLine("SignalR Hub mapped at: /airqualityhub");
