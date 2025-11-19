@@ -1,10 +1,4 @@
-# Phase 2: HTTP API Foundation
-
-## ✅ Completed
-
-Phase 2 đã hoàn thành với đầy đủ HTTP client foundation.
-
-## 📁 Files Created
+## Files Created
 
 ```
 src/services/api/
@@ -16,7 +10,7 @@ src/components/
 └── ApiTestComponent.js   # React component để test API
 ```
 
-## 🎯 Features Implemented
+## Features Implemented
 
 ### 1. **Dual Axios Instances**
 ```javascript
@@ -30,20 +24,20 @@ const devices = await coreApiAxios.get('/api/Devices');
 ```
 
 ### 2. **Request Interceptor**
-- ✅ Auto logging (development mode)
-- ✅ Add timestamp tracking
-- ✅ Ready for authentication headers (commented out)
+- Auto logging (development mode)
+- Add timestamp tracking
+- Ready for authentication headers (commented out)
 
 ### 3. **Response Interceptor**
-- ✅ Auto unwrap `response.data`
-- ✅ Response time logging
-- ✅ Error normalization
+- Auto unwrap `response.data`
+- Response time logging
+- Error normalization
 
 ### 4. **Error Handling**
-- ✅ Normalize all errors thành chuẩn format
-- ✅ Vietnamese error messages
-- ✅ Error types: Network, Timeout, Server, Client, etc.
-- ✅ Detailed logging trong development
+- Normalize all errors thành chuẩn format
+- Vietnamese error messages
+- Error types: Network, Timeout, Server, Client, etc.
+- Detailed logging trong development
 
 ### 5. **Helper Functions**
 ```javascript
@@ -54,7 +48,7 @@ await get(airQualityAxios, '/api/airquality/latest');
 await post(coreApiAxios, '/api/Users/login', { email, password });
 ```
 
-## 🧪 Testing
+## Testing
 
 ### Option 1: Test với React Component
 ```javascript
@@ -79,13 +73,13 @@ airQualityAxios.get('/api/airquality/latest')
 ### Option 3: Backend chưa ready
 Nếu backend chưa chạy, bạn sẽ thấy:
 ```
-❌ ERROR:
+ERROR:
   Type: NETWORK_ERROR
   Message: Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.
   Status: null
 ```
 
-## 📊 Error Types
+## Error Types
 
 | Error Type | Status | Vietnamese Message |
 |-----------|--------|-------------------|
@@ -109,14 +103,14 @@ REACT_APP_API_TIMEOUT=10000
 REACT_APP_DEBUG_MODE=true
 ```
 
-## 🚀 Next Steps
+## Next Steps
 
-**Phase 3: Air Quality API Service**
+** Air Quality API Service**
 - Tạo `airQualityService.js`
 - Implement 3 endpoints: getAll, getLatest, getHistory
 - Data transformation (NGSI-LD → Frontend format)
 
-## 💡 Usage Example
+## Usage Example
 
 ```javascript
 import { airQualityAxios, handleApiError } from '@/services';
@@ -137,8 +131,3 @@ const MyComponent = () => {
   // ...
 };
 ```
-
----
-
-**Phase 2 Complete! ✅**  
-Ready for Phase 3: Air Quality API Service
