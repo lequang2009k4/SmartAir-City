@@ -219,9 +219,9 @@ REACT_APP_DEBUG_MODE=false
 
 ## Next Steps
 
-1. ✅ Frontend configured to connect to `http://3.27.249.236:51761`
-2. ✅ Mock disabled, using real backend
-3. ✅ SignalR events configured
-4. ⏳ Start backend and test connection
-5. ⏳ Verify events are received
-6. ⏳ Test realtime updates
+1. Frontend configured to connect to `http://3.27.249.236:51761`
+2. Mock disabled, using real backend
+3. SignalR events configured
+4. Start backend and test connection
+5. Verify events are received
+6. Test realtime updates

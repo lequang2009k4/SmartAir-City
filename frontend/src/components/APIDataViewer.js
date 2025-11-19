@@ -128,10 +128,10 @@ const APIDataViewer = () => {
 
       {/* API Endpoints Reference */}
       <div className="api-reference">
-        <h3>📚 Air Quality API Endpoints</h3>
+        <h3>Air Quality API Endpoints</h3>
         <div className="endpoint-grid">
           <div className="endpoint-card">
-            <h4>🌡️ Air Quality API</h4>
+            <h4>Air Quality API</h4>
             <code>GET /api/airquality</code>
             <code>GET /api/airquality/latest</code>
             <code>GET /api/airquality/history</code>
