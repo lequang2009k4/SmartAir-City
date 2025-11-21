@@ -412,25 +412,42 @@ You should see:
 
 ---
 
+## Open Data API – Air Quality
 
+Base URL: **https://opendata.quanglv.com/api**
 
+This API provides simple public access to real-time and historical air quality data.
 
-## API Endpoints
-### GET /api/airquality
-Retrieve all air quality records.
+---
 
-**Query Parameters:**
-- `limit` (optional): Maximum number of records to return
+### 1. GET `/airquality`
+Retrieve a list of air quality records.
 
-### GET /api/airquality/latest
-Get the most recent air quality measurement.
+**Query Parameters (optional):**
+- `limit` — number of records to return  
+- `stationId` — filter by station  
+- `order` — `asc` or `desc`  
 
-### GET /api/airquality/history
+---
+
+### 2. GET `/airquality/latest`
+Retrieve the most recent air quality measurement.
+
+**Query Parameters (optional):**
+- `stationId` — get latest record for a specific station
+
+---
+
+### 3. GET `/airquality/history`
 Retrieve historical data within a time range.
 
 **Query Parameters:**
-- `from`: Start date (ISO 8601 format)
-- `to`: End date (ISO 8601 format)
+- `from` — start time (ISO 8601)  
+- `to` — end time (ISO 8601)  
+- `stationId` — optional  
+- `limit` — optional  
+
+---
 ## Contributing
 
 We welcome contributions from the community. Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
@@ -441,4 +458,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Authors
 
-- Le Van Quang - Initial work - [lequang2009k4](https://github.com/lequang2009k4)
+- **SmartCity Team** – Initial work  
+  Contact: smartcity@gmail.com
