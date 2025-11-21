@@ -238,134 +238,131 @@ SmartAir-City/
 └── README.md                                 # Main project README
 
 ```
-
 ## Usage
+
 ### 1. System Requirements
 
-- .NET 8.0 SDK or later
-- MongoDB 4.4 or later
-- Node.js 16.x or later
-- npm or yarn package manager
+**Local Development**
+- .NET 8.0 SDK or later  
+- MongoDB 4.4 or later  
+- Node.js 16.x or later  
+- npm or yarn package manager  
 
-For Docker deployment:
-- Docker 20.10+
-- Docker Compose 2.0+
-### 2. Clone dự án
+**For Docker Deployment**
+- Docker 20.10+  
+- Docker Compose 2.0+  
+
+---
+
+### 2. Clone the Project
+
 ```bash
-#Clone project
+# Clone repository
 git clone https://github.com/lequang2009k4/SmartAir-City.git
-#Di chuyển thư mục dự án
+
+# Move into project directory
 cd SmartAir-City
 ```
-### 3. Khởi chạy 
-#### 3.1. Manual
-Lấy các API Key và config 
+
+---
+
+### 3. Running the Project
+
+## 3.1 Manual Setup
+
+### Configure Environment Variables
+
+**PowerShell (Windows)**
+
 ```powershell
-# PowerShell
 $env:MQTT__BrokerHost = "<MQTT_BROKER_IP>"
-$env:MQTT__Username = "<MQTT_USERNAME>"
-$env:MQTT__Password = "<MQTT_PASSWORD>"
+$env:MQTT__Username   = "<MQTT_USERNAME>"
+$env:MQTT__Password   = "<MQTT_PASSWORD>"
 $env:MQTT__BrokerPort = "<MQTT_BROKER_PORT>"
-$env:MQTT__Topic = "<MQTT_TOPIC>"
-$env:OpenAQ__ApiKey = "<YOUR_API_KEY>"
+$env:MQTT__Topic      = "<MQTT_TOPIC>"
+
+$env:OpenAQ__ApiKey   = "<YOUR_API_KEY>"
 ```
 
+**Linux/macOS**
+
 ```bash
-# Linux/macOS
 export MQTT__BrokerHost="<MQTT_BROKER_IP>"
 export MQTT__Username="<MQTT_USERNAME>"
 export MQTT__Password="<MQTT_PASSWORD>"
 export MQTT__BrokerPort="<MQTT_BROKER_PORT>"
 export MQTT__Topic="<MQTT_TOPIC>"
+
 export OpenAQ__ApiKey="<YOUR_API_KEY>"
 ```
 
-Chạy dự án
+---
+
+### Backend Setup
+
+#### **SmartAirCity API**
+
 ```bash
-----------------Backend-----------------
-###SmartAirCity###
+# Navigate to backend project
 cd backend/SmartAirCity
-###SmartAirCore###
-#Di chuyển đến thư mục dự án
-cd ..
-cd backend/SmartAirCore
-#
-----------------Frontend----------------
-```
-#### 3.2. Docker
 
-
-1. Navigate to the backend directory:
-```bash
-cd backend/SmartAirCity
-```
-
-2. Restore dependencies:
-```bash
+# Restore dependencies
 dotnet restore
-```
 
-
-5. Run the backend server:
-```bash
+# Run the backend server
 dotnet run
 ```
 
-The API will be available at `http://localhost:5000` and Swagger UI at `http://localhost:5000`.
+API available at: **http://localhost:5182/swagger**
+
+---
+
+#### **SmartAirCore API**
+
+```bash
+# Navigate to SmartAirCore
+cd ..
+cd SmartAirCore
+
+# Restore dependencies
+dotnet restore
+
+# Run the backend server
+dotnet run
+```
+
+API available at: **http://localhost:8080/swagger**
+
+---
 
 ### Frontend Setup
 
-#### Standard Development
-
-1. Navigate to the frontend directory:
 ```bash
+# Navigate to the frontend
 cd frontend
-```
 
-2. Install dependencies:
-```bash
+# Install dependencies
 npm install
-```
 
-3. (Optional) Configure environment variables:
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
+# Prepare environment file
+cp .env.example .env   # Then edit the .env file with your configuration
 
-4. Start the development server:
-
-```bash
+# Start development server
 npm start
 ```
 
-The application will open at `http://localhost:3000`.
+Application available at: **http://localhost:3000**
 
+---
 
+## 3.2 Docker Deployment
 
-
-### OpenAQ API
-The system can optionally integrate with OpenAQ for additional air quality data. Register for a free API key at [openaq.org](https://openaq.org/) and add it to your configuration.
-
-
-### Frontend Environment Variables
-Create a `.env` file in the frontend directory based on `.env.example`:
-
-```env
-REACT_APP_API_BASE_URL=http://localhost:5000/api
-REACT_APP_API_TIMEOUT=10000
-REACT_APP_MAP_CENTER_LAT=21.0285
-REACT_APP_MAP_CENTER_LNG=105.8542
-REACT_APP_MAP_DEFAULT_ZOOM=12
-```
-
+> *(Add your Docker instructions here. If you want, I can write a complete Docker section based on your docker-compose.yml.)*
 
 
 
 
 ## API Endpoints
-
-
 ### GET /api/airquality
 Retrieve all air quality records.
 
