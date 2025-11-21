@@ -240,7 +240,7 @@ SmartAir-City/
 ```
 
 ## Usage
-### System Requirements
+### 1. System Requirements
 
 - .NET 8.0 SDK or later
 - MongoDB 4.4 or later
@@ -250,17 +250,37 @@ SmartAir-City/
 For Docker deployment:
 - Docker 20.10+
 - Docker Compose 2.0+
-### Clone dự án
+### 2. Clone dự án
 ```bash
 #Clone project
 git clone https://github.com/lequang2009k4/SmartAir-City.git
 #Di chuyển thư mục dự án
 cd SmartAir-City
 ```
-Clone project
-: git clone https://github.com/lequang2009k4/SmartAir-City.git
+### 3. Khởi chạy 
+#### 3.1. Manual
+Lấy các API Key và config 
+```powershell
+# PowerShell
+$env:MQTT__BrokerHost = "<MQTT_BROKER_IP>"
+$env:MQTT__Username = "<MQTT_USERNAME>"
+$env:MQTT__Password = "<MQTT_PASSWORD>"
+$env:MQTT__BrokerPort = "<MQTT_BROKER_PORT>"
+$env:MQTT__Topic = "<MQTT_TOPIC>"
+$env:OpenAQ__ApiKey = "<YOUR_API_KEY>"
+```
 
-#### Manual
+```bash
+# Linux/macOS
+export MQTT__BrokerHost="<MQTT_BROKER_IP>"
+export MQTT__Username="<MQTT_USERNAME>"
+export MQTT__Password="<MQTT_PASSWORD>"
+export MQTT__BrokerPort="<MQTT_BROKER_PORT>"
+export MQTT__Topic="<MQTT_TOPIC>"
+export OpenAQ__ApiKey="<YOUR_API_KEY>"
+```
+
+Chạy dự án
 ```bash
 ----------------Backend-----------------
 ###SmartAirCity###
@@ -272,7 +292,7 @@ cd backend/SmartAirCore
 #
 ----------------Frontend----------------
 ```
-#### Docker
+#### 3.2. Docker
 
 
 1. Navigate to the backend directory:
