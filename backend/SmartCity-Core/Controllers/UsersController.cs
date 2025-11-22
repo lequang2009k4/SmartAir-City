@@ -1,8 +1,19 @@
-﻿//  SPDX-License-Identifier: MIT
-//  © 2025 SmartAir City Team
-
-//  This source code is licensed under the MIT license found in the
-//  LICENSE file in the root directory of this source tree.
+﻿/**
+ *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
+ *  based on NGSI-LD and FiWARE Standards
+ *
+ *  SPDX-License-Identifier: MIT
+ *  @version   0.1.x
+ *  @author    SmartAir City Team <smartaircity@gmail.com>
+ *  @copyright © 2025 SmartAir City Team. 
+ *  @license   MIT License
+ *  @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+ *
+ *  This software is an open-source component of the SmartAir City initiative.
+ *  It provides real-time environmental monitoring, NGSI-LD–compliant data
+ *  models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+ *  open-data services and smart-city applications.
+ */
 using Microsoft.AspNetCore.Mvc;
 using MyMongoApi.Models;
 using MyMongoApi.Services;
@@ -17,6 +28,7 @@ namespace MyMongoApi.Controllers
     public class UsersController : ControllerBase
     {
         private readonly UserService _userService;
+        private readonly IConfiguration _configuration;
 
         public UsersController(UserService userService)
         {
@@ -124,9 +136,12 @@ namespace MyMongoApi.Controllers
 
             try
             {
-                // ⚙️ Cấu hình SMTP
-                var fromAddress = new MailAddress("your_mail", "SmartCity Notification");
-                var toAddress = new MailAddress(request.Email, user.Name);
+                //  Cấu hình SMTP
+                var your_mail = _configuration["SMTP:FromEmail"];
+                var your_app_password = _configuration["SMTP:FromPassword"];
+
+                var fromAddress = new MailAddress(your_mail, "SmartCity Notification");
+                var toAddress = new MailAddress(your_app_password, user.Name);
                 const string fromPassword = "your_app_password"; // Dùng App Password, không phải password thật
                 string subject = "Cảnh báo: Chất lượng không khí đang ở mức xấu";  // Cố định tiêu đề
                 string body = request.Message;
@@ -160,7 +175,7 @@ namespace MyMongoApi.Controllers
 
     }
 
-    // ✅ Request model cho login
+    // Request model cho login
     public class LoginRequest
     {
         public string Email { get; set; } = null!;

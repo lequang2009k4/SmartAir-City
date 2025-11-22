@@ -1,8 +1,20 @@
-//  SPDX-License-Identifier: MIT
-//  © 2025 SmartAir City Team
- 
-//  This source code is licensed under the MIT license found in the
-//  LICENSE file in the root directory of this source tree.
+/**
+ *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
+ *  based on NGSI-LD and FiWARE Standards
+ *
+ *  SPDX-License-Identifier: MIT
+ *  @version   0.1.x
+ *  @author    SmartAir City Team <smartaircity@gmail.com>
+ *  @copyright © 2025 SmartAir City Team. 
+ *  @license   MIT License
+ *  @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+ *
+ *  This software is an open-source component of the SmartAir City initiative.
+ *  It provides real-time environmental monitoring, NGSI-LD–compliant data
+ *  models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+ *  open-data services and smart-city applications.
+ */
+
 
 using System.Text.Json;
 
@@ -35,8 +47,8 @@ public class OpenAQLiveClient
         if (!string.IsNullOrEmpty(apiKey))
             client.DefaultRequestHeaders.Add("X-API-Key", apiKey);
 
-        // --- Dung co đinh tram co du lieu đay đu ---
-        int locationId = 4946811; // 556 Nguyễn Văn Cừ – Hanoi
+        // Dung co dinh tram co du lieu day du 
+        int locationId = 4946811; // 556 Nguyen Van Cu – Hanoi
         var latestUrl = $"locations/{locationId}/latest";
         _logger.LogInformation("Fetching OpenAQ data for fixed locationId={LocationId}", locationId);
 
@@ -60,7 +72,7 @@ public class OpenAQLiveClient
             return null;
         }
 
-        // anh xa sensorsId -> parameter name (cố định cho VN AQ trạm 556 Nguyễn Văn Cừ)
+        // anh xa sensorsId -> parameter name (co dinh cho VN AQ tram 556 Nguyen Van Cu)
         var map = new Dictionary<int, string>
         {
             { 13502150, "pm25" },
@@ -95,7 +107,7 @@ public class OpenAQLiveClient
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Lỗi khi đọc 1 cảm biến: {Msg}", ex.Message);
+                _logger.LogWarning("Loi khi doc 1 cam bien: {Msg}", ex.Message);
             }
         }
 

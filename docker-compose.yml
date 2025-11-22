@@ -1,0 +1,61 @@
+version: "3.9"
+
+# =========================================================
+# NETWORK DEFINITION (VPC)
+# =========================================================
+networks:
+  mynet:
+    driver: bridge
+
+# =========================================================
+# SERVICES
+# =========================================================
+services:
+
+  # -------------------------------------------------------
+  # SMART AIR CITY API (port 5182)
+  # -------------------------------------------------------
+  smartaircity-api:
+    container_name: smartaircity-api
+    build:
+      context: ./backend/SmartAirCity
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "5182:5182"
+    networks:
+      - mynet
+    restart: always
+
+  # -------------------------------------------------------
+  # SMART CITY CORE API (port 8080)
+  # -------------------------------------------------------
+  smartcity-core:
+    container_name: smartcity-core
+    build:
+      context: ./backend/SmartCity-Core
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    networks:
+      - mynet
+    restart: always
+
+  # -------------------------------------------------------
+  # FRONTEND REACT (port 3000)
+  # -------------------------------------------------------
+  smartcity-frontend:
+    container_name: smartcity-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    networks:
+      - mynet
+    restart: always

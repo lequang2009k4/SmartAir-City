@@ -1,36 +1,20 @@
-# Stage 1: Build the React application
-FROM node:18-alpine AS build
+# Dùng Node chính chủ
+FROM node:20-alpine
 
-# Set working directory
+# Thư mục làm việc
 WORKDIR /app
 
-# Copy package files
+# Copy file package trước → tối ưu cache
 COPY package*.json ./
 
-# Install dependencies with force flag to resolve conflicts
-RUN npm install --force
+# Cài dependency
+RUN npm install
 
-# Copy source code
+# Copy toàn bộ source code vào container
 COPY . .
 
-# Build the application
-RUN npm run build
+# Expose port 3000 cho React dev server
+EXPOSE 3000
 
-# Stage 2: Serve with Nginx
-FROM nginx:alpine
-
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Copy built files from build stage
-COPY --from=build /app/build /usr/share/nginx/html
-
-# Expose port 80
-EXPOSE 80
-
-# Add healthcheck
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Chạy dev server (React)
+CMD ["npm", "start"]

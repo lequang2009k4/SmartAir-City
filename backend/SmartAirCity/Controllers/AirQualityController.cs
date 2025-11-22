@@ -1,9 +1,20 @@
-//  SPDX-License-Identifier: MIT
-//  © 2025 SmartAir City Team
- 
-//  This source code is licensed under the MIT license found in the
-//  LICENSE file in the root directory of this source tree.
- 
+/**
+ *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
+ *  based on NGSI-LD and FiWARE Standards
+ *
+ *  SPDX-License-Identifier: MIT
+ *  @version   0.1.x
+ *  @author    SmartAir City Team <smartaircity@gmail.com>
+ *  @copyright © 2025 SmartAir City Team. 
+ *  @license   MIT License
+ *  @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+ *
+ *  This software is an open-source component of the SmartAir City initiative.
+ *  It provides real-time environmental monitoring, NGSI-LD–compliant data
+ *  models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+ *  open-data services and smart-city applications.
+ */
+
 
 using Microsoft.AspNetCore.Mvc;
 using SmartAirCity.Models;
@@ -27,7 +38,7 @@ public class AirQualityController : ControllerBase
     }
 
 
-    // === GET /api/airquality ===
+    // GET /api/airquality 
     [HttpGet("airquality")]
     public async Task<IActionResult> GetAll([FromQuery] int? limit, CancellationToken ct)
     {
@@ -41,21 +52,21 @@ public class AirQualityController : ControllerBase
         return Ok(all);
     }
 
-    // === GET /api/airquality/latest ===
+    // GET /api/airquality/latest 
     [HttpGet("airquality/latest")]
     public async Task<IActionResult> GetLatest(CancellationToken ct)
     {
         var data = await _service.GetLatestAsync(ct);
         if (data == null)
-            return NotFound(new { message = "Không có dữ liệu." });
+            return NotFound(new { message = "Khong co du lieu" });
         return Ok(data);
     }
 
-    // === GET /api/airquality/history?from=...&to=... ===
+    // GET /api/airquality/history?from=...&to=... 
   [HttpGet("airquality/history")]
     public async Task<IActionResult> GetHistory([FromQuery] DateTime from, [FromQuery] DateTime to, CancellationToken ct)
     {
-        // neu chi nhap ngay, tu dong set đau và cuoi ngay
+        // neu chi nhap ngay, tu dong set dau và cuoi ngay
         if (from.TimeOfDay == TimeSpan.Zero)
             from = from.Date; // 00:00:00
 
@@ -63,7 +74,7 @@ public class AirQualityController : ControllerBase
             to = to.Date.AddDays(1).AddSeconds(-1); // 23:59:59
 
         if (from >= to)
-            return BadRequest(new { message = "Thời gian 'from' phải nhỏ hơn 'to'." });
+            return BadRequest(new { message = "Thoi gian 'from' phai nho hon 'to'." });
 
         var data = await _service.GetByTimeRangeAsync(from, to, ct);
         return Ok(data);

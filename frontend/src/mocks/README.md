@@ -1,9 +1,3 @@
-# Phase 2.5: Mock API Server
-
-## ✅ Completed
-
-Mock Service Worker (MSW) đã được setup hoàn chỉnh để mock tất cả APIs từ 2 files OpenAPI specs.
-
 ## 📁 Structure
 
 ```
@@ -166,30 +160,3 @@ import { airQualityAxios } from './services';
 const data = await airQualityAxios.get('/api/airquality/latest');
 console.log('Mock data:', data);
 ```
-
-## 📝 Notes
-
-### Advantages
-✅ Frontend team không đợi backend  
-✅ Test UI/UX ngay lập tức  
-✅ Data structure chính xác 100%  
-✅ Dễ switch sang real backend  
-✅ Support CRUD operations  
-✅ Network tab vẫn show requests  
-
-### Limitations
-⚠️ WebSocket chưa mock (Phase 5)  
-⚠️ Authentication chưa implement  
-⚠️ Data không persist khi refresh  
-
-## 🎉 Next Steps
-
-**Phase 3: Air Quality API Service**
-- Tạo `airQualityService.js`
-- Test với mock data
-- Implement getAll, getLatest, getHistory
-
----
-
-**Phase 2.5 Complete! ✅**  
-Mock Server hoạt động hoàn hảo!

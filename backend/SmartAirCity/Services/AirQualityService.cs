@@ -1,8 +1,19 @@
-//  SPDX-License-Identifier: MIT
-//  © 2025 SmartAir City Team
- 
-//  This source code is licensed under the MIT license found in the
-//  LICENSE file in the root directory of this source tree.
+/**
+ *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
+ *  based on NGSI-LD and FiWARE Standards
+ *
+ *  SPDX-License-Identifier: MIT
+ *  @version   0.1.x
+ *  @author    SmartAir City Team <smartaircity@gmail.com>
+ *  @copyright © 2025 SmartAir City Team. 
+ *  @license   MIT License
+ *  @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+ *
+ *  This software is an open-source component of the SmartAir City initiative.
+ *  It provides real-time environmental monitoring, NGSI-LD–compliant data
+ *  models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+ *  open-data services and smart-city applications.
+ */
 
 
 using MongoDB.Driver;
@@ -29,7 +40,7 @@ public class AirQualityService
         // Sinh ID NGSI-LD neu chua co
         data.Id ??= $"urn:ngsi-ld:AirQualityObserved:station-hn01:{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ssZ}";
 
-        // thiet lap thuoc tinh chuan NGSI-LD
+        // Thiet lap thuoc tinh chuan NGSI-LD
         data.Type = "AirQualityObserved";
         data.Context = new object[]
         {

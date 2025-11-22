@@ -1,0 +1,52 @@
+All SmartAir City code is Copyright by the original authors. See: https://github.com/lequang2009k4/SmartAir-City
+
+This program is free software; you can redistribute it and/or modify it under 
+the terms of the MIT License as published by the Massachusetts Institute of 
+Technology. See the LICENSE file in the root directory for full license text.
+
+This program is distributed in the hope that it will be useful, but WITHOUT 
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+FOR A PARTICULAR PURPOSE. See the MIT License for more details.
+
+You should have received a copy of the MIT License along with this program 
+as the file LICENSE; if not, please see https://opensource.org/licenses/MIT.
+
+SmartAir City is a trademark of SmartAir City Team.
+
+SmartAir City includes works under other copyright notices and distributed 
+according to the terms of the MIT License or compatible licenses, including:
+
+FRONTEND LIBRARIES (JavaScript/React):
+Name                                Version        License              Description                                                      Url
+
+@microsoft/signalr                  9.0.6          MIT                  SignalR client for real-time WebSocket connections               https://github.com/dotnet/aspnetcore
+@testing-library/dom                10.4.1         MIT                  Simple and complete DOM testing utilities                        https://testing-library.com
+@testing-library/jest-dom           6.9.1          MIT                  Custom Jest matchers for DOM node assertions                     https://github.com/testing-library/jest-dom
+@testing-library/react              16.3.0         MIT                  Simple and complete React testing utilities                      https://testing-library.com/react
+@testing-library/user-event         13.5.0         MIT                  User event simulation for testing                                https://testing-library.com/docs/user-event/intro
+axios                               1.13.1         MIT                  Promise-based HTTP client for browser and Node.js                https://axios-http.com
+chart.js                            4.5.1          MIT                  Simple yet flexible JavaScript charting library                  https://www.chartjs.org
+http-proxy-middleware               3.0.5          MIT                  HTTP proxy middleware for Node.js development                    https://github.com/chimurai/http-proxy-middleware
+leaflet                             1.9.4          BSD-2-Clause         Leading open-source JavaScript library for interactive maps      https://leafletjs.com
+lucide-react                        0.553.0        ISC                  Beautiful & consistent icon toolkit for React                    https://lucide.dev
+msw                                 2.12.1         MIT                  Mock Service Worker for API mocking in browser and Node.js       https://mswjs.io
+react                               19.2.0         MIT                  JavaScript library for building user interfaces                  https://react.dev
+react-chartjs-2                     5.3.1          MIT                  React wrapper components for Chart.js                            https://react-chartjs-2.js.org
+react-dom                           19.2.0         MIT                  React package for working with the DOM                           https://react.dev
+react-leaflet                       5.0.0          Hippocratic-2.1      React components for Leaflet maps                                https://react-leaflet.js.org
+react-scripts                       5.0.1          MIT                  Configuration and scripts for Create React App                   https://create-react-app.dev
+recharts                            3.4.1          MIT                  Composable charting library built on React and D3                https://recharts.org
+web-vitals                          2.1.4          Apache-2.0           Library for measuring web vitals performance metrics             https://github.com/GoogleChrome/web-vitals
+
+
+BACKEND LIBRARIES (.NET/NuGet):
+Name                                                    Version        License              Description                                                      Url
+
+Microsoft.Extensions.Http                                9.0.10         MIT                HTTP client factory and extensions for dependency injection      https://www.nuget.org/packages/Microsoft.Extensions.Http
+Microsoft.VisualStudio.Azure.Containers.Tools.Targets    1.22.1         MIT                Visual Studio tools for Azure Container development              https://www.nuget.org/packages/Microsoft.VisualStudio.Azure.Containers.Tools.Targets
+MongoDB.Driver                                           3.5.0          Apache-2.0         Official MongoDB .NET driver for database operations             https://www.nuget.org/packages/MongoDB.Driver
+MQTTnet                                                  4.3.7.1207     MIT                High performance MQTT client library for .NET                    https://www.nuget.org/packages/MQTTnet
+MQTTnet.Extensions.ManagedClient                         4.3.7.1207     MIT                Managed MQTT client extensions with automatic reconnection       https://www.nuget.org/packages/MQTTnet.Extensions.ManagedClient
+Swashbuckle.AspNetCore                                   6.6.2          MIT                Swagger/OpenAPI tooling for ASP.NET Core                         https://www.nuget.org/packages/Swashbuckle.AspNetCore
+
+.. see copyright information at the header of source code file.
