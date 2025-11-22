@@ -331,12 +331,11 @@ API available at: **http://localhost:51872/swagger**
 
 ---
 
-#### **SmartAirCore API**
+#### **SmartCity-Core API**
 
 ```bash
 # Navigate to SmartAirCore
-cd ..
-cd SmartAirCore
+cd backend/SmartCity-Core
 
 # Restore dependencies
 dotnet restore
