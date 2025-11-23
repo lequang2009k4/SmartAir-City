@@ -27,6 +27,7 @@ import ErrorMessage from './components/ErrorMessage';
 import AuthModal from './components/AuthModal';
 import DeviceManagement from './components/DeviceManagement';
 import UserManagement from './components/UserManagement';
+import ContributionManagement from './components/ContributionManagement';
 import { getUser, removeToken } from './services/api/usersService';
 import { AirQualityProvider } from './contexts/AirQualityContext';
 // import SearchFilter from './components/SearchFilter'; // TODO: Update to use hooks
@@ -173,6 +174,26 @@ function App() {
           );
         }
         return <UserManagement />;
+      
+      case 'contributions':
+        // Only show if user is logged in
+        if (!user) {
+          return (
+            <div className="access-denied">
+              <h2>🔒 Yêu cầu đăng nhập</h2>
+              <p>Bạn cần đăng nhập để đóng góp dữ liệu chất lượng không khí.</p>
+              <div className="access-denied-actions">
+                <button className="btn-primary" onClick={handleLoginClick}>
+                  🔐 Đăng nhập ngay
+                </button>
+                <button className="btn-back" onClick={() => setActiveTab('home')}>
+                  ← Quay lại trang chủ
+                </button>
+              </div>
+            </div>
+          );
+        }
+        return <ContributionManagement user={user} />;
       
       default:
         return (

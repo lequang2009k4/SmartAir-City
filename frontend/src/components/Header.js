@@ -96,11 +96,19 @@ const Header = ({ activeTab, setActiveTab, user, onLoginClick, onLogout }) => {
                   {/* User Dropdown Menu */}
                   {showAdminMenu && (
                     <div className="admin-dropdown-menu">
+                      {/* Contributions - Available for all logged-in users */}
+                      <button
+                        className="dropdown-item"
+                        onClick={() => {
+                          setActiveTab('contributions');
+                          setShowAdminMenu(false);
+                        }}
+                      >
+                        Đóng góp dữ liệu
+                      </button>
+                      
                       {user.role === 'admin' && (
                         <>
-                          <div className="dropdown-header">
-                            🔧 Quản lý hệ thống
-                          </div>
                           <button
                             className="dropdown-item"
                             onClick={() => {
@@ -108,7 +116,7 @@ const Header = ({ activeTab, setActiveTab, user, onLoginClick, onLogout }) => {
                               setShowAdminMenu(false);
                             }}
                           >
-                            📡 Quản lý thiết bị
+                            Quản lý thiết bị
                           </button>
                           <button
                             className="dropdown-item"
@@ -117,11 +125,12 @@ const Header = ({ activeTab, setActiveTab, user, onLoginClick, onLogout }) => {
                               setShowAdminMenu(false);
                             }}
                           >
-                            👥 Quản lý người dùng
+                            Quản lý người dùng
                           </button>
-                          <div className="dropdown-divider"></div>
                         </>
                       )}
+                      
+                      <div className="dropdown-divider"></div>
                       <button
                         className="dropdown-item dropdown-logout"
                         onClick={() => {
