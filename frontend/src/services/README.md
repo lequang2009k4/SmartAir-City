@@ -35,12 +35,12 @@ const url = buildUrl(AIR_QUALITY_ENDPOINTS.GET_ALL, { limit: 50 });
 ### Environment Variables:
 ```bash
 # Development
-REACT_APP_AIR_API_URL=http://localhost:5182
-REACT_APP_CORE_API_URL=http://localhost:5183
+REACT_APP_AIR_API_URL=http://localhost:51872
+REACT_APP_CORE_API_URL=http://localhost:8080
 
 # Production (just change domain!)
-REACT_APP_AIR_API_URL=https://api.smartcity.com
-REACT_APP_CORE_API_URL=https://api.smartcity.com
+REACT_APP_AIR_API_URL=<API_APP_AIR_URL>
+REACT_APP_CORE_API_URL=<API_CORE_URL>
 ```
 
 ## 🔧 Configuration Files

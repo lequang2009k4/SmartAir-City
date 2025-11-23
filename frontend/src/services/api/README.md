@@ -97,8 +97,8 @@ Axios instances tự động lấy config từ `.env`:
 
 ```bash
 # .env.development
-REACT_APP_AIR_API_URL=http://localhost:5182
-REACT_APP_CORE_API_URL=http://localhost:5183
+REACT_APP_AIR_API_URL=http://localhost:51872
+REACT_APP_CORE_API_URL=http://localhost:8080
 REACT_APP_API_TIMEOUT=10000
 REACT_APP_DEBUG_MODE=true
 ```

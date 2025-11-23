@@ -16,28 +16,28 @@ src/mocks/
 
 ## 🎯 Mocked Endpoints
 
-### Air Quality API (Port 5182)
+### Air Quality API (Port 51872)
 ```
-✅ GET  /api/airquality          → List with limit
-✅ GET  /api/airquality/latest   → Latest record (NGSI-LD)
-✅ GET  /api/airquality/history  → History (from, to)
-✅ POST /api/iot-data            → IoT ingest
-```
-
-### Core API - Devices (Port 5183)
-```
-✅ GET    /api/Devices           → List devices
-✅ PUT    /api/Devices/:id       → Update device
-✅ DELETE /api/Devices/:id       → Delete device
+GET  /api/airquality          → List with limit
+GET  /api/airquality/latest   → Latest record (NGSI-LD)
+GET  /api/airquality/history  → History (from, to)
+POST /api/iot-data            → IoT ingest
 ```
 
-### Core API - Users (Port 5183)
+### Core API - Devices (Port 8080)
 ```
-✅ GET    /api/Users             → List users
-✅ POST   /api/Users/singup      → Signup (note: typo in backend)
-✅ POST   /api/Users/login       → Login
-✅ POST   /api/Users/email       → Send email
-✅ DELETE /api/Users/:id         → Delete user
+GET    /api/Devices           → List devices
+PUT    /api/Devices/:id       → Update device
+DELETE /api/Devices/:id       → Delete device
+```
+
+### Core API - Users (Port 8080)
+```
+GET    /api/Users             → List users
+POST   /api/Users/singup      → Signup (note: typo in backend)
+POST   /api/Users/login       → Login
+POST   /api/Users/email       → Send email
+DELETE /api/Users/:id         → Delete user
 ```
 
 ## 🚀 Usage
@@ -66,9 +66,9 @@ npm start
 
 2. **Check console:**
 ```
-🎭 MSW Enabled - Using mock APIs
-   - Air Quality API: http://localhost:5182
-   - Core API (Devices/Users): http://localhost:5183
+MSW Enabled - Using mock APIs
+   - Air Quality API: http://localhost:51872
+   - Core API (Devices/Users): http://localhost:8080
 ```
 
 3. **Go to API Test tab:**
@@ -105,17 +105,17 @@ Mock data tuân thủ 100% OpenAPI specs:
 ```
 
 ### Dynamic Data
-- ✅ Random but realistic values
-- ✅ Proper NGSI-LD structure
-- ✅ 8 Hanoi locations
-- ✅ Timestamps match current time
-- ✅ Historical data generation
+- Random but realistic values
+- Proper NGSI-LD structure
+- 8 Hanoi locations
+- Timestamps match current time
+- Historical data generation
 
 ### CRUD Support
-- ✅ In-memory database
-- ✅ Update/Delete devices
-- ✅ Add/Remove users
-- ✅ Persists during session
+- In-memory database
+- Update/Delete devices
+- Add/Remove users
+- Persists during session
 
 ## 🔄 Switching to Real Backend
 
@@ -130,8 +130,8 @@ REACT_APP_USE_MOCK=false
 **Step 2: Update URLs (if needed)**
 ```bash
 # .env.production
-REACT_APP_AIR_API_URL=https://real-api.smartcity.com
-REACT_APP_CORE_API_URL=https://real-api.smartcity.com
+REACT_APP_AIR_API_URL=<API_APP_AIR_URL>
+REACT_APP_CORE_API_URL=<API_CORE_URL>
 ```
 
 **Step 3: Restart app**
