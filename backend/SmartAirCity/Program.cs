@@ -18,68 +18,172 @@
 using SmartAirCity.Data;
 using SmartAirCity.Services;
 using SmartAirCity.Hubs;
+using SmartAirCity.Filters;
+using Microsoft.OpenApi.Models;
+using System.Text.Json; // THÊM DÒNG NÀY
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// --- Configuration ---
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+builder.Configuration.AddEnvironmentVariables();
 
-// MongoDB
+// --- Controllers ---
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase; // ĐÃ FIX
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
+
+// --- Swagger/OpenAPI ---
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "SmartAir City API",
+        Version = "v1",
+        Description = "IoT Platform for Urban Air Quality Monitoring based on NGSI-LD and FiWARE Standards",
+        Contact = new OpenApiContact
+        {
+            Name = "SmartAir City Team",
+            Email = "smartaircity@gmail.com",
+            Url = new Uri("https://github.com/lequang2009k4/SmartAir-City")
+        },
+        License = new OpenApiLicense
+        {
+            Name = "MIT License",
+            Url = new Uri("https://opensource.org/licenses/MIT")
+        }
+    });
+
+    // OperationFilter cho upload file
+    c.OperationFilter<FileUploadOperationFilter>();
+
+    // Explicit mapping cho IFormFile
+    c.MapType<IFormFile>(() => new OpenApiSchema
+    {
+        Type = "string",
+        Format = "binary"
+    });
+
+    // Tránh trùng tên type trong Swagger
+    c.CustomSchemaIds(type => type.FullName?.Replace("+", ".") ?? type.Name);
+
+    // Thêm XML comments (nếu có)
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
+});
+
+// --- MongoDB ---
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<AirQualityService>();
 
-// OpenAQ
+// --- HTTP Clients ---
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<OpenAQLiveClient>();
 
-// Data Normalization
+// --- Data Services ---
 builder.Services.AddScoped<DataNormalizationService>();
+builder.Services.AddScoped<ContributionValidationService>();
+builder.Services.AddScoped<ContributedDataService>();
 
-// MQTT Subscriber
+// --- MQTT Subscriber ---
 builder.Services.AddHostedService<MqttSubscriberService>();
 
-// SignalR
+// --- SignalR ---
 builder.Services.AddSignalR();
 
-// Doc AllowedOrigins tu appsettings.json
+// --- CORS ---
 var allowedOrigins = builder.Configuration
     .GetSection("AllowedOrigins")
-    .Get<string[]>() ?? Array.Empty<string>();
+    .Get<string[]>() ?? new[] { "http://localhost:3000", "https://localhost:3000" };
 
-// CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins(allowedOrigins)  
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();           
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
+
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+// --- Configuration cho form file handling ---
+// ĐÃ SỬA: Comment hoặc xóa dòng này nếu không cần thiết
+// builder.Services.Configure<ApiBehaviorOptions>(options =>
+// {
+//     options.SuppressConsumesConstraintForFormFileParameters = true;
+// });
+
+// --- Logging ---
+builder.Services.AddLogging(logging =>
+{
+    logging.ClearProviders();
+    logging.AddConsole();
+    logging.AddDebug();
+    logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 });
 
 var app = builder.Build();
 
-// Swagger
+// --- Middleware Pipeline ---
 
+// Swagger trong môi trường Development
+if (app.Environment.IsDevelopment())
+{
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "SmartAir City API v1");
+        c.RoutePrefix = "swagger";
+        c.DocumentTitle = "SmartAir City API Documentation";
+    });
+}
 
+// CORS - đặt trước Routing
+app.UseCors();
 
-
-app.UseCors();  
-
+// Routing
 app.UseRouting();
+
+// Authorization & Authentication
 app.UseAuthorization();
 
-// MAP ENDPOINTS
+// Static Files (nếu cần) - Comment nếu không dùng static files
+// app.UseStaticFiles();
+
+// --- Endpoint Mapping ---
+
+// Controllers
 app.MapControllers();
 
-// Anh xa SignalR Hub vao duong dan /airqualityhub
+// SignalR Hub
 app.MapHub<AirQualityHub>("/airqualityhub");
 
-Console.WriteLine("SignalR Hub mapped at: /airqualityhub");
-Console.WriteLine($"Application started. Listening on: {builder.Configuration["urls"] ?? "http://localhost:5000"}");
+// --- Startup Information ---
+Console.WriteLine("🚀 SmartAir City API Started Successfully!");
+Console.WriteLine($"📍 Environment: {app.Environment.EnvironmentName}");
+Console.WriteLine($"🌐 Listening on: {builder.Configuration["urls"] ?? "http://localhost:5000"}");
+Console.WriteLine($"📊 SignalR Hub mapped at: /airqualityhub");
+Console.WriteLine($"📚 Swagger UI available at: /swagger");
+
+if (app.Environment.IsDevelopment())
+{
+    Console.WriteLine("🔧 Development Mode - Hot Reload Enabled");
+}
 
 app.Run();

@@ -26,6 +26,7 @@ public class MongoDbContext
 {
     public IMongoDatabase Database { get; }
     public IMongoCollection<AirQuality> AirQuality { get; }
+    public IMongoCollection<AirQuality> ContributedData { get; }
 
     public MongoDbContext(IConfiguration config)
     {
@@ -37,5 +38,6 @@ public class MongoDbContext
         Database = client.GetDatabase(dbName);
 
         AirQuality = Database.GetCollection<AirQuality>("AirQuality");
+        ContributedData = Database.GetCollection<AirQuality>("ContributedData");
     }
 }

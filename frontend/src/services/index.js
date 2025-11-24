@@ -31,6 +31,7 @@ export {
   AIR_QUALITY_ENDPOINTS,
   DEVICES_ENDPOINTS,
   USERS_ENDPOINTS,
+  CONTRIBUTIONS_ENDPOINTS,
   API_CONFIG,
   buildUrl,
   logApiRequest,
@@ -131,6 +132,21 @@ export {
   filterByRole as filterUsersByRole,
   getStatistics as getUsersStatistics,
 } from './api/usersService';
+
+// ============================================
+// CONTRIBUTIONS SERVICE
+// ============================================
+export { default as contributionsService } from './api/contributionsService';
+
+export {
+  uploadFile as uploadContributionFile,
+  submitJson as submitContributionJson,
+  getAll as getContributionsAll,
+  getStations as getContributionStations,
+  getByStation as getContributionsByStation,
+  validateJsonStructure,
+  formatContribution,
+} from './api/contributionsService';
 
 // ============================================
 // WEBSOCKET SERVICES (Phase 5)

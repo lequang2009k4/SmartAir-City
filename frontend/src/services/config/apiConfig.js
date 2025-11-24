@@ -83,6 +83,21 @@ export const USERS_ENDPOINTS = {
 };
 
 // ============================================
+// API ENDPOINTS - CONTRIBUTIONS
+// ============================================
+export const CONTRIBUTIONS_ENDPOINTS = {
+  // Base URL
+  BASE_URL: AIR_API_BASE_URL,
+  
+  // Contributions Management (Public - for contributors)
+  UPLOAD: `${AIR_API_BASE_URL}/api/contributions/upload`,
+  SUBMIT: `${AIR_API_BASE_URL}/api/contributions`,
+  GET_ALL: `${AIR_API_BASE_URL}/api/contributions`,
+  GET_STATIONS: `${AIR_API_BASE_URL}/api/contributions/stations`,
+  GET_BY_STATION: (stationId) => `${AIR_API_BASE_URL}/api/contributions/station/${stationId}`,
+};
+
+// ============================================
 // GENERAL CONFIG
 // ============================================
 export const API_CONFIG = {
@@ -156,6 +171,7 @@ const config = {
   AIR_QUALITY_ENDPOINTS,
   DEVICES_ENDPOINTS,
   USERS_ENDPOINTS,
+  CONTRIBUTIONS_ENDPOINTS,
   API_CONFIG,
   buildUrl,
   logApiRequest,
