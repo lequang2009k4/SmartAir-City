@@ -64,6 +64,31 @@ namespace MyMongoApi.Controllers
         }
 
         /// <summary>
+        /// Lấy thông tin người dùng theo email
+        /// </summary>
+        [HttpGet("by-email")]
+        public async Task<IActionResult> GetByEmail([FromQuery] string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return BadRequest(new { message = "Email is required" });
+            }
+
+            var normalizedEmail = email.Trim().ToLowerInvariant();
+            var user = await _userService.GetByEmailAsync(normalizedEmail);
+            if (user == null)
+                return NotFound(new { message = "User not found" });
+
+            return Ok(new
+            {
+                id = user.Id,
+                email = user.Email,
+                name = user.Name,
+                role = user.Role
+            });
+        }
+
+        /// <summary>
         /// Xóa người dùng theo ID
         /// </summary>
         [HttpDelete("{id}")]
