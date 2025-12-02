@@ -218,7 +218,7 @@ public class ContributedDataService
     }
 
     /// <summary>
-    /// Lay thong tin chi tiet cua tat ca cac tram (ten, vi tri, cac chỉ số đo, so luong contributions)
+    /// Lay thong tin chi tiet cua tat ca cac tram (ten, vi tri, cac chi so do, so luong contributions)
     /// </summary>
     public async Task<List<object>> GetStationsInfoAsync(CancellationToken ct = default)
     {
@@ -247,7 +247,7 @@ public class ContributedDataService
 
             if (latestRecord == null) continue;
 
-            // Xac dinh cac chỉ số đo (parameters) ma tram nay co
+            // Xac dinh cac chi so do (parameters) ma tram nay co
             var parameters = new List<string>();
             if (latestRecord.Pm25 != null) parameters.Add("PM2.5");
             if (latestRecord.Pm10 != null) parameters.Add("PM10");
@@ -351,7 +351,7 @@ public class ContributedDataService
     }
 
     /// <summary>
-    /// Lay danh sach tat ca contributionId với metadata (so luong ban ghi, ngay upload)
+    /// Lay danh sach tat ca contributionId voi metadata (so luong ban ghi, ngay upload)
     /// Note: userId chi dung de filter noi bo, khong tra ve trong response
     /// </summary>
     public async Task<List<object>> GetAllContributionIdsAsync(string? userId = null, CancellationToken ct = default)

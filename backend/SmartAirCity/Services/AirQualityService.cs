@@ -180,7 +180,7 @@ public class AirQualityService
     }
 
     /// <summary>
-    /// Lay thong tin chi tiet cua tat ca cac tram IoT (ten, vi tri, cac chỉ số do, so luong records)
+    /// Lay thong tin chi tiet cua tat ca cac tram IoT (ten, vi tri, cac chi so do, so luong records)
     /// </summary>
     public async Task<List<object>> GetStationsInfoAsync(CancellationToken ct = default)
     {
@@ -209,7 +209,7 @@ public class AirQualityService
 
             if (latestRecord == null) continue;
 
-            // Xac dinh cac chỉ số đo (parameters) ma tram nay co
+            // Xac dinh cac chi so do (parameters) ma tram nay co
             var parameters = new List<string>();
             if (latestRecord.Pm25 != null) parameters.Add("PM2.5");
             if (latestRecord.Pm10 != null) parameters.Add("PM10");

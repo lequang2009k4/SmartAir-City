@@ -30,7 +30,7 @@ public class MongoDbContext
 
     public MongoDbContext(IConfiguration config, ILogger<MongoDbContext> logger)
     {
-        // Doc connection string tu appsettings.json - khong hardcode
+        // Doc connection string tu appsettings.json 
         var conn = config.GetConnectionString("MongoDb");
         if (string.IsNullOrEmpty(conn))
         {
@@ -41,7 +41,7 @@ public class MongoDbContext
         
         var client = new MongoClient(conn);
 
-        // Doc database name tu appsettings.json - khong hardcode
+        // Doc database name tu appsettings.json 
         var dbName = config["Mongo:Database"];
         if (string.IsNullOrEmpty(dbName))
         {

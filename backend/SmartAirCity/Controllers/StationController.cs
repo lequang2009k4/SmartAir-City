@@ -39,7 +39,7 @@ public class StationController : ControllerBase
 
     /// <summary>
     /// GET /api/stations
-    /// Lay thong tin chi tiet tat ca cac tram IoT (ten, vi tri, chỉ số đo, so luong records)
+    /// Lay thong tin chi tiet tat ca cac tram IoT (ten, vi tri, chi so do, so luong records)
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetStations(CancellationToken ct)

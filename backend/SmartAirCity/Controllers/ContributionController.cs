@@ -40,6 +40,10 @@ public class ContributionController : ControllerBase
         PropertyNameCaseInsensitive = true
     };
 
+    // Constants for file upload
+    private const long DEFAULT_MAX_FILE_SIZE_BYTES = 10485760; // 10MB (khop voi appsettings.json)
+    private const double BYTES_TO_MEGABYTES = 1048576.0; // 1024 * 1024
+
     public ContributionController(
         ContributedDataService contributedDataService,
         ContributionValidationService validationService,
@@ -101,14 +105,12 @@ public async Task<IActionResult> UploadContribution(CancellationToken ct = defau
         if (!file.FileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
             return BadRequest(new { message = "File phai co dinh dang JSON (.json)" });
 
-        // Doc gioi han kich thuoc file tu config
-        var maxFileSize = long.TryParse(_config["FileUpload:MaxFileSizeBytes"], out var maxSize) 
-            ? maxSize 
-            : 1048576; // 1MB default
+        // Doc gioi han kich thuoc file tu config (khong hardcode)
+        var maxFileSize = _config.GetValue<long>("FileUpload:MaxFileSizeBytes", DEFAULT_MAX_FILE_SIZE_BYTES);
         
         if (file.Length > maxFileSize)
         {
-            var maxSizeMB = maxFileSize / 1048576.0;
+            var maxSizeMB = maxFileSize / BYTES_TO_MEGABYTES;
             return BadRequest(new { message = $"File khong duoc vuot qua {maxSizeMB:F1}MB" });
         }
 
@@ -144,7 +146,7 @@ public async Task<IActionResult> UploadContribution(CancellationToken ct = defau
     /// <summary>
     /// GET /api/contributions/public
     /// Hien thi TAT CA nguoi dung da dong gop va tong so dong gop cua ho
-    /// (Không theo chuẩn NGSI-LD - Simple JSON format)
+    /// (Khong theo chuan NGSI-LD - Simple JSON format)
     /// </summary>
     [HttpGet("public")]
     public async Task<IActionResult> GetPublicContributions(CancellationToken ct = default)
@@ -253,7 +255,7 @@ public async Task<IActionResult> UploadContribution(CancellationToken ct = defau
     /// <summary>
     /// GET /api/contributions/list?email={email}
     /// Lay danh sach tat ca contributionId voi metadata (so luong ban ghi, ngay upload)
-    /// Optional: filter theo email (không lộ userId)
+    /// Optional: filter theo email (khong lo userId)
     /// </summary>
     [HttpGet("list")]
     public async Task<IActionResult> GetContributionIds(

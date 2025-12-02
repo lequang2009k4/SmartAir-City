@@ -270,7 +270,7 @@ public class DataNormalizationService
         {
             _logger.LogError(ex, "Loi khi parse du lieu IoT: {Message}", ex.Message);
             // Tra ve entity voi du lieu da parse duoc, khong throw exception
-            // de tranh lam gián đoạn luong xu ly chinh
+            // de tranh lam gian doan luong xu ly chinh
         }
 
         return entity;

@@ -27,11 +27,11 @@ public class OpenAQLiveClient
     private readonly IConfiguration _config;
     private readonly ILogger<OpenAQLiveClient> _logger;
     
-    // Cache sensor mappings để tránh gọi API nhiều lần
+    // Cache sensor mappings de tranh goi API nhieu lan
     private static readonly Dictionary<int, Dictionary<int, string>> _sensorMappingCache = new();
     private static readonly SemaphoreSlim _cacheLock = new(1, 1);
     
-    // Cac chỉ số bon toi ho tro
+    // Cac chi so bon toi ho tro
     private static readonly HashSet<string> _supportedParameters = new(StringComparer.OrdinalIgnoreCase)
     {
         "pm25", "pm2.5",
@@ -167,7 +167,7 @@ public class OpenAQLiveClient
             }
         }
         
-        // Thu 3: Fallback to global OpenAQ:SensorMapping - CHỈ KHI KHÔNG CÓ locationId cụ thể
+        // Thu 3: Fallback to global OpenAQ:SensorMapping - CHI KHI KHONG CO locationId cu the
         // KHONG dung global mapping cho cac tram co locationId rieng de tranh hien thi sai du lieu
         if (sensorMapping == null && !locationId.HasValue)
         {
@@ -275,7 +275,7 @@ public class OpenAQLiveClient
     /// <summary>
     /// Auto-fetch sensor mapping tu OpenAQ API
     /// Goi /v3/locations/{locationId} de lay danh sach sensors,
-    /// sau đó goi /v3/sensors/{sensorId} cho tung sensor de biet no do cai gi
+    /// sau do goi /v3/sensors/{sensorId} cho tung sensor de biet no do cai gi
     /// </summary>
     private async Task<Dictionary<int, string>?> FetchSensorMappingAsync(HttpClient client, int locationId, CancellationToken ct)
     {

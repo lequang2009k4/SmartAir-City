@@ -178,7 +178,7 @@ public class MqttSubscriberService : BackgroundService
 
             var jsonDoc = JsonDocument.Parse(payload);
 
-            // chuan hoa va hop nhat - truyền thông tin trạm vào
+            // chuan hoa va hop nhat - truyen thong tin tram vao
             var merged = await normalization.NormalizeAndMergeAsync(
                 jsonDoc.RootElement,
                 lat,
