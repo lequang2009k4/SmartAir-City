@@ -254,31 +254,11 @@ public class MqttSubscriberService : BackgroundService
             _logger.LogWarning(ex, "Error reading station config for: {StationId}", stationId);
         }
         
-        // Fallback: dung default config tu appsettings.json - khong hardcode
-        _logger.LogWarning("Tram {StationId} khong tim thay trong StationMapping, su dung gia tri mac dinh tu OpenAQ config", stationId);
+        // KHONG FALLBACK: Neu khong tim thay config, tra ve 0 de khong goi OpenAQ
+        // Tranh tinh trang nhieu tram dung chung OpenAQLocationId default
+        _logger.LogWarning("Tram {StationId} khong tim thay trong StationMapping, KHONG goi OpenAQ API (locationId = 0)", stationId);
         
-        var defaultLatStr = _configuration["OpenAQ:DefaultLatitude"];
-        if (string.IsNullOrEmpty(defaultLatStr) || !double.TryParse(defaultLatStr, out var defaultLat))
-        {
-            _logger.LogError("Cau hinh OpenAQ:DefaultLatitude khong hop le cho tram {StationId}", stationId);
-            defaultLat = 0;
-        }
-        
-        var defaultLonStr = _configuration["OpenAQ:DefaultLongitude"];
-        if (string.IsNullOrEmpty(defaultLonStr) || !double.TryParse(defaultLonStr, out var defaultLon))
-        {
-            _logger.LogError("Cau hinh OpenAQ:DefaultLongitude khong hop le cho tram {StationId}", stationId);
-            defaultLon = 0;
-        }
-        
-        var defaultLocIdStr = _configuration["OpenAQ:LocationId"];
-        if (string.IsNullOrEmpty(defaultLocIdStr) || !int.TryParse(defaultLocIdStr, out var defaultLocId))
-        {
-            _logger.LogError("Cau hinh OpenAQ:LocationId khong hop le cho tram {StationId}", stationId);
-            defaultLocId = 0;
-        }
-        
-        return (defaultLat, defaultLon, defaultLocId, $"Unknown Station ({stationId})");
+        return (0, 0, 0, $"Unknown Station ({stationId})");
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)

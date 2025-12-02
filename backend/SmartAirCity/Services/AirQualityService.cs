@@ -35,7 +35,7 @@ public class AirQualityService
         _logger = logger;
     }
 
-    // === Insert du lieu tu IoT + OpenAQ API ===
+    // Insert du lieu tu IoT + OpenAQ API
     public async Task InsertAsync(AirQuality data, CancellationToken ct = default)
     {
         // Doc cau hinh station tu appsettings
@@ -44,6 +44,10 @@ public class AirQualityService
         var featureOfInterest = _config["DefaultStation:FeatureOfInterest"] ?? "urn:ngsi-ld:Air:urban-hanoi";
         var observedProperty = _config["DefaultStation:ObservedProperty"] ?? "AirQuality";
 
+        // Doc cau hinh NGSI-LD tu appsettings
+        var contextUrl = _config["NGSILD:ContextUrl"] ?? "https://smartdatamodels.org/context.jsonld";
+        var sosaNamespace = _config["NGSILD:SosaNamespace"] ?? "http://www.w3.org/ns/sosa/";
+
         // Sinh ID NGSI-LD neu chua co
         data.Id ??= $"urn:ngsi-ld:AirQualityObserved:{stationId}:{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ssZ}";
 
@@ -51,8 +55,8 @@ public class AirQualityService
         data.Type = "AirQualityObserved";
         data.Context = new object[]
         {
-            "https://smartdatamodels.org/context.jsonld",
-            new { sosa = "http://www.w3.org/ns/sosa/" }
+            contextUrl,
+            new { sosa = sosaNamespace }
         };
         data.ObservedProperty ??= new Relationship { Object = observedProperty };
         data.MadeBySensor ??= new Relationship { Object = sensorUrn };

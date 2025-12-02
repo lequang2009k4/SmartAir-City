@@ -80,30 +80,15 @@ public class OpenAQLiveClient
             throw new InvalidOperationException(errorMsg);
         }
         
-        // Neu khong truyen locationId, doc tu config (co the null)
-        if (!locationId.HasValue)
+        // KHONG FALLBACK: Chi su dung locationId duoc truyen vao
+        // Neu locationId = null hoac 0 thi KHONG goi API
+        if (!locationId.HasValue || locationId.Value == 0)
         {
-            if (int.TryParse(_config["OpenAQ:LocationId"], out var locId))
-            {
-                locationId = locId;
-                _logger.LogDebug("Su dung locationId tu config: {LocationId}", locationId);
-            }
-            else
-            {
-                _logger.LogDebug("Khong co locationId trong config, se su dung locationId tu tham so hoac null");
-            }
-        }
-        else
-        {
-            _logger.LogDebug("Su dung locationId duoc truyen vao: {LocationId}", locationId);
-        }
-        
-        // Kiem tra locationId co gia tri truoc khi su dung
-        if (!locationId.HasValue)
-        {
-            _logger.LogWarning("Khong co locationId de lay du lieu OpenAQ");
+            _logger.LogWarning("Khong co locationId hop le (StationId={StationId}), BO QUA OpenAQ API", stationId ?? "unknown");
             return null;
         }
+        
+        _logger.LogDebug("Su dung locationId: {LocationId} cho station: {StationId}", locationId.Value, stationId ?? "unknown");
 
         var client = _http.CreateClient();
         client.BaseAddress = new Uri(baseUrl);
@@ -132,9 +117,7 @@ public class OpenAQLiveClient
             return null;
         }
 
-        // ========================================
-        // BUC 1: Lay sensor mapping
-        // ========================================
+        // BUOC 1: Lay sensor mapping
         Dictionary<int, string>? sensorMapping = null;
         
         // Thu 1: Doc tu config StationMapping (neu co stationId)
@@ -214,9 +197,7 @@ public class OpenAQLiveClient
             sensorMapping = new Dictionary<int, string>();
         }
 
-        // ========================================
-        // BUC 2: Parse sensor values
-        // ========================================
+        // BUOC 2: Parse sensor values
         var results = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
         var unmappedSensors = new List<int>(); // Track sensors khong co trong mapping
 
@@ -261,9 +242,7 @@ public class OpenAQLiveClient
                 unmappedSensors.Count, string.Join(", ", unmappedSensors));
         }
 
-        // ========================================
-        // BUC 3: Extract values (null neu khong co)
-        // ========================================
+        // BUOC 3: Extract values (null neu khong co)
         double? pm25 = results.ContainsKey("pm25") ? results["pm25"] : null;
         double? pm10 = results.ContainsKey("pm10") ? results["pm10"] : null;
         double? o3 = results.ContainsKey("o3") ? results["o3"] : null;

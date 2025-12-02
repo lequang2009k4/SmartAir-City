@@ -19,6 +19,7 @@
 
 using System.Text.Json;
 using SmartAirCity.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace SmartAirCity.Services;
 
@@ -33,10 +34,14 @@ public class ValidationResult
 public class ContributionValidationService
 {
     private readonly ILogger<ContributionValidationService> _logger;
+    private readonly IConfiguration _config;
 
-    public ContributionValidationService(ILogger<ContributionValidationService> logger)
+    public ContributionValidationService(
+        ILogger<ContributionValidationService> logger,
+        IConfiguration config)
     {
         _logger = logger;
+        _config = config;
     }
 
     /// <summary>
@@ -514,10 +519,13 @@ public class ContributionValidationService
         // Dam bao @context
         if (data.Context == null || data.Context.Length == 0)
         {
+            var contextUrl = _config["NGSILD:ContextUrl"] ?? "https://smartdatamodels.org/context.jsonld";
+            var sosaNamespace = _config["NGSILD:SosaNamespace"] ?? "http://www.w3.org/ns/sosa/";
+            
             data.Context = new object[]
             {
-                "https://smartdatamodels.org/context.jsonld",
-                new { sosa = "http://www.w3.org/ns/sosa/" }
+                contextUrl,
+                new { sosa = sosaNamespace }
             };
             _logger.LogInformation("Dat @context mac dinh");
         }

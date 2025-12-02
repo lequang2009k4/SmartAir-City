@@ -39,7 +39,7 @@ public class AirQualityController : ControllerBase
     }
 
 
-    // ================ PRIVATE HELPER METHOD ================
+    //PRIVATE HELPER METHOD
     // Shared logic de lay du lieu AirQuality (dung chung cho view va download)
     private async Task<List<AirQuality>> GetAirQualityDataAsync(
         string? stationId, 
@@ -63,7 +63,7 @@ public class AirQualityController : ControllerBase
         }
     }
 
-    // ================ VIEW APIs (JSON Response) ================
+    // VIEW APIs (JSON Response)
     
     // GET /api/airquality?stationId={stationId}&limit=100
     // API de XEM du lieu (tra ve JSON response)
@@ -77,7 +77,7 @@ public class AirQualityController : ControllerBase
         return Ok(data);
     }
 
-    // ================ DOWNLOAD APIs (File Download) ================
+    //DOWNLOAD APIs (File Download)
     
     // GET /api/airquality/download?stationId={stationId}&limit=100&format=json
     // API de DOWNLOAD file du lieu

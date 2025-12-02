@@ -487,12 +487,15 @@ public async Task<IActionResult> UploadContribution(CancellationToken ct = defau
 
     private object[] NormalizeContext(object[]? original)
     {
+        var contextUrl = _config["NGSILD:ContextUrl"] ?? "https://smartdatamodels.org/context.jsonld";
+        var sosaNamespace = _config["NGSILD:SosaNamespace"] ?? "http://www.w3.org/ns/sosa/";
+        
         if (original == null || original.Length == 0)
         {
             return new object[]
             {
-                "https://smartdatamodels.org/context.jsonld",
-                new Dictionary<string, string> { { "sosa", "http://www.w3.org/ns/sosa/" } }
+                contextUrl,
+                new Dictionary<string, string> { { "sosa", sosaNamespace } }
             };
         }
 
@@ -525,8 +528,8 @@ public async Task<IActionResult> UploadContribution(CancellationToken ct = defau
 
         if (normalized.Count == 0)
         {
-            normalized.Add("https://smartdatamodels.org/context.jsonld");
-            normalized.Add(new Dictionary<string, string> { { "sosa", "http://www.w3.org/ns/sosa/" } });
+            normalized.Add(contextUrl);
+            normalized.Add(new Dictionary<string, string> { { "sosa", sosaNamespace } });
         }
 
         return normalized.ToArray();
