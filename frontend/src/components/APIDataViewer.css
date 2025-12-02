@@ -24,25 +24,107 @@ open-data services and smart-city applications.
   margin: 0 auto;
 }
 
-/* Page Header */
-.page-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+/* Main Tab Buttons (Big, Prominent) */
+.main-tab-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.main-tab-btn {
+  background: white;
+  border: 3px solid #e0e0e0;
+  border-radius: 16px;
   padding: 2rem;
-  border-radius: 12px;
-  margin-bottom: 2rem;
-  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
 }
 
-.page-header h2 {
+.main-tab-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.main-tab-btn:hover {
+  border-color: #667eea;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);
+}
+
+.main-tab-btn:hover::before {
+  opacity: 1;
+}
+
+.main-tab-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: white;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+  transform: translateY(-2px);
+}
+
+.main-tab-btn.active::before {
+  opacity: 0;
+}
+
+.tab-icon {
+  font-size: 3.5rem;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.main-tab-btn:hover .tab-icon {
+  transform: scale(1.1);
+}
+
+.main-tab-btn.active .tab-icon {
+  transform: scale(1.05);
+}
+
+.tab-content {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.tab-content h2 {
   margin: 0 0 0.5rem 0;
-  font-size: 2rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #333;
+  transition: color 0.3s ease;
 }
 
-.page-subtitle {
+.main-tab-btn.active .tab-content h2 {
+  color: white;
+}
+
+.tab-content p {
   margin: 0;
-  opacity: 0.95;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  color: #666;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.main-tab-btn.active .tab-content p {
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* Dataset Tabs */
@@ -88,6 +170,247 @@ open-data services and smart-city applications.
 
 .tab-btn.active .tab-count {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* Section Header */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.section-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.25rem;
+}
+
+.stats-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.stats-summary .stat-item strong {
+  color: #667eea;
+  font-weight: 700;
+}
+
+.stat-divider {
+  color: #ccc;
+}
+
+.btn-back {
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 2px solid #667eea;
+  border-radius: 6px;
+  color: #667eea;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-back:hover {
+  background: #667eea;
+  color: white;
+  transform: translateX(-2px);
+}
+
+/* Contributors Grid */
+.contributions-tab {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.contributors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Contributions Section */
+.contributions-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 3px solid #f0f0f0;
+}
+
+.contributions-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+/* Query Section */
+.query-section {
+  margin-bottom: 2rem;
+}
+
+.query-type-selector {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.type-btn {
+  flex: 1;
+  padding: 1rem;
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.type-btn:hover {
+  border-color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+}
+
+.type-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Query Form */
+.query-form {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #333;
+}
+
+.form-group input {
+  padding: 0.625rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-query,
+.btn-download-query {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.btn-query {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-query:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-query:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-download-query {
+  background: white;
+  color: #28a745;
+  border: 2px solid #28a745;
+}
+
+.btn-download-query:hover:not(:disabled) {
+  background: #28a745;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-download-query:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Query Results */
+.query-results {
+  margin-top: 1.5rem;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.results-header {
+  background: #f8f9fa;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.results-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1rem;
+}
+
+/* Section Divider */
+.section-divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #667eea, transparent);
+  margin: 2.5rem 0;
+}
+
+/* Sample Section */
+.sample-section {
+  margin-top: 2rem;
 }
 
 /* Dataset Info */
@@ -255,6 +578,24 @@ open-data services and smart-city applications.
   transform: translateY(-1px);
 }
 
+.btn-close {
+  padding: 0.5rem 1rem;
+  border: 1px solid #e0e0e0;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-close:hover {
+  background: #dc3545;
+  color: white;
+  transform: translateY(-1px);
+}
+
 .json-viewer {
   background: #1e1e1e;
   color: #d4d4d4;
@@ -320,10 +661,93 @@ open-data services and smart-city applications.
   margin-bottom: 0;
 }
 
+/* No Data Box */
+.no-data-box {
+  background: #f8f9fa;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+  font-size: 1rem;
+}
+
+.no-data-box p {
+  margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .api-data-viewer {
     padding: 1rem;
+  }
+
+  .main-tab-buttons {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .main-tab-btn {
+    padding: 1.5rem;
+  }
+
+  .tab-icon {
+    font-size: 2.5rem;
+  }
+
+  .tab-content h2 {
+    font-size: 1.25rem;
+  }
+
+  .tab-content p {
+    font-size: 0.85rem;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .stats-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .stat-divider {
+    display: none;
+  }
+
+  .contributors-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contributions-list {
+    grid-template-columns: 1fr;
+  }
+
+  .query-type-selector {
+    flex-direction: column;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-query,
+  .btn-download-query {
+    width: 100%;
+  }
+
+  .results-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
 
   .dataset-tabs {
@@ -354,4 +778,3 @@ open-data services and smart-city applications.
     grid-template-columns: 1fr;
   }
 }
-
