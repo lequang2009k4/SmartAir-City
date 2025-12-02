@@ -38,8 +38,10 @@ const StatsCards = ({ stations: stationsProp }) => {
 
   // Log realtime updates
   useEffect(() => {
-    if (isConnected && latestData.length > 0) {
-      console.log('📈 Stats updated with realtime data, AQI:', latestData[0]?.aqi);
+    // latestData is now an object: { 'hanoi-oceanpark': {...}, ... }
+    if (isConnected && latestData && Object.keys(latestData).length > 0) {
+      const firstStation = Object.values(latestData)[0];
+      console.log('📈 Stats updated with realtime data, AQI:', firstStation?.aqi);
     }
   }, [isConnected, latestData]);
 

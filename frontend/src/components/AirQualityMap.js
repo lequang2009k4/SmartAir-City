@@ -37,10 +37,16 @@ const AirQualityMap = ({ stations: stationsProp, onStationClick }) => {
 
   // ALWAYS use latestData from context (ignore prop)
   const stations = useMemo(() => {
+    // latestData is now an object: { 'hanoi-oceanpark': {...}, 'hcm-cmt8': {...} }
+    if (!latestData || Object.keys(latestData).length === 0) {
+      return [];
+    }
    
-    // Group by location coordinates to avoid duplicates
+    // Convert object to array and group by location coordinates to avoid duplicates
+    const stationsArray = Object.values(latestData);
     const uniqueStations = new Map();
-    latestData.forEach(station => {
+    
+    stationsArray.forEach(station => {
       const lat = station.location?.lat || station.location?.coordinates?.[1];
       const lng = station.location?.lng || station.location?.coordinates?.[0];
       const key = `${lat},${lng}`;
@@ -53,6 +59,7 @@ const AirQualityMap = ({ stations: stationsProp, onStationClick }) => {
     });
     
     const result = Array.from(uniqueStations.values());
+    console.log('🗺️ [AirQualityMap] Total stations on map:', result.length);
     return result;
   }, [latestData]);
 
