@@ -16,13 +16,13 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import './ContributionUpload.css';
-import { uploadContributionFile, submitContributionJson, validateJsonStructure } from '../services';
+import { uploadContributionFile, validateJsonStructure } from '../services';
 
 /**
  * Contribution Upload Component
- * Allows users to contribute air quality data via:
- * 1. File Upload (.json)
- * 2. Direct JSON Paste
+ * Allows users to contribute air quality data via File Upload (.json)
+ * 
+ * NOTE: Direct JSON paste feature disabled - POST /api/contributions does not exist in api.yaml
  */
 const ContributionUpload = ({ onUploadSuccess, user }) => {
   const [activeMethod, setActiveMethod] = useState('file'); // 'file' or 'json'
@@ -204,41 +204,10 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
     setError(null);
     setResult(null);
 
-    try {
-      const jsonData = JSON.parse(jsonInput);
-      const response = await submitContributionJson(jsonData);
-      console.log('[ContributionUpload] JSON Submit Response:', response);
-
-      if (response.success) {
-        console.log('[ContributionUpload] JSON Success data:', response.data);
-        setResult({
-          type: 'success',
-          message: response.data.message,
-          count: response.data.count,
-          ids: response.data.ids,
-        });
-        setJsonInput('');
-        
-        // Call parent callback
-        if (onUploadSuccess) {
-          console.log('[ContributionUpload] Calling onUploadSuccess with:', response.data);
-          onUploadSuccess(response.data);
-        }
-      } else {
-        // Backend trả về {message, errors} trong error response
-        const errorMsg = response.details?.message || response.error || 'Gửi dữ liệu thất bại';
-        setError(`❌ ${errorMsg}`);
-        if (response.details?.errors && Array.isArray(response.details.errors)) {
-          setValidationErrors(response.details.errors);
-        }
-      }
-    } catch (err) {
-      console.error('[ContributionUpload] JSON Submit error:', err);
-      const errorMessage = err?.message || err?.toString() || 'Lỗi không xác định';
-      setError(`❌ Lỗi khi gửi dữ liệu: ${errorMessage}`);
-    } finally {
-      setLoading(false);
-    }
+    // NOTE: POST /api/contributions endpoint DOES NOT EXIST in api.yaml
+    // This feature is not available - only file upload is supported
+    setError('❌ Tính năng submit JSON trực tiếp không khả dụng. Vui lòng sử dụng upload file.');
+    setLoading(false);
   };
 
   const handleClearJson = () => {
@@ -312,24 +281,8 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
       <div className="upload-header">
         <h2>Đóng góp dữ liệu chất lượng không khí</h2>
         <p className="upload-description">
-          Bạn có thể đóng góp dữ liệu theo chuẩn NGSI-LD bằng cách upload file JSON hoặc paste JSON trực tiếp
+          Bạn có thể đóng góp dữ liệu theo chuẩn NGSI-LD bằng cách upload file JSON
         </p>
-      </div>
-
-      {/* Method Toggle */}
-      <div className="method-toggle">
-        <button
-          className={`toggle-btn ${activeMethod === 'file' ? 'active' : ''}`}
-          onClick={() => setActiveMethod('file')}
-        >
-          Upload File
-        </button>
-        <button
-          className={`toggle-btn ${activeMethod === 'json' ? 'active' : ''}`}
-          onClick={() => setActiveMethod('json')}
-        >
-          Paste JSON
-        </button>
       </div>
 
       {/* Contributor Metadata */}
@@ -362,9 +315,8 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
 
       {/* Upload Methods */}
       <div className="upload-methods">
-        {activeMethod === 'file' ? (
-          /* FILE UPLOAD */
-          <div className="upload-method file-upload">
+        {/* FILE UPLOAD */}
+        <div className="upload-method file-upload">
             <div
               className={`file-drop-zone ${dragActive ? 'drag-active' : ''} ${selectedFile ? 'has-file' : ''}`}
               onDragEnter={handleDrag}
@@ -418,8 +370,8 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
               {loading ? '⏳ Đang upload...' : '📤 Upload File'}
             </button>
           </div>
-        ) : (
-          /* JSON PASTE */
+        <div style={{ display: 'none' }}>
+          {/* JSON PASTE - DISABLED */}
           <div className="upload-method json-paste">
             <div className="json-editor">
               <div className="json-toolbar">
@@ -478,7 +430,7 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
               {loading ? '⏳ Đang gửi...' : '📤 Gửi JSON'}
             </button>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Result/Error Messages */}

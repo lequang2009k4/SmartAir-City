@@ -79,7 +79,7 @@ const ContributionManagement = ({ user }) => {
         {activeView === 'upload' ? (
           <ContributionUpload onUploadSuccess={handleUploadSuccess} user={user} />
         ) : (
-          <ContributionList refreshTrigger={refreshTrigger} />
+          <ContributionList user={user} refreshTrigger={refreshTrigger} />
         )}
       </div>
 
