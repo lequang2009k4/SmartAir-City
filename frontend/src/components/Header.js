@@ -57,6 +57,12 @@ const Header = ({ activeTab, setActiveTab, user, onLoginClick, onLogout }) => {
             Trang chủ
           </button>
           <button 
+            className={`nav-item ${activeTab === 'api-docs' ? 'active' : ''}`}
+            onClick={() => setActiveTab('api-docs')}
+          >
+            API Docs
+          </button>
+          <button 
             className={`nav-item ${activeTab === 'map' ? 'active' : ''}`}
             onClick={() => setActiveTab('map')}
           >

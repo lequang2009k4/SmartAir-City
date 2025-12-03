@@ -21,6 +21,7 @@ import AirQualityChart from './components/AirQualityChart';
 import AirQualityMap from './components/AirQualityMap';
 import RealtimeDashboard from './components/RealtimeDashboard';
 import OpenDataViewer from './components/OpenDataViewer';
+import SwaggerViewer from './components/SwaggerViewer';
 import About from './components/About';
 import Footer from './components/Footer';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -139,6 +140,9 @@ function App() {
             <AirQualityMap onStationClick={handleStationClick} />
           </>
         );
+      
+      case 'api-docs':
+        return <SwaggerViewer />;
       
       case 'data':
         return <OpenDataViewer />;
