@@ -338,13 +338,10 @@ public async Task<IActionResult> UploadContribution(CancellationToken ct = defau
                     HasFeatureOfInterest = item.HasFeatureOfInterest,
                     Location = item.Location,
                     DateObserved = item.DateObserved,
-                    Pm25 = item.Pm25,
-                    Pm10 = item.Pm10,
-                    O3 = item.O3,
-                    No2 = item.No2,
-                    So2 = item.So2,
-                    Co = item.Co,
-                    AirQualityIndex = item.AirQualityIndex
+                    // Copy ALL dynamic properties (completely generic)
+                    Properties = item.Properties != null 
+                        ? new Dictionary<string, object>(item.Properties) 
+                        : null
                 };
                 return cleaned;
             }).ToList();
@@ -400,13 +397,10 @@ public async Task<IActionResult> UploadContribution(CancellationToken ct = defau
                     HasFeatureOfInterest = item.HasFeatureOfInterest,
                     Location = item.Location,
                     DateObserved = item.DateObserved,
-                    Pm25 = item.Pm25,
-                    Pm10 = item.Pm10,
-                    O3 = item.O3,
-                    No2 = item.No2,
-                    So2 = item.So2,
-                    Co = item.Co,
-                    AirQualityIndex = item.AirQualityIndex
+                    // Copy ALL dynamic properties (completely generic)
+                    Properties = item.Properties != null 
+                        ? new Dictionary<string, object>(item.Properties) 
+                        : null
                 };
                 return cleaned;
             }).ToList();

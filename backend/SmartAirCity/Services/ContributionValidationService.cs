@@ -414,20 +414,38 @@ public class ContributionValidationService
             }
         }
 
-        // Kiem tra co it nhat 1 numeric property (PM25/pm25, PM10/pm10, O3/o3, NO2/no2, SO2/so2, CO/co, airQualityIndex)
-        var numericFields = new[] { "PM25", "pm25", "PM10", "pm10", "O3", "o3", "NO2", "no2", "SO2", "so2", "CO", "co", "airQualityIndex" };
-        var foundFields = numericFields.Where(field => root.TryGetProperty(field, out _)).ToList();
+        // Kiem tra co it nhat 1 numeric property (DYNAMIC - bat ky chi so nao co type=Property va value la number)
+        var foundFields = new List<string>();
+        
+        foreach (var prop in root.EnumerateObject())
+        {
+            // Skip core NGSI-LD fields
+            if (prop.Name == "id" || prop.Name == "type" || prop.Name == "@context" || 
+                prop.Name == "location" || prop.Name == "dateObserved" || 
+                prop.Name.StartsWith("sosa:"))
+                continue;
+            
+            // Check if it's a NumericProperty (has type=Property and numeric value)
+            if (prop.Value.ValueKind == System.Text.Json.JsonValueKind.Object &&
+                prop.Value.TryGetProperty("type", out var propTypeEl) &&
+                propTypeEl.GetString() == "Property" &&
+                prop.Value.TryGetProperty("value", out var propValueEl) &&
+                propValueEl.ValueKind == System.Text.Json.JsonValueKind.Number)
+            {
+                foundFields.Add(prop.Name);
+            }
+        }
         
         _logger.LogInformation("Dang kiem tra cac truong so - Tim thay: {FoundFields}", string.Join(", ", foundFields));
         
         if (foundFields.Count == 0)
         {
-            result.Errors.Add("At least one air quality measurement is required (pm25, pm10, o3, no2, so2, co, or airQualityIndex)");
-            _logger.LogInformation("Khong tim thay chi so chat luong khong khi nao");
+            result.Errors.Add("At least one numeric measurement is required (any field with type=Property and numeric value)");
+            _logger.LogInformation("Khong tim thay chi so nao");
         }
         else
         {
-            _logger.LogInformation("Tim thay {Count} chi so chat luong khong khi: {Fields}", foundFields.Count, string.Join(", ", foundFields));
+            _logger.LogInformation("Tim thay {Count} chi so: {Fields}", foundFields.Count, string.Join(", ", foundFields));
         }
     }
 
@@ -568,52 +586,14 @@ public class ContributionValidationService
     }
 
     /// <summary>
-    /// Normalize pollutant names in JSON: convert lowercase (pm25, o3, no2, so2, co) to uppercase (PM25, O3, NO2, SO2, CO)
+    /// Normalize property names in JSON: keep original case (dynamic properties accept any name)
+    /// This method is now simplified since Properties dictionary accepts any key name
     /// </summary>
     private string NormalizePollutantNames(string json)
     {
-        // Simple string replacement for pollutant names
-        // This handles both quoted property names and values
-        var normalized = json;
-        
-        // Replace lowercase pollutant names with uppercase (only in property names, not values)
-        // Pattern: "pm25" -> "PM25", "o3" -> "O3", etc.
-        normalized = System.Text.RegularExpressions.Regex.Replace(
-            normalized, 
-            @"""pm25""\s*:", 
-            @"""PM25"":", 
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        
-        normalized = System.Text.RegularExpressions.Regex.Replace(
-            normalized, 
-            @"""pm10""\s*:", 
-            @"""PM10"":", 
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        
-        normalized = System.Text.RegularExpressions.Regex.Replace(
-            normalized, 
-            @"""o3""\s*:", 
-            @"""O3"":", 
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        
-        normalized = System.Text.RegularExpressions.Regex.Replace(
-            normalized, 
-            @"""no2""\s*:", 
-            @"""NO2"":", 
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        
-        normalized = System.Text.RegularExpressions.Regex.Replace(
-            normalized, 
-            @"""so2""\s*:", 
-            @"""SO2"":", 
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        
-        normalized = System.Text.RegularExpressions.Regex.Replace(
-            normalized, 
-            @"""co""\s*:", 
-            @"""CO"":", 
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        
-        return normalized;
+        // Properties dictionary now accepts ANY property name (PM25, pm25, temperature, VOC, etc.)
+        // No normalization needed - just return original JSON
+        // MongoDB BsonExtraElements will store all properties as-is
+        return json;
     }
 }

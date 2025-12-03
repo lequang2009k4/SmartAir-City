@@ -103,18 +103,33 @@ public class DataNormalizationService
                 lat, lon, locationId, stationId);
             var openaqData = await _openAqClient.GetNearestAsync(lat, lon, locationId, stationId);
             
-            if (openaqData.HasValue)
+            if (openaqData != null && openaqData.Count > 0)
             {
-                // Merge OpenAQ data vao entity
-                entity.Pm25 = CreateNumericProperty(openaqData.Value.pm25, "GQ");
-                entity.Pm10 = CreateNumericProperty(openaqData.Value.pm10, "GQ");
-                entity.O3 = CreateNumericProperty(openaqData.Value.o3, "GQ");
-                entity.No2 = CreateNumericProperty(openaqData.Value.no2, "GQ");
-                entity.So2 = CreateNumericProperty(openaqData.Value.so2, "GQ");
-                entity.Co = CreateNumericProperty(openaqData.Value.co, "GQ");
+                // Merge ALL OpenAQ data vao Properties dictionary (dynamic)
+                entity.Properties ??= new Dictionary<string, object>();
                 
-                _logger.LogInformation("Da merge IoT + OpenAQ: PM2.5={Pm25}, PM10={Pm10}", 
-                    openaqData.Value.pm25, openaqData.Value.pm10);
+                foreach (var (paramName, value) in openaqData)
+                {
+                    var unitCode = OpenAQLiveClient.GetUnitCode(paramName);
+                    var property = CreateNumericProperty(value, unitCode);
+                    
+                    if (property != null)
+                    {
+                        // Normalize key name to uppercase (PM25, PM10, O3, NO2, SO2, CO, etc.)
+                        var normalizedKey = paramName.ToUpper();
+                        
+                        // Store as Dictionary to avoid MongoDB serialization issues
+                        entity.Properties[normalizedKey] = new Dictionary<string, object?>
+                        {
+                            ["type"] = property.Type,
+                            ["value"] = property.Value,
+                            ["unitCode"] = property.UnitCode,
+                            ["observedAt"] = property.ObservedAt
+                        };
+                    }
+                }
+                
+                _logger.LogInformation("Da merge IoT + OpenAQ: {Count} parameters", openaqData.Count);
             }
             else
             {
@@ -188,13 +203,61 @@ public class DataNormalizationService
             {
                 if (aqi.TryGetProperty("value", out var aqiValue))
                 {
-                    entity.AirQualityIndex = new NumericProperty
+                    entity.Properties ??= new Dictionary<string, object>();
+                    
+                    // Store as Dictionary to avoid MongoDB serialization issues
+                    entity.Properties["airQualityIndex"] = new Dictionary<string, object?>
                     {
-                        Type = "Property",
-                        Value = aqiValue.GetDouble(),
-                        UnitCode = aqi.TryGetProperty("unitCode", out var u) ? u.GetString() : "P1",
-                        ObservedAt = DateTime.UtcNow
+                        ["type"] = "Property",
+                        ["value"] = aqiValue.GetDouble(),
+                        ["unitCode"] = aqi.TryGetProperty("unitCode", out var u) ? u.GetString() : "P1",
+                        ["observedAt"] = DateTime.UtcNow
                     };
+                }
+            }
+
+            // Parse ALL other numeric properties dynamically (PM25, PM10, temperature, humidity, etc.)
+            entity.Properties ??= new Dictionary<string, object>();
+            
+            foreach (var prop in root.EnumerateObject())
+            {
+                // Skip known fields that are already parsed
+                if (prop.Name == "id" || prop.Name == "type" || prop.Name == "@context" || 
+                    prop.Name == "location" || prop.Name == "dateObserved" || 
+                    prop.Name == "airQualityIndex" || prop.Name.StartsWith("sosa:"))
+                {
+                    continue;
+                }
+
+                // Try to parse as NumericProperty
+                try
+                {
+                    if (prop.Value.ValueKind == System.Text.Json.JsonValueKind.Object &&
+                        prop.Value.TryGetProperty("type", out var typeEl) &&
+                        typeEl.GetString() == "Property" &&
+                        prop.Value.TryGetProperty("value", out var valueEl) &&
+                        (valueEl.ValueKind == System.Text.Json.JsonValueKind.Number))
+                    {
+                        var value = valueEl.GetDouble();
+                        var unitCode = prop.Value.TryGetProperty("unitCode", out var uc) ? uc.GetString() : OpenAQLiveClient.GetUnitCode(prop.Name);
+                        var observedAt = prop.Value.TryGetProperty("observedAt", out var oa) ? oa.GetDateTime() : DateTime.UtcNow;
+                        
+                        // Store as Dictionary to avoid MongoDB serialization issues
+                        entity.Properties[prop.Name] = new Dictionary<string, object?>
+                        {
+                            ["type"] = "Property",
+                            ["value"] = value,
+                            ["unitCode"] = unitCode,
+                            ["observedAt"] = observedAt
+                        };
+                        
+                        _logger.LogDebug("Parsed dynamic property: {Name} = {Value} {Unit}", 
+                            prop.Name, value, unitCode);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug("Could not parse property {Name} as NumericProperty: {Message}", prop.Name, ex.Message);
                 }
             }
 
@@ -280,23 +343,19 @@ public class DataNormalizationService
     /// Helper: Tao NumericProperty tu value va unit
     /// Luu y: Khong loai bo gia tri 0 vi 0 la gia tri hop le cho mot so chi so
     /// </summary>
-    private NumericProperty? CreateNumericProperty(double? value, string unitCode)
+    private NumericProperty? CreateNumericProperty(double value, string unitCode)
     {
-        // Chi kiem tra null, khong loai bo gia tri 0
-        if (!value.HasValue)
-            return null;
-        
         // Kiem tra gia tri am (khong hop le cho chi so chat luong khong khi)
-        if (value.Value < 0)
+        if (value < 0)
         {
-            _logger.LogWarning("Gia tri am khong hop le: {Value}, bo qua", value.Value);
+            _logger.LogWarning("Gia tri am khong hop le: {Value}, bo qua", value);
             return null;
         }
         
         return new NumericProperty
         {
             Type = "Property",
-            Value = value.Value,
+            Value = value,
             UnitCode = unitCode,
             ObservedAt = DateTime.UtcNow
         };

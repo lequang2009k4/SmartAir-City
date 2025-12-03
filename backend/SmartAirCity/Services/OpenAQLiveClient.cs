@@ -30,17 +30,6 @@ public class OpenAQLiveClient
     // Cache sensor mappings de tranh goi API nhieu lan
     private static readonly Dictionary<int, Dictionary<int, string>> _sensorMappingCache = new();
     private static readonly SemaphoreSlim _cacheLock = new(1, 1);
-    
-    // Cac chi so bon toi ho tro
-    private static readonly HashSet<string> _supportedParameters = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "pm25", "pm2.5",
-        "pm10",
-        "o3",
-        "no2",
-        "so2",
-        "co"
-    };
 
     public OpenAQLiveClient(
         IHttpClientFactory http,
@@ -68,7 +57,11 @@ public class OpenAQLiveClient
         }
     }
 
-    public async Task<(double? pm25, double? pm10, double? o3, double? no2, double? so2, double? co)?>
+    /// <summary>
+    /// Get ALL sensor readings from OpenAQ (dynamic, not limited to specific pollutants)
+    /// </summary>
+    /// <returns>Dictionary with parameter names as keys (pm25, pm10, o3, no2, so2, co, etc.) and values</returns>
+    public async Task<Dictionary<string, double>?>
         GetNearestAsync(double lat, double lon, int? locationId = null, string? stationId = null, CancellationToken ct = default)
     {
         // Doc cau hinh tu appsettings - khong hardcode
@@ -167,37 +160,15 @@ public class OpenAQLiveClient
             }
         }
         
-        // Thu 3: Fallback to global OpenAQ:SensorMapping - CHI KHI KHONG CO locationId cu the
-        // KHONG dung global mapping cho cac tram co locationId rieng de tranh hien thi sai du lieu
-        if (sensorMapping == null && !locationId.HasValue)
-        {
-            var globalMappingSection = _config.GetSection("OpenAQ:SensorMapping");
-            var tempMap = new Dictionary<int, string>();
-            
-            foreach (var item in globalMappingSection.GetChildren())
-            {
-                if (int.TryParse(item.Key, out var sensorId))
-                {
-                    tempMap[sensorId] = item.Value ?? "";
-                }
-            }
-            
-            if (tempMap.Count > 0)
-            {
-                sensorMapping = tempMap;
-                _logger.LogInformation("Using global OpenAQ:SensorMapping with {Count} sensors", tempMap.Count);
-            }
-        }
-        
-        // Thu 4: Final fallback - return empty mapping if nothing found
-        // This will cause all sensors to be null if no mapping is available
+        // Final fallback - return empty mapping if nothing found
+        // Auto-fetch se lay TAT CA sensors, neu khong co thi de empty
         if (sensorMapping == null)
         {
-            _logger.LogWarning("No sensor mapping found for location {LocationId}. Only PM2.5 may be available.", locationId.Value);
+            _logger.LogWarning("No sensor mapping found for location {LocationId}. Auto-fetch may have failed.", locationId.Value);
             sensorMapping = new Dictionary<int, string>();
         }
 
-        // BUOC 2: Parse sensor values
+        // BUOC 2: Parse sensor values - LAY TAT CA sensors, khong filter
         var results = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
         var unmappedSensors = new List<int>(); // Track sensors khong co trong mapping
 
@@ -210,18 +181,11 @@ public class OpenAQLiveClient
 
                 if (sensorMapping.TryGetValue(sid, out var paramName))
                 {
-                    // Chi lay cac parameter duoc ho tro (pm25, pm10, o3, no2, so2, co)
-                    if (_supportedParameters.Contains(paramName))
-                    {
-                        // Normalize ten parameter (pm2.5 -> pm25)
-                        var normalizedName = paramName.ToLower().Replace(".", "");
-                        results[normalizedName] = val;
-                        _logger.LogInformation("Sensor {SensorId} -> {ParamName} = {Value} GQ", sid, normalizedName.ToUpper(), val);
-                    }
-                    else
-                    {
-                        _logger.LogDebug("Skipped unsupported parameter: {ParamName} (sensorId={SensorId})", paramName, sid);
-                    }
+                    // Normalize ten parameter (pm2.5 -> pm25, PM2.5 -> pm25)
+                    var normalizedName = paramName.ToLower().Replace(".", "").Replace("₃", "3").Replace("₂", "2");
+                    results[normalizedName] = val;
+                    _logger.LogInformation("Sensor {SensorId} -> {ParamName} = {Value} (unitCode: {UnitCode})", 
+                        sid, normalizedName.ToUpper(), val, GetUnitCode(normalizedName));
                 }
                 else
                 {
@@ -242,40 +206,29 @@ public class OpenAQLiveClient
                 unmappedSensors.Count, string.Join(", ", unmappedSensors));
         }
 
-        // BUOC 3: Extract values (null neu khong co)
-        double? pm25 = results.ContainsKey("pm25") ? results["pm25"] : null;
-        double? pm10 = results.ContainsKey("pm10") ? results["pm10"] : null;
-        double? o3 = results.ContainsKey("o3") ? results["o3"] : null;
-        double? no2 = results.ContainsKey("no2") ? results["no2"] : null;
-        double? so2 = results.ContainsKey("so2") ? results["so2"] : null;
-        double? co = results.ContainsKey("co") ? results["co"] : null;
-
         // Log ket qua cuoi cung
-        var availableParams = new List<string>();
-        var missingParams = new List<string>();
-        
-        if (pm25.HasValue) availableParams.Add($"PM2.5={pm25.Value:F2}"); else missingParams.Add("PM2.5");
-        if (pm10.HasValue) availableParams.Add($"PM10={pm10.Value:F2}"); else missingParams.Add("PM10");
-        if (o3.HasValue) availableParams.Add($"O3={o3.Value:F2}"); else missingParams.Add("O3");
-        if (no2.HasValue) availableParams.Add($"NO2={no2.Value:F2}"); else missingParams.Add("NO2");
-        if (so2.HasValue) availableParams.Add($"SO2={so2.Value:F2}"); else missingParams.Add("SO2");
-        if (co.HasValue) availableParams.Add($"CO={co.Value:F2}"); else missingParams.Add("CO");
+        if (results.Count > 0)
+        {
+            var paramList = results.Select(kvp => $"{kvp.Key.ToUpper()}={kvp.Value:F2}").ToList();
+            _logger.LogInformation(
+                "OpenAQ Final Results for location {LocationId}: {Count} parameters\n" +
+                "    {Parameters}",
+                locationId.Value,
+                results.Count,
+                string.Join(" | ", paramList));
+        }
+        else
+        {
+            _logger.LogWarning("No sensor data available for location {LocationId}", locationId.Value);
+        }
 
-        _logger.LogInformation(
-            "OpenAQ Final Results for location {LocationId}:\n" +
-            "    Available: {Available}\n" +
-            "    Missing (null): {Missing}",
-            locationId.Value,
-            availableParams.Count > 0 ? string.Join(", ", availableParams) : "None",
-            missingParams.Count > 0 ? string.Join(", ", missingParams) : "None");
-
-        return (pm25, pm10, o3, no2, so2, co);
+        return results.Count > 0 ? results : null;
     }
 
     /// <summary>
     /// Auto-fetch sensor mapping tu OpenAQ API
-    /// Goi /v3/locations/{locationId} de lay danh sach sensors,
-    /// sau do goi /v3/sensors/{sensorId} cho tung sensor de biet no do cai gi
+    /// Lay parameter name truc tiep tu /v3/locations/{locationId} response
+    /// (KHONG can goi them /v3/sensors/{sensorId} cho tung sensor)
     /// </summary>
     private async Task<Dictionary<int, string>?> FetchSensorMappingAsync(HttpClient client, int locationId, CancellationToken ct)
     {
@@ -296,7 +249,7 @@ public class OpenAQLiveClient
                 _cacheLock.Release();
             }
 
-            // Goi API /v3/locations/{locationId} de lay sensor IDs
+            // Goi API /v3/locations/{locationId} de lay sensor IDs VA parameter names
             _logger.LogInformation("Fetching sensor list from /v3/locations/{LocationId}", locationId);
             var locationUrl = $"locations/{locationId}";
             var locationRes = await client.GetAsync(locationUrl, ct);
@@ -326,61 +279,40 @@ public class OpenAQLiveClient
 
             var mapping = new Dictionary<int, string>();
 
-            // Duyet qua tung sensor
+            // Duyet qua tung sensor VA LAY parameter name TRUC TIEP tu response
             foreach (var sensor in sensorsArr.EnumerateArray())
             {
-                if (!sensor.TryGetProperty("id", out var sensorIdProp))
-                    continue;
-
-                var sensorId = sensorIdProp.GetInt32();
-
-                // Goi API /v3/sensors/{sensorId} de lay parameter name
-                _logger.LogDebug("Fetching metadata for sensor {SensorId}", sensorId);
-                var sensorUrl = $"sensors/{sensorId}";
-                var sensorRes = await client.GetAsync(sensorUrl, ct);
-
-                if (!sensorRes.IsSuccessStatusCode)
+                try
                 {
-                    _logger.LogWarning("Failed to fetch sensor {SensorId}: {Status}", sensorId, sensorRes.StatusCode);
-                    continue;
-                }
+                    if (!sensor.TryGetProperty("id", out var sensorIdProp))
+                        continue;
 
-                var sensorJson = await sensorRes.Content.ReadAsStringAsync(ct);
-                using var sensorDoc = JsonDocument.Parse(sensorJson);
+                    var sensorId = sensorIdProp.GetInt32();
 
-                if (!sensorDoc.RootElement.TryGetProperty("results", out var sensorResultsArr) || 
-                    sensorResultsArr.GetArrayLength() == 0)
-                {
-                    _logger.LogWarning("No results for sensor {SensorId}", sensorId);
-                    continue;
-                }
-
-                var sensorData = sensorResultsArr[0];
-                if (!sensorData.TryGetProperty("parameter", out var parameterProp) ||
-                    !parameterProp.TryGetProperty("name", out var paramNameProp))
-                {
-                    _logger.LogWarning("No parameter name for sensor {SensorId}", sensorId);
-                    continue;
-                }
-
-                var paramName = paramNameProp.GetString();
-                if (!string.IsNullOrEmpty(paramName))
-                {
-                    // Normalize parameter name (PM2.5 -> pm25, O₃ -> o3, pm1 -> pm1)
-                    var normalized = paramName.ToLower().Replace(".", "").Replace("₃", "3").Replace("₂", "2");
-                    
-                    // CHI LAY cac sensors do chi so trong danh sach ho tro
-                    if (_supportedParameters.Contains(normalized))
+                    // LAY parameter name TRUC TIEP tu sensor object (KHONG goi API them)
+                    if (sensor.TryGetProperty("parameter", out var parameterProp) &&
+                        parameterProp.TryGetProperty("name", out var paramNameProp))
                     {
-                        mapping[sensorId] = normalized;
-                        _logger.LogInformation("Sensor {SensorId} measures {Parameter} (normalized: {Normalized}) - SUPPORTED", 
-                            sensorId, paramName, normalized);
+                        var paramName = paramNameProp.GetString();
+                        if (!string.IsNullOrEmpty(paramName))
+                        {
+                            // Normalize parameter name (PM2.5 -> pm25, O₃ -> o3, pm1 -> pm1)
+                            var normalized = paramName.ToLower().Replace(".", "").Replace("₃", "3").Replace("₂", "2");
+                            
+                            // LAY TAT CA sensors, khong filter theo danh sach ho tro
+                            mapping[sensorId] = normalized;
+                            _logger.LogInformation("Sensor {SensorId} measures {Parameter} (normalized: {Normalized})", 
+                                sensorId, paramName, normalized);
+                        }
                     }
                     else
                     {
-                        _logger.LogInformation("Sensor {SensorId} measures {Parameter} (normalized: {Normalized}) - SKIPPED (not in supported list)", 
-                            sensorId, paramName, normalized);
+                        _logger.LogDebug("Sensor {SensorId} has no parameter info in location response", sensorId);
                     }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Error parsing sensor info");
                 }
             }
 
@@ -409,5 +341,41 @@ public class OpenAQLiveClient
             _logger.LogError(ex, "Error while auto-fetching sensor mapping for location {LocationId}", locationId);
             return null;
         }
+    }
+
+    /// <summary>
+    /// Map parameter names to UN/CEFACT unit codes (NGSI-LD standard)
+    /// Reference: https://unece.org/trade/cefact/UNLOCODE-Download
+    /// </summary>
+    public static string GetUnitCode(string parameterName)
+    {
+        return parameterName.ToLower() switch
+        {
+            // Pollutants - GQ = microgram per cubic metre (µg/m³)
+            "pm25" or "pm2.5" or "pm10" or "pm1" => "GQ",
+            "o3" or "ozone" => "GQ",
+            "no2" or "nitrogen dioxide" => "GQ",
+            "so2" or "sulfur dioxide" => "GQ",
+            "co" or "carbon monoxide" => "GQ",
+            "nox" or "nitrogen oxides" => "GQ",
+            "voc" or "tvoc" or "volatile organic compounds" => "GQ",
+            "benzene" or "toluene" or "formaldehyde" => "GQ",
+            "bc" or "black carbon" => "GQ",
+            
+            // Temperature - CEL = degree Celsius (°C)
+            "temperature" or "temp" => "CEL",
+            
+            // Humidity - P1 = percent (%)
+            "humidity" or "relativehumidity" => "P1",
+            
+            // Pressure - A97 = hectopascal (hPa)
+            "pressure" or "atmosphericpressure" => "A97",
+            
+            // Air Quality Index - E30 = dimensionless (no unit)
+            "aqi" or "airqualityindex" => "E30",
+            
+            // Default fallback
+            _ => "E30" // dimensionless for unknown parameters
+        };
     }
 }

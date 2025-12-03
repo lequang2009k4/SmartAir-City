@@ -135,31 +135,143 @@ public class AirQuality
         Value = DateTime.UtcNow
     };
 
-    [BsonElement("PM25")]
-    [JsonPropertyName("PM25")]
-    public NumericProperty? Pm25 { get; set; }
+    /// <summary>
+    /// Dynamic properties for ALL measurements (PM2.5, PM10, O3, NO2, SO2, CO, Temperature, Humidity, VOC, etc.)
+    /// NGSI-LD Full compliance: Any measurement can be added without code changes
+    /// </summary>
+    [BsonExtraElements]
+    [JsonExtensionData]
+    public Dictionary<string, object>? Properties { get; set; }
 
-    [BsonElement("PM10")]
-    [JsonPropertyName("PM10")]
-    public NumericProperty? Pm10 { get; set; }
+    // Helper methods for common properties (backward compatibility)
+    [BsonIgnore]
+    [JsonIgnore]
+    public NumericProperty? PM25
+    {
+        get => GetProperty("PM25");
+        set => SetProperty("PM25", value);
+    }
 
-    [BsonElement("O3")]
-    [JsonPropertyName("O3")]
-    public NumericProperty? O3 { get; set; }
+    [BsonIgnore]
+    [JsonIgnore]
+    public NumericProperty? PM10
+    {
+        get => GetProperty("PM10");
+        set => SetProperty("PM10", value);
+    }
 
-    [BsonElement("NO2")]
-    [JsonPropertyName("NO2")]
-    public NumericProperty? No2 { get; set; }
+    [BsonIgnore]
+    [JsonIgnore]
+    public NumericProperty? O3
+    {
+        get => GetProperty("O3");
+        set => SetProperty("O3", value);
+    }
 
-    [BsonElement("SO2")]
-    [JsonPropertyName("SO2")]
-    public NumericProperty? So2 { get; set; }
+    [BsonIgnore]
+    [JsonIgnore]
+    public NumericProperty? NO2
+    {
+        get => GetProperty("NO2");
+        set => SetProperty("NO2", value);
+    }
 
-    [BsonElement("CO")]
-    [JsonPropertyName("CO")]
-    public NumericProperty? Co { get; set; }
+    [BsonIgnore]
+    [JsonIgnore]
+    public NumericProperty? SO2
+    {
+        get => GetProperty("SO2");
+        set => SetProperty("SO2", value);
+    }
 
-    [BsonElement("airQualityIndex")]
-    [JsonPropertyName("airQualityIndex")]
-    public NumericProperty? AirQualityIndex { get; set; }
+    [BsonIgnore]
+    [JsonIgnore]
+    public NumericProperty? CO
+    {
+        get => GetProperty("CO");
+        set => SetProperty("CO", value);
+    }
+
+    [BsonIgnore]
+    [JsonIgnore]
+    public NumericProperty? AirQualityIndex
+    {
+        get => GetProperty("airQualityIndex");
+        set => SetProperty("airQualityIndex", value);
+    }
+
+    private NumericProperty? GetProperty(string key)
+    {
+        if (Properties == null || !Properties.TryGetValue(key, out var value) || value == null)
+            return null;
+
+        // Case 1: Already a NumericProperty (shouldn't happen after fix, but keep for safety)
+        if (value is NumericProperty np)
+            return np;
+
+        // Case 2: From JSON deserialization (JsonExtensionData) -> JsonElement
+        if (value is System.Text.Json.JsonElement jsonEl)
+        {
+            try
+            {
+                return System.Text.Json.JsonSerializer.Deserialize<NumericProperty>(jsonEl.GetRawText());
+            }
+            catch { return null; }
+        }
+
+        // Case 3: From MongoDB (BsonExtraElements) -> Dictionary or BsonDocument-like structure
+        if (value is System.Collections.IDictionary dict)
+        {
+            try
+            {
+                var prop = new NumericProperty();
+                if (dict.Contains("type") && dict["type"] is string typeVal)
+                    prop.Type = typeVal;
+                if (dict.Contains("value"))
+                {
+                    var val = dict["value"];
+                    if (val is double dbl)
+                        prop.Value = dbl;
+                    else if (val != null && double.TryParse(val.ToString(), out var parsed))
+                        prop.Value = parsed;
+                }
+                if (dict.Contains("unitCode") && dict["unitCode"] is string unitVal)
+                    prop.UnitCode = unitVal;
+                if (dict.Contains("observedAt"))
+                {
+                    var obs = dict["observedAt"];
+                    if (obs is DateTime dt)
+                        prop.ObservedAt = dt;
+                    else if (obs != null && DateTime.TryParse(obs.ToString(), out var parsedDt))
+                        prop.ObservedAt = parsedDt;
+                }
+                return prop;
+            }
+            catch { return null; }
+        }
+
+        return null;
+    }
+
+    private void SetProperty(string key, NumericProperty? value)
+    {
+        Properties ??= new Dictionary<string, object>();
+        
+        if (value != null)
+        {
+            // Store as dictionary to avoid MongoDB serialization issues
+            // MongoDB can serialize Dictionary<string, object?> as BsonDocument
+            Properties[key] = new Dictionary<string, object?>
+            {
+                ["type"] = value.Type,
+                ["value"] = value.Value,
+                ["unitCode"] = value.UnitCode,
+                ["observedAt"] = value.ObservedAt
+            };
+        }
+        else
+        {
+            Properties.Remove(key);
+        }
+    }
 }

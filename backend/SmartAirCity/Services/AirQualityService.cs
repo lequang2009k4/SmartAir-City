@@ -209,15 +209,22 @@ public class AirQualityService
 
             if (latestRecord == null) continue;
 
-            // Xac dinh cac chi so do (parameters) ma tram nay co
+            // Xac dinh cac chi so do (parameters) ma tram nay co - DYNAMIC from Properties dictionary
             var parameters = new List<string>();
-            if (latestRecord.Pm25 != null) parameters.Add("PM2.5");
-            if (latestRecord.Pm10 != null) parameters.Add("PM10");
-            if (latestRecord.O3 != null) parameters.Add("O3");
-            if (latestRecord.No2 != null) parameters.Add("NO2");
-            if (latestRecord.So2 != null) parameters.Add("SO2");
-            if (latestRecord.Co != null) parameters.Add("CO");
-            if (latestRecord.AirQualityIndex != null) parameters.Add("AQI");
+            if (latestRecord.Properties != null)
+            {
+                foreach (var prop in latestRecord.Properties)
+                {
+                    // Chi lay cac NumericProperty (skip metadata fields)
+                    if (prop.Value is NumericProperty)
+                    {
+                        parameters.Add(prop.Key);
+                    }
+                }
+            }
+            
+            // Sort parameters alphabetically
+            parameters = parameters.OrderBy(p => p).ToList();
 
             // Tao object thong tin tram
             var stationInfo = new
