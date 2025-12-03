@@ -16,9 +16,9 @@ models, MQTT-based data ingestion, and FiWARE Smart Data Models for
 open-data services and smart-city applications. 
 */
 
-/* API Data Viewer Component */
+/* Open Data Viewer Component */
 
-.api-data-viewer {
+.open-data-viewer {
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
@@ -838,7 +838,7 @@ open-data services and smart-city applications.
 
 /* Responsive */
 @media (max-width: 768px) {
-  .api-data-viewer {
+  .open-data-viewer {
     padding: 1rem;
   }
 

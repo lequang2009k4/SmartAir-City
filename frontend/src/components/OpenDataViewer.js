@@ -20,15 +20,14 @@ import contributionsService from "../services/api/contributionsService";
 import { getAll, getLatest, getHistory, downloadAirQuality, downloadHistory } from "../services/api/airQualityService";
 import ContributorCard from "./ContributorCard";
 import ContributionRecordCard from "./ContributionRecordCard";
-import "./APIDataViewer.css";
+import "./OpenDataViewer.css";
 
 /**
- * API Data Viewer Component
- * Displays raw Air Quality API data for developers
- * AND Contributions data (new feature)
+ * Open Data Viewer Component
+ * Displays Air Quality open data and public contributions
  */
-const APIDataViewer = () => {
-  // Sub-tab state (Contributions vs API Data)
+const OpenDataViewer = () => {
+  // Sub-tab state (Contributions vs Open Data)
   const [activeSubTab, setActiveSubTab] = useState('contributions');
   
   // Air Quality API state
@@ -273,7 +272,7 @@ const APIDataViewer = () => {
   const displayData = cleanData(sampleData);
 
   return (
-    <div className="api-data-viewer">
+    <div className="open-data-viewer">
       {/* Main Tab Buttons (Replace Header) */}
       <div className="main-tab-buttons">
         <button
@@ -287,12 +286,12 @@ const APIDataViewer = () => {
           </div>
         </button>
         <button
-          className={`main-tab-btn ${activeSubTab === 'api-data' ? 'active' : ''}`}
-          onClick={() => setActiveSubTab('api-data')}
+          className={`main-tab-btn ${activeSubTab === 'open-data' ? 'active' : ''}`}
+          onClick={() => setActiveSubTab('open-data')}
         >
-          <div className="tab-icon">📊</div>
+          <div className="tab-icon">🔍</div>
           <div className="tab-content">
-            <h2>API Data View</h2>
+            <h2>Open Data View</h2>
             <p>Xem dữ liệu Air Quality API</p>
           </div>
         </button>
@@ -429,8 +428,8 @@ const APIDataViewer = () => {
         </div>
       )}
 
-      {/* ===== TAB 2: API DATA VIEW ===== */}
-      {activeSubTab === 'api-data' && (
+      {/* ===== TAB 2: OPEN DATA VIEW ===== */}
+      {activeSubTab === 'open-data' && (
         <>
           {/* Query Form */}
           <div className="query-section">
@@ -660,4 +659,4 @@ const APIDataViewer = () => {
   );
 };
 
-export default APIDataViewer;
+export default OpenDataViewer;

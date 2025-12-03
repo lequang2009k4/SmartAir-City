@@ -20,7 +20,7 @@ import Header from './components/Header';
 import AirQualityChart from './components/AirQualityChart';
 import AirQualityMap from './components/AirQualityMap';
 import RealtimeDashboard from './components/RealtimeDashboard';
-import APIDataViewer from './components/APIDataViewer';
+import OpenDataViewer from './components/OpenDataViewer';
 import About from './components/About';
 import Footer from './components/Footer';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -141,7 +141,7 @@ function App() {
         );
       
       case 'data':
-        return <APIDataViewer />;
+        return <OpenDataViewer />;
       
       case 'about':
         return <About />;

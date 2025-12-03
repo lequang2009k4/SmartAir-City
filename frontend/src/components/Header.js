@@ -66,7 +66,7 @@ const Header = ({ activeTab, setActiveTab, user, onLoginClick, onLogout }) => {
             className={`nav-item ${activeTab === 'data' ? 'active' : ''}`}
             onClick={() => setActiveTab('data')}
           >
-            API Data
+            Open Data
           </button>
           <button 
             className={`nav-item ${activeTab === 'about' ? 'active' : ''}`}
