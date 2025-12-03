@@ -147,7 +147,7 @@ const ContributionList = ({ user, refreshTrigger }) => {
               <ContributionRecordCard
                 key={contribution.contributionId}
                 contribution={contribution}
-                onView={handleViewData}
+                onViewData={handleViewData}
                 onDownload={handleDownloadContribution}
               />
             ))}
@@ -155,35 +155,37 @@ const ContributionList = ({ user, refreshTrigger }) => {
         </>
       )}
 
-      {/* Data Viewer */}
+      {/* Data Viewer Modal */}
       {viewedData && (
-        <div className="data-viewer-modal">
-          <div className="modal-header">
-            <h3>📄 Chi tiết Contribution</h3>
-            <button className="btn-close" onClick={handleCloseViewer}>✕</button>
-          </div>
-          <div className="modal-body">
-            <div className="viewer-info">
-              <span className="info-label">Contribution ID:</span>
-              <code className="info-value">{viewedData.contributionId}</code>
+        <div className="json-modal-overlay" onClick={handleCloseViewer}>
+          <div className="json-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>📄 Dữ liệu JSON (ID: {viewedData.contributionId?.slice(0, 8)}...)</h3>
+              <button className="btn-close" onClick={handleCloseViewer}>✕</button>
             </div>
-            <div className="viewer-info">
-              <span className="info-label">Số bản ghi:</span>
-              <span className="info-value">{viewedData.records.length}</span>
-            </div>
-            <pre className="json-viewer">
-              {JSON.stringify(viewedData.records, null, 2)}
-            </pre>
-            <div className="viewer-actions">
-              <button 
-                className="btn-copy"
-                onClick={() => {
-                  navigator.clipboard.writeText(JSON.stringify(viewedData.records, null, 2));
-                  alert('Đã copy JSON vào clipboard!');
-                }}
-              >
-                📋 Copy JSON
-              </button>
+            <div className="modal-body">
+              <div className="viewer-info">
+                <span className="info-label">Contribution ID:</span>
+                <code className="info-value">{viewedData.contributionId}</code>
+              </div>
+              <div className="viewer-info">
+                <span className="info-label">Số bản ghi:</span>
+                <span className="info-value">{viewedData.records.length}</span>
+              </div>
+              <div className="json-actions">
+                <button 
+                  className="btn-copy"
+                  onClick={() => {
+                    navigator.clipboard.writeText(JSON.stringify(viewedData.records, null, 2));
+                    alert('Đã copy JSON vào clipboard!');
+                  }}
+                >
+                  📋 Copy JSON
+                </button>
+              </div>
+              <pre className="json-viewer">
+                {JSON.stringify(viewedData.records, null, 2)}
+              </pre>
             </div>
           </div>
         </div>

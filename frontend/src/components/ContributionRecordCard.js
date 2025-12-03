@@ -14,7 +14,7 @@
 // models, MQTT-based data ingestion, and FiWARE Smart Data Models for
 // open-data services and smart-city applications. 
 
-import React, { useState } from "react";
+import React from "react";
 import "./ContributionRecordCard.css";
 
 /**
@@ -23,7 +23,6 @@ import "./ContributionRecordCard.css";
  */
 const ContributionRecordCard = ({ contribution, onDownload, onViewData }) => {
   const { contributionId, recordCount, uploadedAt } = contribution;
-  const [isExpanded, setIsExpanded] = useState(false);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -43,8 +42,7 @@ const ContributionRecordCard = ({ contribution, onDownload, onViewData }) => {
 
   return (
     <div className="contribution-record-card">
-      {/* Header */}
-      <div className="record-header" onClick={() => setIsExpanded(!isExpanded)}>
+      <div className="record-content">
         <div className="record-icon">📊</div>
         <div className="record-info">
           <h4 className="record-id">ID: {contributionId?.slice(0, 8)}...</h4>
@@ -58,34 +56,23 @@ const ContributionRecordCard = ({ contribution, onDownload, onViewData }) => {
             </span>
           </p>
         </div>
-        <button 
-          className="expand-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsExpanded(!isExpanded);
-          }}
+      </div>
+      <div className="record-actions">
+        <button
+          className="action-btn btn-view"
+          onClick={() => onViewData(contributionId)}
+          title="Xem dữ liệu"
         >
-          {isExpanded ? '▼' : '▶'}
+          👁️
+        </button>
+        <button
+          className="action-btn btn-download"
+          onClick={() => onDownload(contributionId)}
+          title="Tải xuống JSON"
+        >
+          💾
         </button>
       </div>
-
-      {/* Actions (shown when expanded) */}
-      {isExpanded && (
-        <div className="record-actions">
-          <button
-            className="action-btn btn-view"
-            onClick={() => onViewData(contributionId)}
-          >
-            👁️ Xem dữ liệu
-          </button>
-          <button
-            className="action-btn btn-download"
-            onClick={() => onDownload(contributionId)}
-          >
-            💾 Tải xuống JSON
-          </button>
-        </div>
-      )}
     </div>
   );
 };
