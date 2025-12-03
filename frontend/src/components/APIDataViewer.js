@@ -60,6 +60,7 @@ const APIDataViewer = () => {
   const [viewedData, setViewedData] = useState(null);
   const [loadingContributions, setLoadingContributions] = useState(false);
   const [contributionsError, setContributionsError] = useState(null);
+  const [showContributionsModal, setShowContributionsModal] = useState(false);
 
   // Load public contributors on mount
   useEffect(() => {
@@ -76,7 +77,27 @@ const APIDataViewer = () => {
     try {
       const result = await contributionsService.getPublicStats();
       if (result.success) {
-        setContributorsData(result.data);
+        // Fix: contributionCount from backend is wrong (total records instead of upload count)
+        // Fetch actual contribution lists to get correct upload count
+        const contributors = result.data.contributors || [];
+        const contributorsWithCorrectCount = await Promise.all(
+          contributors.map(async (contributor) => {
+            try {
+              const listResult = await contributionsService.getContributionList(contributor.email);
+              return {
+                ...contributor,
+                contributionCount: listResult.success ? (listResult.contributions?.length || 0) : contributor.contributionCount,
+              };
+            } catch {
+              return contributor;
+            }
+          })
+        );
+        
+        setContributorsData({
+          ...result.data,
+          contributors: contributorsWithCorrectCount,
+        });
       } else {
         setContributionsError(result.error || 'Không thể tải dữ liệu contributors');
       }
@@ -91,6 +112,7 @@ const APIDataViewer = () => {
   const handleContributorClick = async (contributor) => {
     setSelectedContributor(contributor);
     setViewedData(null); // Reset viewed data
+    setShowContributionsModal(true); // Open modal
     setLoadingContributions(true);
     setContributionsError(null);
 
@@ -114,6 +136,14 @@ const APIDataViewer = () => {
     if (!result.success) {
       alert(`Lỗi tải xuống: ${result.error}`);
     }
+  };
+
+  // Handle close contributions modal
+  const handleCloseContributionsModal = () => {
+    setShowContributionsModal(false);
+    setSelectedContributor(null);
+    setContributionsList([]);
+    setViewedData(null);
   };
 
   // Handle view data
@@ -322,48 +352,45 @@ const APIDataViewer = () => {
             </>
           )}
 
-          {/* Selected Contributor's Contributions */}
-          {selectedContributor && (
-            <div className="contributions-section">
-              <div className="section-header">
-                <h3>📋 Contributions của {selectedContributor.userName}</h3>
-                <button 
-                  className="btn-back"
-                  onClick={() => {
-                    setSelectedContributor(null);
-                    setContributionsList([]);
-                    setViewedData(null);
-                  }}
-                >
-                  ← Quay lại
-                </button>
+          {/* Contributions Modal */}
+          {showContributionsModal && selectedContributor && (
+            <div className="contributions-modal-overlay" onClick={handleCloseContributionsModal}>
+              <div className="contributions-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h3>📋 Contributions của {selectedContributor.userName}</h3>
+                  <button className="btn-close" onClick={handleCloseContributionsModal}>
+                    ✕
+                  </button>
+                </div>
+
+                <div className="modal-body">
+                  {loadingContributions && (
+                    <div className="loading-box">
+                      <div className="spinner"></div>
+                      <p>Đang tải contributions...</p>
+                    </div>
+                  )}
+
+                  {!loadingContributions && contributionsList.length > 0 && (
+                    <div className="contributions-list">
+                      {contributionsList.map((contribution) => (
+                        <ContributionRecordCard
+                          key={contribution.contributionId}
+                          contribution={contribution}
+                          onDownload={handleDownloadContribution}
+                          onView={handleViewData}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {!loadingContributions && contributionsList.length === 0 && (
+                    <div className="no-data-box">
+                      <p>⚠️ Không có contributions nào</p>
+                    </div>
+                  )}
+                </div>
               </div>
-
-              {loadingContributions && (
-                <div className="loading-box">
-                  <div className="spinner"></div>
-                  <p>Đang tải contributions...</p>
-                </div>
-              )}
-
-              {!loadingContributions && contributionsList.length > 0 && (
-                <div className="contributions-list">
-                  {contributionsList.map((contribution) => (
-                    <ContributionRecordCard
-                      key={contribution.contributionId}
-                      contribution={contribution}
-                      onDownload={handleDownloadContribution}
-                      onViewData={handleViewData}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {!loadingContributions && contributionsList.length === 0 && (
-                <div className="no-data-box">
-                  <p>⚠️ Không có contributions nào</p>
-                </div>
-              )}
             </div>
           )}
 

@@ -16,38 +16,66 @@ models, MQTT-based data ingestion, and FiWARE Smart Data Models for
 open-data services and smart-city applications.  
 */
 
-/* Contributor Card Component */
+/* Contributor Card Component - Modern Design */
 
 .contributor-card {
-  background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 1.5rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid #e9ecef;
+  border-radius: 16px;
+  padding: 24px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.contributor-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
 }
 
 .contributor-card:hover {
+  transform: translateY(-4px);
   border-color: #667eea;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+}
+
+.contributor-card:hover::before {
+  transform: scaleX(1);
 }
 
 .contributor-card.active {
   border-color: #667eea;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  background: linear-gradient(135deg, #f0f3ff 0%, #e8ecff 100%);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);
 }
 
-/* Avatar */
+.contributor-card.active::before {
+  transform: scaleX(1);
+}
+
+/* Card Top - Avatar and Badge */
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
 .contributor-avatar {
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -55,87 +83,114 @@ open-data services and smart-city applications.
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  transition: transform 0.3s ease;
   flex-shrink: 0;
 }
 
-/* Info */
-.contributor-info {
-  flex: 1;
-  min-width: 0;
+.contributor-card:hover .contributor-avatar {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.contributor-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  min-width: 50px;
+  text-align: center;
+}
+
+.badge-number {
+  display: block;
+  line-height: 1;
+}
+
+/* Card Content */
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .contributor-name {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.125rem;
+  margin: 0;
+  font-size: 1.2rem;
   font-weight: 600;
-  color: #333;
-  white-space: nowrap;
+  color: #1a202c;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .contributor-email {
   margin: 0;
-  font-size: 0.875rem;
-  color: #666;
-  white-space: nowrap;
+  font-size: 0.9rem;
+  color: #718096;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Stats */
-.contributor-stats {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.stat-badge {
-  background: #f0f0f0;
-  padding: 0.5rem 1rem;
+.contribution-label {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: rgba(102, 126, 234, 0.1);
   border-radius: 8px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.contributor-card.active .stat-badge {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.stat-value {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #667eea;
-}
-
-.contributor-card.active .stat-value {
-  color: white;
-}
-
-.stat-label {
-  font-size: 0.75rem;
-  color: #666;
+  font-size: 0.85rem;
   font-weight: 500;
-}
-
-.contributor-card.active .stat-label {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-/* Arrow */
-.contributor-arrow {
-  font-size: 1.5rem;
-  color: #ccc;
-  transition: all 0.3s ease;
-}
-
-.contributor-card:hover .contributor-arrow,
-.contributor-card.active .contributor-arrow {
   color: #667eea;
-  transform: translateX(4px);
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .contributor-card {
+    padding: 20px;
+  }
+
+  .contributor-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 1.3rem;
+  }
+
+  .contributor-name {
+    font-size: 1.1rem;
+  }
+
+  .contributor-badge {
+    padding: 6px 12px;
+    font-size: 1rem;
+  }
+}
+
+/* Dark Mode Support */
+.dark-mode .contributor-card {
+  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  border-color: #4a5568;
+}
+
+.dark-mode .contributor-card:hover {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #2d3748 0%, #374151 100%);
+}
+
+.dark-mode .contributor-card.active {
+  background: linear-gradient(135deg, #3730a3 0%, #4c1d95 100%);
+  border-color: #667eea;
+}
+
+.dark-mode .contributor-name {
+  color: #e2e8f0;
+}
+
+.dark-mode .contributor-email {
+  color: #a0aec0;
 }
 
 /* Responsive */

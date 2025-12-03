@@ -21,6 +21,7 @@ import "./ContributorCard.css";
 /**
  * Contributor Card Component
  * Displays contributor info card with name, email, and contribution count
+ * Note: contributionCount = number of upload sessions (not total records)
  */
 const ContributorCard = ({ contributor, onClick, isActive }) => {
   const { userName, email, contributionCount } = contributor;
@@ -30,23 +31,20 @@ const ContributorCard = ({ contributor, onClick, isActive }) => {
       className={`contributor-card ${isActive ? 'active' : ''}`}
       onClick={onClick}
     >
-      <div className="contributor-avatar">
-        {userName?.charAt(0).toUpperCase() || '?'}
-      </div>
-      
-      <div className="contributor-info">
-        <h3 className="contributor-name">{userName || 'Unknown User'}</h3>
-        <p className="contributor-email">{email}</p>
-      </div>
-      
-      <div className="contributor-stats">
-        <div className="stat-badge">
-          <span className="stat-value">{contributionCount || 0}</span>
-          <span className="stat-label">đóng góp</span>
+      <div className="card-top">
+        <div className="contributor-avatar">
+          {userName?.charAt(0).toUpperCase() || '?'}
+        </div>
+        <div className="contributor-badge">
+          <span className="badge-number">{contributionCount || 0}</span>
         </div>
       </div>
       
-      <div className="contributor-arrow">→</div>
+      <div className="card-content">
+        <h3 className="contributor-name">{userName || 'Unknown User'}</h3>
+        <p className="contributor-email">{email}</p>
+        <div className="contribution-label">Đã đóng góp {contributionCount || 0} lần</div>
+      </div>
     </div>
   );
 };
