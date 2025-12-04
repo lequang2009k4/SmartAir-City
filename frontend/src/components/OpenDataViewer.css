@@ -114,6 +114,189 @@ open-data services and smart-city applications.
   color: #666;
 }
 
+/* ============================================
+   SENSOR FORM (for Open Data viewer)
+   ============================================ */
+.sensor-data-tab .sensor-form-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.sensor-data-tab .form-title {
+  margin: 0 0 10px 0;
+  font-size: 1.8rem;
+  color: #667eea;
+}
+
+.sensor-data-tab .form-description {
+  margin: 0 0 30px 0;
+  color: #666;
+  line-height: 1.6;
+}
+
+.sensor-data-tab .sensor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.sensor-data-tab .form-section {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.sensor-data-tab .section-header {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.sensor-data-tab .section-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #333;
+}
+
+.sensor-data-tab .mqtt-info {
+  background: #fff9e6;
+  border-left: 4px solid #ffc107;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+
+.sensor-data-tab .mqtt-info p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+.sensor-data-tab .mqtt-info strong {
+  color: #333;
+}
+
+.sensor-data-tab .form-group {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.sensor-data-tab .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.sensor-data-tab .form-group .required {
+  color: #dc3545;
+  margin-left: 3px;
+}
+
+.sensor-data-tab .form-group input[type="text"],
+.sensor-data-tab .form-group input[type="number"] {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.sensor-data-tab .form-group input[type="text"]:focus,
+.sensor-data-tab .form-group input[type="number"]:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.sensor-data-tab .form-group input[type="text"]:disabled,
+.sensor-data-tab .form-group input[type="number"]:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.sensor-data-tab .checkbox-group {
+  margin-bottom: 20px;
+}
+
+.sensor-data-tab .checkbox-group label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.sensor-data-tab .checkbox-group input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.sensor-data-tab .checkbox-group span {
+  font-size: 1rem;
+  color: #333;
+}
+
+.sensor-data-tab .location-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.sensor-data-tab .validation-icon {
+  position: absolute;
+  right: 15px;
+  top: 42px;
+  color: #28a745;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.sensor-data-tab .form-actions {
+  display: flex;
+  justify-content: center;
+  padding-top: 10px;
+}
+
+.sensor-data-tab .submit-btn {
+  padding: 14px 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.sensor-data-tab .submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.sensor-data-tab .submit-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive for sensor form */
+@media (max-width: 768px) {
+  .sensor-data-tab .location-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sensor-data-tab .form-title {
+    font-size: 1.5rem;
+  }
+}
+
 .main-tab-btn {
   background: white;
   border: 3px solid #e0e0e0;

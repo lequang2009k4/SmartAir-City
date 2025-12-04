@@ -33,6 +33,16 @@ const OpenDataViewer = () => {
   // Sub-tab within Contributions (sensor-data, uploaded-json, third-party-api)
   const [contributionTab, setContributionTab] = useState('uploaded-json');
   
+  // Sensor form state
+  const [sensorData, setSensorData] = useState({
+    enableMQTT: false,
+    mqttUrl: '',
+    mqttTopic: '',
+    latitude: '',
+    longitude: '',
+    height: ''
+  });
+  
   // Air Quality API state
   const [showRaw, setShowRaw] = useState(false);
   
@@ -70,6 +80,27 @@ const OpenDataViewer = () => {
       loadPublicContributors();
     }
   }, [activeSubTab]);
+
+  /**
+   * Handle sensor form input change
+   */
+  const handleSensorInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setSensorData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  /**
+   * Handle sensor form submit
+   */
+  const handleSensorSubmit = (e) => {
+    e.preventDefault();
+    console.log('[OpenDataViewer] Sensor data submitted:', sensorData);
+    // TODO: Implement sensor connection logic
+    alert('Chức năng kết nối sensor đang được phát triển!');
+  };
 
   // Load contributors from API
   const loadPublicContributors = async () => {
@@ -309,9 +340,119 @@ const OpenDataViewer = () => {
         {/* Sensor Data Tab */}
         {contributionTab === 'sensor-data' && (
           <div className="sensor-data-tab">
-            <div className="coming-soon">
-              <h3>🚧 Đang phát triển</h3>
-              <p>Tính năng dữ liệu từ sensor đang được phát triển</p>
+            <div className="sensor-form-container">
+              <h2 className="form-title">🌡️ Xem dữ liệu từ cảm biến IoT</h2>
+              <p className="form-description">
+                Kết nối với cảm biến qua MQTT để xem dữ liệu chất lượng không khí theo thời gian thực từ cộng đồng.
+              </p>
+
+              <form onSubmit={handleSensorSubmit} className="sensor-form">
+                {/* MQTT Section */}
+                <div className="form-section">
+                  <div className="section-header">
+                    <h3>MQTT</h3>
+                  </div>
+                  <div className="form-group checkbox-group">
+                    <label>
+                      <input
+                        type="checkbox"
+                        name="enableMQTT"
+                        checked={sensorData.enableMQTT}
+                        onChange={handleSensorInputChange}
+                      />
+                      <span>Enable MQTT</span>
+                    </label>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="mqttUrl-open">
+                      Url<span className="required">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="mqttUrl-open"
+                      name="mqttUrl"
+                      value={sensorData.mqttUrl}
+                      onChange={handleSensorInputChange}
+                      disabled={!sensorData.enableMQTT}
+                      placeholder="mqtt://broker.example.com:1883"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="mqttTopic-open">
+                      Topic<span className="required">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="mqttTopic-open"
+                      name="mqttTopic"
+                      value={sensorData.mqttTopic}
+                      onChange={handleSensorInputChange}
+                      disabled={!sensorData.enableMQTT}
+                      placeholder="sensors/airquality"
+                    />
+                  </div>
+                </div>
+
+                {/* Location Section */}
+                <div className="form-section">
+                  <div className="section-header">
+                    <h3>Vị trí cảm biến</h3>
+                  </div>
+
+                  <div className="location-grid">
+                    <div className="form-group">
+                      <label htmlFor="latitude-open">Latitude</label>
+                      <input
+                        type="number"
+                        id="latitude-open"
+                        name="latitude"
+                        value={sensorData.latitude}
+                        onChange={handleSensorInputChange}
+                        step="0.000001"
+                        placeholder="21.001118"
+                      />
+                      {sensorData.latitude && <span className="validation-icon">✓</span>}
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="longitude-open">Longitude</label>
+                      <input
+                        type="number"
+                        id="longitude-open"
+                        name="longitude"
+                        value={sensorData.longitude}
+                        onChange={handleSensorInputChange}
+                        step="0.000001"
+                        placeholder="105.747091"
+                      />
+                      {sensorData.longitude && <span className="validation-icon">✓</span>}
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="height-open">Height (GPS)</label>
+                      <input
+                        type="number"
+                        id="height-open"
+                        name="height"
+                        value={sensorData.height}
+                        onChange={handleSensorInputChange}
+                        step="0.1"
+                        placeholder="0"
+                      />
+                      {sensorData.height && <span className="validation-icon">✓</span>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="form-actions">
+                  <button type="submit" className="submit-btn">
+                    Xem dữ liệu sensor
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
