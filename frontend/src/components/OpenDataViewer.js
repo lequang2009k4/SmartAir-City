@@ -27,8 +27,11 @@ import "./OpenDataViewer.css";
  * Displays Air Quality open data and public contributions
  */
 const OpenDataViewer = () => {
-  // Sub-tab state (Contributions vs Open Data)
+  // Main tab is always 'contributions' now
   const [activeSubTab, setActiveSubTab] = useState('contributions');
+  
+  // Sub-tab within Contributions (sensor-data, uploaded-json, third-party-api)
+  const [contributionTab, setContributionTab] = useState('uploaded-json');
   
   // Air Quality API state
   const [showRaw, setShowRaw] = useState(false);
@@ -273,32 +276,48 @@ const OpenDataViewer = () => {
 
   return (
     <div className="open-data-viewer">
-      {/* Main Tab Buttons (Replace Header) */}
-      <div className="main-tab-buttons">
+      {/* Page Header */}
+      <div className="page-header">
+        <h1>📊 Dữ liệu đóng góp</h1>
+        <p>Dữ liệu chất lượng không khí từ cộng đồng</p>
+      </div>
+
+      {/* Contribution Sub-tabs */}
+      <div className="contribution-sub-tabs">
         <button
-          className={`main-tab-btn ${activeSubTab === 'contributions' ? 'active' : ''}`}
-          onClick={() => setActiveSubTab('contributions')}
+          className={`sub-tab-btn ${contributionTab === 'sensor-data' ? 'active' : ''}`}
+          onClick={() => setContributionTab('sensor-data')}
         >
-          <div className="tab-icon">👥</div>
-          <div className="tab-content">
-            <h2>Dữ liệu đóng góp</h2>
-            <p>Xem contributions từ cộng đồng</p>
-          </div>
+          🌡️ Dữ liệu từ sensor
         </button>
         <button
-          className={`main-tab-btn ${activeSubTab === 'open-data' ? 'active' : ''}`}
-          onClick={() => setActiveSubTab('open-data')}
+          className={`sub-tab-btn ${contributionTab === 'uploaded-json' ? 'active' : ''}`}
+          onClick={() => setContributionTab('uploaded-json')}
         >
-          <div className="tab-icon">🔍</div>
-          <div className="tab-content">
-            <h2>Open Data View</h2>
-            <p>Xem dữ liệu Air Quality API</p>
-          </div>
+          📤 Đã tải lên JSON
+        </button>
+        <button
+          className={`sub-tab-btn ${contributionTab === 'third-party-api' ? 'active' : ''}`}
+          onClick={() => setContributionTab('third-party-api')}
+        >
+          🔗 API bên thứ 3
         </button>
       </div>
 
-      {/* ===== TAB 1: CONTRIBUTIONS ===== */}
-      {activeSubTab === 'contributions' && (
+      {/* Tab Content */}
+      <div className="tab-content-area">
+        {/* Sensor Data Tab */}
+        {contributionTab === 'sensor-data' && (
+          <div className="sensor-data-tab">
+            <div className="coming-soon">
+              <h3>🚧 Đang phát triển</h3>
+              <p>Tính năng dữ liệu từ sensor đang được phát triển</p>
+            </div>
+          </div>
+        )}
+
+        {/* Uploaded JSON Tab (existing contributions) */}
+        {contributionTab === 'uploaded-json' && (
         <div className="contributions-tab">
           {/* Error Display */}
           {contributionsError && (
@@ -426,235 +445,18 @@ const OpenDataViewer = () => {
             </div>
           )}
         </div>
-      )}
+        )}
 
-      {/* ===== TAB 2: OPEN DATA VIEW ===== */}
-      {activeSubTab === 'open-data' && (
-        <>
-          {/* Query Form */}
-          <div className="query-section">
-            <div className="section-header">
-              <h3>🔍 Query Air Quality Data</h3>
-            </div>
-
-            {/* Query Type Selector */}
-            <div className="query-type-selector">
-              <button
-                className={`type-btn ${queryType === 'latest' ? 'active' : ''}`}
-                onClick={() => setQueryType('latest')}
-              >
-                ⚡ Get Latest
-              </button>
-              <button
-                className={`type-btn ${queryType === 'all' ? 'active' : ''}`}
-                onClick={() => setQueryType('all')}
-              >
-                📋 Get All Records
-              </button>
-              <button
-                className={`type-btn ${queryType === 'history' ? 'active' : ''}`}
-                onClick={() => setQueryType('history')}
-              >
-                📅 Get Historical Data
-              </button>
-            </div>
-
-            {/* Query Form */}
-            <div className="query-form">
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Station ID {queryType === 'latest' ? '(Required)' : '(Optional)'}</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., station-hanoi-oceanpark"
-                    value={queryParams.stationId}
-                    onChange={(e) => setQueryParams({...queryParams, stationId: e.target.value})}
-                  />
-                </div>
-
-                {queryType === 'all' && (
-                  <div className="form-group">
-                    <label>Limit</label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="1000"
-                      value={queryParams.limit}
-                      onChange={(e) => setQueryParams({...queryParams, limit: e.target.value})}
-                    />
-                  </div>
-                )}
-
-                {queryType === 'history' && (
-                  <>
-                    <div className="form-group">
-                      <label>From (Date/Time)</label>
-                      <input
-                        type="datetime-local"
-                        value={queryParams.from}
-                        onChange={(e) => setQueryParams({...queryParams, from: e.target.value})}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>To (Date/Time)</label>
-                      <input
-                        type="datetime-local"
-                        value={queryParams.to}
-                        onChange={(e) => setQueryParams({...queryParams, to: e.target.value})}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="form-actions">
-                <button
-                  className="btn-query"
-                  onClick={handleQuerySubmit}
-                  disabled={queryLoading}
-                >
-                  {queryLoading ? '⏳ Đang tải...' : '🔍 Query'}
-                </button>
-                <button
-                  className="btn-download-query"
-                  onClick={handleDownloadQuery}
-                  disabled={queryLoading}
-                >
-                  💾 Download JSON
-                </button>
-              </div>
-            </div>
-
-            {/* Query Error */}
-            {queryError && (
-              <div className="error-box">
-                <h4>❌ Lỗi Query</h4>
-                <p>{queryError}</p>
-              </div>
-            )}
-
-            {/* Query Results */}
-            {queryResults && (
-              <div className="query-results">
-                <div className="results-header">
-                  <h4>📊 Kết quả: {queryResults.length} records</h4>
-                  <button
-                    className="btn-copy"
-                    onClick={() => {
-                      navigator.clipboard.writeText(JSON.stringify(queryResults, null, 2));
-                      alert("Đã copy JSON vào clipboard!");
-                    }}
-                  >
-                    📋 Copy JSON
-                  </button>
-                </div>
-                <pre className="json-viewer">
-                  <code>{JSON.stringify(queryResults, null, 2)}</code>
-                </pre>
-              </div>
-            )}
-          </div>
-
-          {/* Divider */}
-          <div className="section-divider"></div>
-
-          {/* Sample Data Section */}
-          <div className="sample-section">
-            <div className="section-header">
-              <h3>📄 Sample Data (Real-time WebSocket)</h3>
-            </div>
-
-          {/* Error Display */}
-          {error && (
-            <div className="error-box">
-              <h4>❌ Error Loading Data</h4>
-              <p>{error}</p>
-            </div>
-          )}
-
-          {/* Loading Display */}
-          {isLoading && (
-            <div className="loading-box">
-              <div className="spinner"></div>
-              <p>Loading data...</p>
-            </div>
-          )}
-
-          {/* Data Display */}
-          {!isLoading && !error && (
-        <div className="data-display">
-          <div className="data-header">
-            <h3>Sample JSON Data (1 Record)</h3>
-            <div className="data-actions">
-              <button
-                className={`btn-toggle ${showRaw ? 'active' : ''}`}
-                onClick={() => setShowRaw(!showRaw)}
-              >
-                {showRaw ? '📋 Show Transformed' : '🔍 Show NGSI-LD'}
-              </button>
-              <button
-                className="btn-copy"
-                onClick={() => {
-                  navigator.clipboard.writeText(
-                    JSON.stringify(displayData, null, 2)
-                  );
-                  alert("Đã copy JSON vào clipboard!");
-                }}
-              >
-                📋 Copy JSON
-              </button>
-              <button
-                className="btn-download"
-                onClick={() => {
-                  const blob = new Blob(
-                    [JSON.stringify(displayData, null, 2)],
-                    { type: "application/json" }
-                  );
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `sample-airquality-${Date.now()}.json`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-              >
-                💾 Download JSON
-              </button>
+        {/* Third Party API Tab */}
+        {contributionTab === 'third-party-api' && (
+          <div className="third-party-api-tab">
+            <div className="coming-soon">
+              <h3>🚧 Đang phát triển</h3>
+              <p>Tính năng tích hợp API bên thứ 3 đang được phát triển</p>
             </div>
           </div>
-
-          {displayData.length > 0 ? (
-            <pre className="json-viewer">
-              <code>{JSON.stringify(displayData, null, 2)}</code>
-            </pre>
-          ) : (
-            <div className="no-data-box">
-              <p>⚠️ Không có dữ liệu mẫu</p>
-            </div>
-          )}
-        </div>
-          )}
-          </div>
-
-          {/* API Endpoints Reference */}
-          <div className="api-reference">
-            <h3>Air Quality API Endpoints</h3>
-            <div className="endpoint-grid">
-              <div className="endpoint-card">
-                <h4>Air Quality Query</h4>
-                <code>GET /api/airquality?limit=N&stationId=xxx</code>
-                <code>GET /api/airquality/latest?stationId=xxx</code>
-                <code>GET /api/airquality/history?from=xxx&to=xxx</code>
-              </div>
-              <div className="endpoint-card">
-                <h4>Air Quality Download</h4>
-                <code>GET /api/airquality/download</code>
-                <code>GET /api/airquality/history/download</code>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 };
