@@ -276,13 +276,6 @@ const ContributionManagement = ({ user }) => {
                   <div className="section-header">
                     <h3>MQTT</h3>
                   </div>
-                  <div className="mqtt-info">
-                    <p>
-                      openSenseMap offers a <strong>MQTT</strong> client for connecting to public brokers. 
-                      Documentation for the parameters is provided in the docs. Please note that it's only 
-                      possible to receive measurements through MQTT.
-                    </p>
-                  </div>
                   <div className="form-group checkbox-group">
                     <label>
                       <input
