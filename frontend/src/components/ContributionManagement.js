@@ -18,6 +18,7 @@ import React, { useState } from 'react';
 import './ContributionManagement.css';
 import ContributionUpload from './ContributionUpload';
 import ContributionList from './ContributionList';
+import ContributionRecordCard from './ContributionRecordCard';
 
 /**
  * Contribution Management Component
@@ -37,6 +38,100 @@ const ContributionManagement = ({ user }) => {
     longitude: '',
     height: ''
   });
+
+  // Sensor data state (fake data for now)
+  const [selectedSensor, setSelectedSensor] = useState(null);
+  const [sensorRecordsList, setSensorRecordsList] = useState([]);
+  const [viewedData, setViewedData] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  
+  // Fake sensor data
+  const fakeSensorsData = {
+    totalSensors: 8,
+    totalRecords: 2458,
+    sensors: [
+      {
+        id: 'SEN001',
+        name: 'Sensor Hà Nội - Hoàn Kiếm',
+        location: 'Quận Hoàn Kiếm, Hà Nội',
+        latitude: 21.028511,
+        longitude: 105.804817,
+        recordCount: 542,
+        lastUpdate: '2025-12-04T10:30:00Z',
+        status: 'active'
+      },
+      {
+        id: 'SEN002',
+        name: 'Sensor TP.HCM - Quận 1',
+        location: 'Quận 1, TP. Hồ Chí Minh',
+        latitude: 10.762622,
+        longitude: 106.660172,
+        recordCount: 438,
+        lastUpdate: '2025-12-04T10:25:00Z',
+        status: 'active'
+      },
+      {
+        id: 'SEN003',
+        name: 'Sensor Đà Nẵng - Hải Châu',
+        location: 'Quận Hải Châu, Đà Nẵng',
+        latitude: 16.047079,
+        longitude: 108.206230,
+        recordCount: 385,
+        lastUpdate: '2025-12-04T10:20:00Z',
+        status: 'active'
+      },
+      {
+        id: 'SEN004',
+        name: 'Sensor Hà Nội - Cầu Giấy',
+        location: 'Quận Cầu Giấy, Hà Nội',
+        latitude: 21.033333,
+        longitude: 105.783333,
+        recordCount: 312,
+        lastUpdate: '2025-12-04T09:45:00Z',
+        status: 'active'
+      },
+      {
+        id: 'SEN005',
+        name: 'Sensor Hải Phòng - Ngô Quyền',
+        location: 'Quận Ngô Quyền, Hải Phòng',
+        latitude: 20.865139,
+        longitude: 106.683830,
+        recordCount: 289,
+        lastUpdate: '2025-12-04T10:15:00Z',
+        status: 'active'
+      },
+      {
+        id: 'SEN006',
+        name: 'Sensor Cần Thơ - Ninh Kiều',
+        location: 'Quận Ninh Kiều, Cần Thơ',
+        latitude: 10.045162,
+        longitude: 105.746857,
+        recordCount: 267,
+        lastUpdate: '2025-12-04T08:30:00Z',
+        status: 'inactive'
+      },
+      {
+        id: 'SEN007',
+        name: 'Sensor Huế - Thành phố',
+        location: 'TP. Huế, Thừa Thiên Huế',
+        latitude: 16.463713,
+        longitude: 107.590866,
+        recordCount: 145,
+        lastUpdate: '2025-12-04T10:00:00Z',
+        status: 'active'
+      },
+      {
+        id: 'SEN008',
+        name: 'Sensor Nha Trang - Trung tâm',
+        location: 'TP. Nha Trang, Khánh Hòa',
+        latitude: 12.238791,
+        longitude: 109.196749,
+        recordCount: 80,
+        lastUpdate: '2025-12-03T22:10:00Z',
+        status: 'inactive'
+      }
+    ]
+  };
 
   /**
    * Handle sensor form input change
@@ -71,6 +166,65 @@ const ContributionManagement = ({ user }) => {
     } catch (error) {
       console.error('[ContributionManagement] Error in handleUploadSuccess:', error);
     }
+  };
+
+  /**
+   * Handle sensor card click - show sensor records
+   */
+  const handleSensorClick = (sensor) => {
+    setSelectedSensor(sensor);
+    // Generate fake records for this sensor
+    const fakeRecords = generateFakeSensorRecords(sensor);
+    setSensorRecordsList(fakeRecords);
+  };
+
+  /**
+   * Generate fake sensor records
+   */
+  const generateFakeSensorRecords = (sensor) => {
+    const records = [];
+    const recordCount = sensor.recordCount;
+    const numRecords = Math.min(recordCount, 10); // Show max 10 records
+    
+    for (let i = 0; i < numRecords; i++) {
+      const date = new Date();
+      date.setHours(date.getHours() - i * 2); // Each record 2 hours apart
+      
+      records.push({
+        id: `${sensor.id}_REC${String(i + 1).padStart(4, '0')}`,
+        sensorId: sensor.id,
+        timestamp: date.toISOString(),
+        temperature: (20 + Math.random() * 15).toFixed(1),
+        humidity: (50 + Math.random() * 30).toFixed(1),
+        pm25: (10 + Math.random() * 80).toFixed(1),
+        pm10: (15 + Math.random() * 100).toFixed(1),
+        aqi: Math.floor(50 + Math.random() * 100)
+      });
+    }
+    
+    return records;
+  };
+
+  /**
+   * Handle view sensor record data
+   */
+  const handleViewSensorData = (record) => {
+    setViewedData(record);
+    setShowModal(true);
+  };
+
+  /**
+   * Handle download sensor record
+   */
+  const handleDownloadSensorRecord = (record) => {
+    const dataStr = JSON.stringify(record, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `sensor_record_${record.id}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -121,6 +275,13 @@ const ContributionManagement = ({ user }) => {
                 <div className="form-section">
                   <div className="section-header">
                     <h3>MQTT</h3>
+                  </div>
+                  <div className="mqtt-info">
+                    <p>
+                      openSenseMap offers a <strong>MQTT</strong> client for connecting to public brokers. 
+                      Documentation for the parameters is provided in the docs. Please note that it's only 
+                      possible to receive measurements through MQTT.
+                    </p>
                   </div>
                   <div className="form-group checkbox-group">
                     <label>
@@ -224,6 +385,129 @@ const ContributionManagement = ({ user }) => {
                 </div>
               </form>
             </div>
+
+            {/* Sensor Data List Below Form */}
+            <div className="sensor-data-section">
+              <h2 className="section-title">📡 Dữ liệu từ sensor</h2>
+              
+              {/* Sensors List */}
+              {!selectedSensor && (
+                <>
+                  <div className="stats-summary">
+                    <div className="stat-box">
+                      <div className="stat-icon">🌡️</div>
+                      <div className="stat-info">
+                        <div className="stat-label">Tổng số sensor</div>
+                        <div className="stat-value">{fakeSensorsData.totalSensors}</div>
+                      </div>
+                    </div>
+                    <div className="stat-box">
+                      <div className="stat-icon">📊</div>
+                      <div className="stat-info">
+                        <div className="stat-label">Tổng dữ liệu</div>
+                        <div className="stat-value">{fakeSensorsData.totalRecords}</div>
+                      </div>
+                    </div>
+                    <div className="stat-box">
+                      <div className="stat-icon">✅</div>
+                      <div className="stat-info">
+                        <div className="stat-label">Đang hoạt động</div>
+                        <div className="stat-value">{fakeSensorsData.sensors.filter(s => s.status === 'active').length}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="sensors-grid">
+                    {fakeSensorsData.sensors.map(sensor => (
+                      <div
+                        key={sensor.id}
+                        className={`sensor-card ${sensor.status}`}
+                        onClick={() => handleSensorClick(sensor)}
+                      >
+                        <div className="sensor-header">
+                          <h3>{sensor.name}</h3>
+                          <span className={`status-badge ${sensor.status}`}>
+                            {sensor.status === 'active' ? '🟢 Hoạt động' : '⚫ Offline'}
+                          </span>
+                        </div>
+                        <div className="sensor-info">
+                          <p className="sensor-location">📍 {sensor.location}</p>
+                          <p className="sensor-coords">
+                            📌 {sensor.latitude.toFixed(6)}, {sensor.longitude.toFixed(6)}
+                          </p>
+                        </div>
+                        <div className="sensor-stats">
+                          <div className="stat-item">
+                            <span className="stat-label">Dữ liệu</span>
+                            <span className="stat-value">{sensor.recordCount}</span>
+                          </div>
+                          <div className="stat-item">
+                            <span className="stat-label">Cập nhật</span>
+                            <span className="stat-value">{new Date(sensor.lastUpdate).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Sensor Records List */}
+              {selectedSensor && (
+                <>
+                  <div className="back-button-container">
+                    <button className="back-btn" onClick={() => setSelectedSensor(null)}>
+                      ← Quay lại danh sách sensor
+                    </button>
+                  </div>
+
+                  <div className="sensor-detail-header">
+                    <h2>{selectedSensor.name}</h2>
+                    <p>📍 {selectedSensor.location}</p>
+                    <p className="sensor-stats-text">
+                      Tổng {selectedSensor.recordCount} bản ghi • Hiển thị {sensorRecordsList.length} bản ghi gần nhất
+                    </p>
+                  </div>
+
+                  <div className="contributions-list">
+                    {sensorRecordsList.map(record => (
+                      <ContributionRecordCard
+                        key={record.id}
+                        contribution={{
+                          id: record.id,
+                          timestamp: record.timestamp,
+                          location: selectedSensor.location,
+                          data: {
+                            temperature: record.temperature,
+                            humidity: record.humidity,
+                            pm25: record.pm25,
+                            pm10: record.pm10,
+                            aqi: record.aqi
+                          }
+                        }}
+                        onDownload={() => handleDownloadSensorRecord(record)}
+                        onViewData={() => handleViewSensorData(record)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* JSON Modal */}
+            {showModal && viewedData && (
+              <div className="json-modal-overlay" onClick={() => setShowModal(false)}>
+                <div className="json-modal" onClick={(e) => e.stopPropagation()}>
+                  <div className="json-modal-header">
+                    <h3>📊 Sensor Data - {viewedData.id}</h3>
+                    <button className="close-btn" onClick={() => setShowModal(false)}>✕</button>
+                  </div>
+                  <div className="json-modal-body">
+                    <pre>{JSON.stringify(viewedData, null, 2)}</pre>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

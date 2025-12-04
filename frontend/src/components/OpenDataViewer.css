@@ -297,6 +297,208 @@ open-data services and smart-city applications.
   }
 }
 
+/* ============================================
+   SENSOR CARDS & LIST
+   ============================================ */
+.sensor-data-tab .stats-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.sensor-data-tab .stat-box {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: all 0.3s ease;
+}
+
+.sensor-data-tab .stat-box:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  transform: translateY(-2px);
+}
+
+.sensor-data-tab .stat-icon {
+  font-size: 2.5rem;
+}
+
+.sensor-data-tab .stat-info {
+  flex: 1;
+}
+
+.sensor-data-tab .stat-label {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.sensor-data-tab .stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.sensors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.sensor-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.sensor-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2);
+  transform: translateY(-4px);
+}
+
+.sensor-card.inactive {
+  opacity: 0.6;
+}
+
+.sensor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.sensor-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #333;
+  flex: 1;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge.active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.inactive {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.sensor-info {
+  margin-bottom: 15px;
+}
+
+.sensor-location {
+  margin: 0 0 5px 0;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.sensor-coords {
+  margin: 0;
+  color: #777;
+  font-size: 0.85rem;
+  font-family: monospace;
+}
+
+.sensor-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.sensor-stats .stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.sensor-stats .stat-label {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 3px;
+}
+
+.sensor-stats .stat-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.back-button-container {
+  margin-bottom: 20px;
+}
+
+.back-btn {
+  padding: 10px 20px;
+  background: white;
+  border: 2px solid #667eea;
+  color: #667eea;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background: #667eea;
+  color: white;
+  transform: translateX(-5px);
+}
+
+.sensor-detail-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+.sensor-detail-header h2 {
+  margin: 0 0 10px 0;
+  font-size: 2rem;
+}
+
+.sensor-detail-header p {
+  margin: 5px 0;
+  font-size: 1rem;
+}
+
+.sensor-stats-text {
+  opacity: 0.9;
+  font-size: 0.95rem !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sensors-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sensor-data-tab .stats-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
 .main-tab-btn {
   background: white;
   border: 3px solid #e0e0e0;
