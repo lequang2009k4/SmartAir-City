@@ -1,0 +1,53 @@
+{
+  "station": {
+    "id": "HN-DOWNTOWN-001",
+    "name": "Hanoi Downtown Station",
+    "location": {
+      "lat": 21.0285,
+      "lng": 105.8542
+    }
+  },
+  "timestamp": "2025-12-04T13:30:00Z",
+  "sensors": [
+    {
+      "type": "PM2.5",
+      "value": 45.3,
+      "unit": "µg/m³"
+    },
+    {
+      "type": "PM10",
+      "value": 78.9,
+      "unit": "µg/m³"
+    },
+    {
+      "type": "Temperature",
+      "value": 28.5,
+      "unit": "°C"
+    },
+    {
+      "type": "Humidity",
+      "value": 65.2,
+      "unit": "%"
+    },
+    {
+      "type": "CO",
+      "value": 1.2,
+      "unit": "ppm"
+    },
+    {
+      "type": "NO2",
+      "value": 0.08,
+      "unit": "ppm"
+    },
+    {
+      "type": "O3",
+      "value": 0.05,
+      "unit": "ppm"
+    }
+  ],
+  "metadata": {
+    "source": "IoT Sensor Network",
+    "version": "1.0",
+    "reliability": "high"
+  }
+}

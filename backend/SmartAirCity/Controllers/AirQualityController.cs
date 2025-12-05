@@ -28,53 +28,111 @@ namespace SmartAirCity.Controllers;
 public class AirQualityController : ControllerBase
 {
     private readonly AirQualityService _service;
+    private readonly ExternalAirQualityService _externalService;
     private readonly ILogger<AirQualityController> _logger;
 
     public AirQualityController(
         AirQualityService service,
+        ExternalAirQualityService externalService,
         ILogger<AirQualityController> logger)
     {
         _service = service;
+        _externalService = externalService;
         _logger = logger;
     }
 
 
     //PRIVATE HELPER METHOD
     // Shared logic de lay du lieu AirQuality (dung chung cho view va download)
-    private async Task<List<AirQuality>> GetAirQualityDataAsync(
+    // source: "official" (default), "external", "all"
+    private async Task<List<object>> GetAirQualityDataAsync(
         string? stationId, 
-        int? limit, 
+        int? limit,
+        string source,
         CancellationToken ct)
     {
-        // neu co stationId thi lay theo station
-        if (!string.IsNullOrWhiteSpace(stationId))
+        var result = new List<object>();
+        var actualLimit = limit ?? 100; // Default limit
+
+        // Get official data (AirQuality collection)
+        if (source == "official" || source == "all")
         {
-            return await _service.GetByStationAsync(stationId, limit, ct);
+            List<AirQuality> officialData;
+            if (!string.IsNullOrWhiteSpace(stationId))
+            {
+                officialData = await _service.GetByStationAsync(stationId, limit, ct);
+            }
+            else if (limit.HasValue)
+            {
+                officialData = await _service.GetLatestNAsync(limit.Value, ct);
+            }
+            else
+            {
+                officialData = await _service.GetAllAsync(ct);
+            }
+            
+            // Add _source field for identification
+            foreach (var item in officialData)
+            {
+                result.Add(new { 
+                    _source = "official",
+                    data = item 
+                });
+            }
         }
-        // neu co limit thi lay N ban ghi moi nhat
-        else if (limit.HasValue)
+
+        // Get external data (ExternalAirQuality collection)
+        if (source == "external" || source == "all")
         {
-            return await _service.GetLatestNAsync(limit.Value, ct);
+            List<ExternalAirQuality> externalData;
+            if (!string.IsNullOrWhiteSpace(stationId))
+            {
+                externalData = await _externalService.GetByStationAsync(stationId, limit);
+            }
+            else if (limit.HasValue)
+            {
+                externalData = await _externalService.GetLatestNAsync(limit.Value);
+            }
+            else
+            {
+                externalData = await _externalService.GetAllAsync();
+            }
+            
+            // Add _source field for identification
+            foreach (var item in externalData)
+            {
+                result.Add(new { 
+                    _source = "external",
+                    data = item 
+                });
+            }
         }
-        // neu khong co stationId va limit thi lay tat ca
-        else
+
+        // Sort by dateObserved descending and apply limit if getting all
+        if (source == "all" && limit.HasValue)
         {
-            return await _service.GetAllAsync(ct);
+            result = result.Take(limit.Value).ToList();
         }
+
+        return result;
     }
 
     // VIEW APIs (JSON Response)
     
     // GET /api/airquality?stationId={stationId}&limit=100
-    // API de XEM du lieu (tra ve JSON response)
+    // Lấy dữ liệu từ tất cả nguồn (official + external)
     [HttpGet("airquality")]
     public async Task<IActionResult> GetAll(
         [FromQuery] string? stationId, 
-        [FromQuery] int? limit, 
-        CancellationToken ct)
+        [FromQuery] int? limit,
+        CancellationToken ct = default)
     {
-        var data = await GetAirQualityDataAsync(stationId, limit, ct);
-        return Ok(data);
+        const string source = "all"; // Luôn lấy từ tất cả nguồn
+
+        var data = await GetAirQualityDataAsync(stationId, limit, source, ct);
+        
+        // Trả về mảng data trực tiếp
+        return Ok(data.Select(x => ((dynamic)x).data));
     }
 
     //DOWNLOAD APIs (File Download)
@@ -85,22 +143,25 @@ public class AirQualityController : ControllerBase
     public async Task<IActionResult> DownloadAll(
         [FromQuery] string? stationId, 
         [FromQuery] int? limit,
-        CancellationToken ct,
+        CancellationToken ct = default,
         [FromQuery] string format = "json")
     {
-        var data = await GetAirQualityDataAsync(stationId, limit, ct);
+        const string source = "all";
+
+        var data = await GetAirQualityDataAsync(stationId, limit, source, ct);
+        var flatData = data.Select(x => ((dynamic)x).data).ToList();
         
         // hien tai chi ho tro JSON, sau nay co the them CSV, Excel
         switch (format.ToLower())
         {
             case "json":
-                var json = System.Text.Json.JsonSerializer.Serialize(data, 
+                var json = System.Text.Json.JsonSerializer.Serialize(flatData, 
                     new System.Text.Json.JsonSerializerOptions 
                     { 
                         WriteIndented = true 
                     });
                 var bytes = System.Text.Encoding.UTF8.GetBytes(json);
-                var fileName = $"airquality_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json";
+                var fileName = $"airquality_{source}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json";
                 return File(bytes, "application/json", fileName);
                 
             default:
@@ -109,32 +170,60 @@ public class AirQualityController : ControllerBase
     }
 
     // GET /api/airquality/latest?stationId={stationId}
+    // Lấy bản ghi mới nhất từ tất cả nguồn
     [HttpGet("airquality/latest")]
-    public async Task<IActionResult> GetLatest([FromQuery] string? stationId, CancellationToken ct)
+    public async Task<IActionResult> GetLatest(
+        [FromQuery] string? stationId,
+        CancellationToken ct = default)
     {
-        // neu co stationId thi lay ban ghi moi nhat cua tram do
+        var results = new List<object>();
+
+        // Get official latest
         if (!string.IsNullOrWhiteSpace(stationId))
         {
             var stationData = await _service.GetByStationAsync(stationId, 1, ct);
-            if (stationData == null || stationData.Count == 0)
-                return NotFound(new { message = $"Khong co du lieu cho tram {stationId}" });
-            return Ok(stationData[0]); // tra ve 1 object, khong phai mang
+            if (stationData?.Count > 0)
+                results.Add(new { _source = "official", data = stationData[0] });
+        }
+        else
+        {
+            var data = await _service.GetLatestAsync(ct);
+            if (data != null)
+                results.Add(new { _source = "official", data = data });
         }
 
-        // neu khong co stationId thi lay ban ghi moi nhat cua tat ca tram (backward compatible)
-        var data = await _service.GetLatestAsync(ct);
-        if (data == null)
+        // Get external latest
+        if (!string.IsNullOrWhiteSpace(stationId))
+        {
+            var extData = await _externalService.GetLatestByStationIdAsync(stationId);
+            if (extData != null)
+                results.Add(new { _source = "external", data = extData });
+        }
+        else
+        {
+            var extData = await _externalService.GetLatestAsync();
+            if (extData != null)
+                results.Add(new { _source = "external", data = extData });
+        }
+
+        if (results.Count == 0)
             return NotFound(new { message = "Khong co du lieu" });
-        return Ok(data);
+
+        // Trả về 1 bản ghi mới nhất (object, không phải mảng)
+        var latestRecord = results.First();
+        return Ok(((dynamic)latestRecord).data);
     }
 
     // Private helper method de lay du lieu history
-    private async Task<List<AirQuality>> GetHistoryDataAsync(
+    private async Task<List<object>> GetHistoryDataAsync(
         string? stationId,
         DateTime from,
         DateTime to,
+        string source,
         CancellationToken ct)
     {
+        var result = new List<object>();
+
         // Validate thoi gian
         if (from.TimeOfDay == TimeSpan.Zero)
             from = from.Date; // 00:00:00
@@ -142,17 +231,44 @@ public class AirQualityController : ControllerBase
         if (to.TimeOfDay == TimeSpan.Zero)
             to = to.Date.AddDays(1).AddSeconds(-1); // 23:59:59
 
-        var data = await _service.GetByTimeRangeAsync(from, to, ct);
-        
-        // neu co stationId thi filter theo tram
-        if (!string.IsNullOrWhiteSpace(stationId))
+        // Get official history
+        if (source == "official" || source == "all")
         {
-            data = data
-                .Where(x => ExtractStationIdFromData(x)?.Equals(stationId, StringComparison.OrdinalIgnoreCase) == true)
-                .ToList();
+            var data = await _service.GetByTimeRangeAsync(from, to, ct);
+            
+            // neu co stationId thi filter theo tram
+            if (!string.IsNullOrWhiteSpace(stationId))
+            {
+                data = data
+                    .Where(x => ExtractStationIdFromData(x)?.Equals(stationId, StringComparison.OrdinalIgnoreCase) == true)
+                    .ToList();
+            }
+
+            foreach (var item in data)
+            {
+                result.Add(new { _source = "official", data = item });
+            }
         }
 
-        return data;
+        // Get external history
+        if (source == "external" || source == "all")
+        {
+            var extData = await _externalService.GetByTimeRangeAsync(from, to);
+            
+            // Filter by stationId if provided
+            if (!string.IsNullOrWhiteSpace(stationId))
+            {
+                var pattern = $"urn:ngsi-ld:AirQualityObserved:{stationId}:";
+                extData = extData.Where(x => x.Id.StartsWith(pattern)).ToList();
+            }
+
+            foreach (var item in extData)
+            {
+                result.Add(new { _source = "external", data = item });
+            }
+        }
+
+        return result;
     }
 
     // GET /api/airquality/history?stationId={stationId}&from=...&to=...
@@ -162,13 +278,16 @@ public class AirQualityController : ControllerBase
         [FromQuery] string? stationId, 
         [FromQuery] DateTime from, 
         [FromQuery] DateTime to,
-        CancellationToken ct)
+        CancellationToken ct = default)
     {
         if (from >= to)
             return BadRequest(new { message = "Thoi gian 'from' phai nho hon 'to'." });
 
-        var data = await GetHistoryDataAsync(stationId, from, to, ct);
-        return Ok(data);
+        const string source = "all";
+        var data = await GetHistoryDataAsync(stationId, from, to, source, ct);
+        
+        // Trả về mảng data trực tiếp
+        return Ok(data.Select(x => ((dynamic)x).data));
     }
 
     // GET /api/airquality/history/download?stationId={stationId}&from=...&to=...&format=json
@@ -178,24 +297,26 @@ public class AirQualityController : ControllerBase
         [FromQuery] string? stationId, 
         [FromQuery] DateTime from, 
         [FromQuery] DateTime to,
-        CancellationToken ct,
+        CancellationToken ct = default,
         [FromQuery] string format = "json")
     {
         if (from >= to)
             return BadRequest(new { message = "Thoi gian 'from' phai nho hon 'to'." });
 
-        var data = await GetHistoryDataAsync(stationId, from, to, ct);
+        const string source = "all";
+        var data = await GetHistoryDataAsync(stationId, from, to, source, ct);
+        var flatData = data.Select(x => ((dynamic)x).data).ToList();
         
         switch (format.ToLower())
         {
             case "json":
-                var json = System.Text.Json.JsonSerializer.Serialize(data, 
+                var json = System.Text.Json.JsonSerializer.Serialize(flatData, 
                     new System.Text.Json.JsonSerializerOptions 
                     { 
                         WriteIndented = true 
                     });
                 var bytes = System.Text.Encoding.UTF8.GetBytes(json);
-                var fileName = $"airquality_history_{from:yyyyMMdd}_to_{to:yyyyMMdd}.json";
+                var fileName = $"airquality_history_{source}_{from:yyyyMMdd}_to_{to:yyyyMMdd}.json";
                 return File(bytes, "application/json", fileName);
                 
             default:

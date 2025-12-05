@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>External Data Source Manager - SmartAir City</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary: #4f46e5;
+        --primary-dark: #4338ca;
+        --primary-light: #6366f1;
+        --success: #10b981;
+        --success-dark: #059669;
+        --danger: #ef4444;
+        --danger-dark: #dc2626;
+        --warning: #f59e0b;
+        --warning-dark: #d97706;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+          0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+          0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+          0 8px 10px -6px rgb(0 0 0 / 0.1);
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem;
+        line-height: 1.6;
+        color: var(--gray-900);
+      }
+
+      .container {
+        max-width: 1600px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow-xl);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--primary-dark) 100%
+        );
+        padding: 2rem 2.5rem;
+        color: white;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .header p {
+        font-size: 1rem;
+        opacity: 0.9;
+      }
+
+      .content {
+        padding: 2.5rem;
+      }
+
+      .section {
+        background: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        padding: 1.75rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        transition: all 0.2s;
+      }
+
+      .section:hover {
+        box-shadow: var(--shadow-md);
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .section-header h2 {
+        color: var(--gray-900);
+        font-size: 1.25rem;
+        font-weight: 600;
+        flex: 1;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.025em;
+      }
+
+      .badge-step {
+        background: var(--primary);
+        color: white;
+      }
+
+      .badge-success {
+        background: var(--success);
+        color: white;
+      }
+
+      .badge-warning {
+        background: var(--warning);
+        color: white;
+      }
+
+      .input-group {
+        margin-bottom: 1rem;
+      }
+
+      .input-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+      }
+
+      input[type="text"],
+      input[type="number"],
+      textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--gray-200);
+        border-radius: 8px;
+        font-size: 0.9375rem;
+        font-family: inherit;
+        transition: all 0.2s;
+        background: white;
+      }
+
+      input:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+      }
+
+      input::placeholder {
+        color: var(--gray-400);
+      }
+
+      button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: var(--shadow-sm);
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+      }
+
+      .btn-success {
+        background: var(--success);
+        color: white;
+      }
+
+      .btn-success:hover {
+        background: var(--success-dark);
+      }
+
+      .btn-danger {
+        background: var(--danger);
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: var(--danger-dark);
+      }
+
+      .btn-secondary {
+        background: var(--gray-200);
+        color: var(--gray-700);
+      }
+
+      .btn-secondary:hover {
+        background: var(--gray-300);
+      }
+
+      .btn-small {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.8125rem;
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+      }
+
+      .json-viewer {
+        background: var(--gray-900);
+        color: #d4d4d4;
+        padding: 1.25rem;
+        border-radius: 8px;
+        font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono",
+          monospace;
+        font-size: 0.8125rem;
+        max-height: 500px;
+        overflow-y: auto;
+        cursor: pointer;
+        position: relative;
+        border: 1px solid var(--gray-700);
+        line-height: 1.6;
+      }
+
+      .json-viewer::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .json-viewer::-webkit-scrollbar-track {
+        background: var(--gray-800);
+        border-radius: 4px;
+      }
+
+      .json-viewer::-webkit-scrollbar-thumb {
+        background: var(--gray-600);
+        border-radius: 4px;
+      }
+
+      .json-viewer.pulse::before {
+        content: "👈 Click vào giá trị";
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: var(--warning);
+        color: white;
+        padding: 0.5rem 0.875rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        animation: pulse 2s infinite;
+        font-family: "Inter", sans-serif;
+        box-shadow: var(--shadow-lg);
+        z-index: 10;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.8;
+          transform: scale(1.05);
+        }
+      }
+
+      .json-key {
+        color: #9cdcfe;
+        font-weight: 500;
+      }
+
+      .json-string {
+        color: #ce9178;
+      }
+
+      .json-number {
+        color: #b5cea8;
+      }
+
+      .json-value {
+        cursor: pointer;
+        padding: 0.125rem 0.375rem;
+        border-radius: 4px;
+        transition: all 0.15s;
+        display: inline-block;
+      }
+
+      .json-value:hover {
+        background: rgba(79, 70, 229, 0.2);
+        box-shadow: 0 0 0 2px var(--primary-light);
+      }
+
+      .json-value.selected {
+        background: rgba(16, 185, 129, 0.2);
+        border-left: 3px solid var(--success);
+        padding-left: 0.5rem;
+      }
+
+      .mapping-panel {
+        background: white;
+        padding: 1.25rem;
+        border-radius: 8px;
+        border: 2px solid var(--gray-200);
+        max-height: 500px;
+        overflow-y: auto;
+      }
+
+      .mapping-panel::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .mapping-panel::-webkit-scrollbar-track {
+        background: var(--gray-100);
+        border-radius: 4px;
+      }
+
+      .mapping-panel::-webkit-scrollbar-thumb {
+        background: var(--gray-300);
+        border-radius: 4px;
+      }
+
+      .field-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .field-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1rem;
+        background: var(--gray-50);
+        border-radius: 8px;
+        border-left: 4px solid var(--primary);
+        transition: all 0.2s;
+      }
+
+      .field-item:hover {
+        background: var(--gray-100);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .field-item.timestamp-field {
+        background: #fef3c7;
+        border-left-color: var(--warning);
+      }
+
+      .field-name {
+        font-weight: 600;
+        color: var(--gray-800);
+        min-width: 140px;
+        font-size: 0.875rem;
+      }
+
+      .field-value {
+        flex: 1;
+        color: var(--gray-600);
+        font-family: "SF Mono", "Monaco", monospace;
+        font-size: 0.8125rem;
+        background: white;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        border: 1px solid var(--gray-200);
+      }
+
+      .field-value.empty {
+        color: var(--gray-400);
+        font-style: italic;
+        font-family: "Inter", sans-serif;
+      }
+
+      .alert-box {
+        border-left: 4px solid var(--warning);
+        background: #fffbeb;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.25rem;
+        border-radius: 8px;
+        color: var(--gray-700);
+        font-size: 0.875rem;
+      }
+
+      .alert-box strong {
+        color: var(--gray-900);
+        font-weight: 600;
+      }
+
+      .alert-info {
+        border-left-color: var(--primary);
+        background: #eff6ff;
+      }
+
+      .alert-success {
+        border-left-color: var(--success);
+        background: #f0fdf4;
+      }
+
+      .source-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.25rem;
+        margin-top: 1.5rem;
+      }
+
+      .source-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 2px solid var(--gray-200);
+        transition: all 0.2s;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .source-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(
+          90deg,
+          var(--primary),
+          var(--primary-light)
+        );
+      }
+
+      .source-card:hover {
+        border-color: var(--primary-light);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+      }
+
+      .source-card h3 {
+        color: var(--gray-900);
+        margin-bottom: 0.75rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .source-card .info-row {
+        display: flex;
+        align-items: start;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+      }
+
+      .source-card .info-label {
+        color: var(--gray-500);
+        font-weight: 500;
+        min-width: 80px;
+      }
+
+      .source-card .info-value {
+        color: var(--gray-700);
+        flex: 1;
+        word-break: break-word;
+      }
+
+      .source-card .actions {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--gray-200);
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .format-selector {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        border: 2px solid var(--gray-200);
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .format-selector:hover {
+        border-color: var(--primary-light);
+        background: var(--gray-50);
+      }
+
+      .format-selector input[type="checkbox"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        cursor: pointer;
+        accent-color: var(--success);
+        margin: 0;
+      }
+
+      .format-selector input[type="checkbox"]:not(:checked) {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        border: 2px solid var(--gray-300);
+        border-radius: 4px;
+        background: white;
+      }
+
+      .format-selector input[type="checkbox"]:not(:checked):hover {
+        border-color: var(--gray-400);
+      }
+
+      .format-selector label {
+        flex: 1;
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--gray-700);
+        font-size: 0.9375rem;
+      }
+
+      .location-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--gray-400);
+      }
+
+      .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+
+      .empty-state p {
+        font-size: 0.9375rem;
+      }
+
+      @media (max-width: 1024px) {
+        .grid-2 {
+          grid-template-columns: 1fr;
+        }
+
+        .source-list {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 768px) {
+        body {
+          padding: 1rem;
+        }
+
+        .content {
+          padding: 1.5rem;
+        }
+
+        .header {
+          padding: 1.5rem;
+        }
+
+        .header h1 {
+          font-size: 1.5rem;
+        }
+
+        .location-inputs {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path
+              d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+            />
+            <path d="M2 12h20" />
+          </svg>
+          External Data Source Manager
+        </h1>
+        <p>
+          Quản lý và cấu hình nguồn dữ liệu chất lượng không khí từ API bên
+          ngoài
+        </p>
+      </div>
+
+      <div class="content">
+        <!-- Step 1: Test URL -->
+        <div class="section">
+          <div class="section-header">
+            <span class="badge badge-step">Bước 1</span>
+            <h2>Kiểm tra kết nối API</h2>
+          </div>
+
+          <div class="input-group">
+            <label>URL Endpoint</label>
+            <input
+              type="text"
+              id="testUrl"
+              placeholder="Ví dụ: https://api.openaq.org/v3/locations/4946811/latest"
+              value="https://api.openaq.org/v3/locations/4946811/latest"
+            />
+          </div>
+
+          <div class="input-group">
+            <label>API Key (tùy chọn)</label>
+            <input
+              type="text"
+              id="testApiKey"
+              placeholder="Nhập API key nếu API yêu cầu xác thực"
+              value="b83e130f7e3ef61c96a810d8018cae69fdaabeb58bab10ae850081ff499b6f1e"
+            />
+          </div>
+
+          <button class="btn-primary" onclick="testUrl()">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+            Test kết nối
+          </button>
+        </div>
+
+        <!-- Step 1.5: Format Detection -->
+        <div id="formatSection" class="section hidden">
+          <div class="section-header">
+            <span class="badge badge-step">Bước 1.5</span>
+            <h2>Định dạng dữ liệu</h2>
+          </div>
+
+          <div class="alert-box alert-info">
+            <strong>💡 Tự động phát hiện:</strong> Hệ thống sẽ kiểm tra xem API
+            có trả về chuẩn NGSI-LD không (kiểm tra id URN, type, @context, và
+            cấu trúc Properties). Nếu là NGSI-LD chuẩn, bạn không cần mapping
+            thủ công.
+          </div>
+
+          <div
+            class="format-selector"
+            onclick="document.getElementById('isNGSILD').click()"
+          >
+            <input
+              type="checkbox"
+              id="isNGSILD"
+              onchange="toggleMappingSection()"
+            />
+            <label for="isNGSILD" id="formatLabel">
+              <strong id="formatLabelText">Dữ liệu đã chuẩn NGSI-LD</strong> (bỏ
+              qua bước mapping)
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 2: Mapping -->
+        <div id="mappingSection" class="section hidden">
+          <div class="section-header">
+            <span class="badge badge-step">Bước 2</span>
+            <h2>Cấu hình mapping dữ liệu</h2>
+          </div>
+
+          <div class="alert-box">
+            <strong>📍 Hướng dẫn:</strong> Click vào giá trị bên JSON viewer bên
+            trái để chọn trường dữ liệu. Nhập tên trường đo (PM2.5, CO2,
+            Temperature...) và trường sẽ được thêm vào danh sách mapping bên
+            phải.
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <div style="margin-bottom: 0.75rem">
+                <strong style="color: var(--gray-700)"
+                  >📄 Dữ liệu JSON từ API</strong
+                >
+                <p
+                  style="
+                    font-size: 0.8125rem;
+                    color: var(--gray-500);
+                    margin-top: 0.25rem;
+                  "
+                >
+                  Click vào giá trị để chọn
+                </p>
+              </div>
+              <div id="jsonViewer" class="json-viewer pulse"></div>
+            </div>
+
+            <div>
+              <div style="margin-bottom: 0.75rem">
+                <strong style="color: var(--gray-700)"
+                  >🎯 Danh sách mapping</strong
+                >
+                <p
+                  style="
+                    font-size: 0.8125rem;
+                    color: var(--gray-500);
+                    margin-top: 0.25rem;
+                  "
+                >
+                  Các trường đã được map
+                </p>
+              </div>
+              <div class="mapping-panel">
+                <!-- Timestamp field -->
+                <div class="field-item timestamp-field">
+                  <div class="field-name">🕐 Timestamp</div>
+                  <div class="field-value empty" id="display-timestamp">
+                    Tùy chọn (tự động nếu bỏ trống)
+                  </div>
+                  <button
+                    class="btn-small btn-danger"
+                    onclick="clearField('timestamp')"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <!-- Dynamic fields -->
+                <div class="field-list" id="dynamicFields">
+                  <div class="empty-state">
+                    <div class="empty-state-icon">📊</div>
+                    <p>Chưa có trường nào được map</p>
+                    <p style="font-size: 0.8125rem; margin-top: 0.5rem">
+                      Click vào JSON bên trái để thêm
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Station Info -->
+        <div id="saveSection" class="section hidden">
+          <div class="section-header">
+            <span class="badge badge-step">Bước 3</span>
+            <h2>Thông tin trạm và lưu cấu hình</h2>
+          </div>
+
+          <div class="input-group">
+            <label>Tên nguồn dữ liệu *</label>
+            <input
+              type="text"
+              id="sourceName"
+              placeholder="Ví dụ: OpenAQ Hanoi Central Station"
+            />
+          </div>
+
+          <div class="location-inputs">
+            <div class="input-group">
+              <label>Vĩ độ (Latitude) *</label>
+              <input
+                type="number"
+                step="0.000001"
+                id="sourceLat"
+                placeholder="Ví dụ: 21.0491"
+              />
+            </div>
+            <div class="input-group">
+              <label>Kinh độ (Longitude) *</label>
+              <input
+                type="number"
+                step="0.000001"
+                id="sourceLon"
+                placeholder="Ví dụ: 105.8831"
+              />
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Chu kỳ lấy dữ liệu (phút) *</label>
+            <input
+              type="number"
+              id="sourceInterval"
+              placeholder="Ví dụ: 10"
+              value="10"
+            />
+          </div>
+
+          <div class="alert-box alert-info" style="margin-top: 1rem">
+            <strong>ℹ️ Lưu ý:</strong> Station ID sẽ được tự động tạo từ tên
+            nguồn dữ liệu
+          </div>
+
+          <button class="btn-success" onclick="saveSource()">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
+              />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+            Lưu cấu hình
+          </button>
+        </div>
+
+        <!-- Step 4: Source List -->
+        <div class="section">
+          <div class="section-header">
+            <h2>Danh sách nguồn dữ liệu</h2>
+            <button class="btn-secondary" onclick="loadSources()">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"
+                />
+              </svg>
+              Tải lại
+            </button>
+          </div>
+          <div id="sourceList" class="source-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Auto-detect API base URL from current window location
+      const API_BASE = `${window.location.protocol}//${window.location.host}/api/sources`;
+      let currentJsonData = null;
+      let currentUrl = "";
+      let currentApiKey = "";
+      let dynamicFieldsMap = new Map();
+      let timestampPath = "";
+
+      async function testUrl() {
+        const url = document.getElementById("testUrl").value;
+        const apiKey = document.getElementById("testApiKey").value;
+
+        if (!url) {
+          alert("Vui lòng nhập URL");
+          return;
+        }
+
+        currentUrl = url;
+        currentApiKey = apiKey;
+
+        try {
+          const body = { url };
+          if (apiKey) {
+            body.headers = { "X-API-Key": apiKey };
+          }
+
+          const response = await fetch(`${API_BASE}/test`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+          }
+
+          // Response could be JSON string or already parsed object
+          const contentType = response.headers.get("content-type");
+          let data;
+
+          if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+          } else {
+            // Plain text response - parse as JSON
+            const text = await response.text();
+            data = JSON.parse(text);
+          }
+
+          currentJsonData = data;
+
+          // Auto-detect NGSI-LD format (silently in background)
+          const isNGSILD = detectNGSILD(data);
+          document.getElementById("isNGSILD").checked = isNGSILD;
+
+          renderJsonViewer(data);
+          // Don't show formatSection - auto-detect only
+          document.getElementById("mappingSection").classList.remove("hidden");
+          document.getElementById("saveSection").classList.remove("hidden");
+
+          // Update UI based on detection
+          toggleMappingSection();
+
+          if (isNGSILD) {
+            alert(
+              "✅ Phát hiện dữ liệu chuẩn NGSI-LD!\n\n→ Có thể bỏ qua Bước 2 (không cần mapping)"
+            );
+          }
+
+          // Remove pulse after first interaction
+          setTimeout(() => {
+            document.getElementById("jsonViewer").classList.remove("pulse");
+          }, 5000);
+        } catch (error) {
+          alert("❌ Lỗi: " + error.message);
+        }
+      }
+
+      function detectNGSILD(data) {
+        // Check if data has NGSI-LD structure
+        // Must have: id (URN format), type, and at least one Property with "type" and "value"
+
+        if (!data || typeof data !== "object") return false;
+
+        // Check for id field with URN format
+        if (
+          !data.id ||
+          typeof data.id !== "string" ||
+          !data.id.startsWith("urn:ngsi-ld:")
+        ) {
+          return false;
+        }
+
+        // Check for type field
+        if (!data.type || typeof data.type !== "string") {
+          return false;
+        }
+
+        // Check if AirQualityObserved type
+        if (data.type !== "AirQualityObserved") {
+          return false;
+        }
+
+        // Check for at least one Property with proper structure
+        let hasValidProperty = false;
+        for (const key in data) {
+          const value = data[key];
+          if (
+            value &&
+            typeof value === "object" &&
+            value.type === "Property" &&
+            value.value !== undefined
+          ) {
+            hasValidProperty = true;
+            break;
+          }
+        }
+
+        return hasValidProperty;
+      }
+
+      function toggleMappingSection() {
+        const isNGSILD = document.getElementById("isNGSILD").checked;
+        const mappingSection = document.getElementById("mappingSection");
+
+        if (isNGSILD) {
+          // Hide mapping section completely for NGSI-LD data
+          mappingSection.classList.add("hidden");
+        } else {
+          // Show mapping section for custom JSON
+          mappingSection.classList.remove("hidden");
+        }
+      }
+
+      function renderJsonViewer(data, path = "$", parentElement = null) {
+        const viewer = parentElement || document.getElementById("jsonViewer");
+        if (!parentElement) viewer.innerHTML = "";
+
+        if (Array.isArray(data)) {
+          data.forEach((item, index) => {
+            const itemPath = `${path}[${index}]`;
+            renderJsonViewer(item, itemPath, viewer);
+          });
+        } else if (typeof data === "object" && data !== null) {
+          for (const [key, value] of Object.entries(data)) {
+            const keyPath = path === "$" ? `$.${key}` : `${path}.${key}`;
+            const line = document.createElement("div");
+            line.style.marginLeft = (path.split(".").length - 1) * 20 + "px";
+
+            if (typeof value === "object" && value !== null) {
+              line.innerHTML = `<span class="json-key">"${key}"</span>: ${
+                Array.isArray(value) ? "[" : "{"
+              }`;
+              viewer.appendChild(line);
+              renderJsonViewer(value, keyPath, viewer);
+              const closeLine = document.createElement("div");
+              closeLine.style.marginLeft =
+                (path.split(".").length - 1) * 20 + "px";
+              closeLine.textContent = Array.isArray(value) ? "]," : "},";
+              viewer.appendChild(closeLine);
+            } else {
+              const valueClass =
+                typeof value === "number"
+                  ? "json-number"
+                  : typeof value === "string"
+                  ? "json-string"
+                  : "json-value";
+              const displayValue =
+                typeof value === "string" ? `"${value}"` : value;
+
+              line.innerHTML = `<span class="json-key">"${key}"</span>: <span class="json-value ${valueClass}" data-path="${keyPath}" data-value="${value}">${displayValue}</span>,`;
+              line.querySelector(".json-value").onclick = function () {
+                selectValue(keyPath, value, this);
+              };
+              viewer.appendChild(line);
+            }
+          }
+        }
+      }
+
+      function selectValue(path, value, element) {
+        // Smart detection for timestamp
+        const lowerPath = path.toLowerCase();
+
+        if (
+          (lowerPath.includes("time") || lowerPath.includes("date")) &&
+          !timestampPath
+        ) {
+          const useForTime = confirm(
+            `Giá trị: ${value}\n\nSử dụng làm Timestamp?`
+          );
+          if (useForTime) {
+            timestampPath = path;
+            updateFieldDisplay("timestamp", path, value);
+            element.classList.add("selected");
+            return;
+          }
+        }
+
+        // For dynamic fields
+        const fieldName = prompt(
+          `Giá trị: ${value}\n\nNhập tên trường (ví dụ: PM2.5, CO2, Temperature...):`
+        );
+        if (fieldName && fieldName.trim()) {
+          addDynamicField(fieldName.trim(), path, value);
+          element.classList.add("selected");
+        }
+      }
+
+      function updateFieldDisplay(fieldType, path, value) {
+        const display = document.getElementById(`display-${fieldType}`);
+        display.textContent = `${value} (${path})`;
+        display.classList.remove("empty");
+      }
+
+      function addDynamicField(name, path, value) {
+        dynamicFieldsMap.set(name, { path, value });
+        renderDynamicFields();
+      }
+
+      function renderDynamicFields() {
+        const container = document.getElementById("dynamicFields");
+
+        if (dynamicFieldsMap.size === 0) {
+          container.innerHTML =
+            '<div class="empty-state"><p>Chưa có trường nào. Click vào JSON bên trái để thêm.</p></div>';
+          return;
+        }
+
+        container.innerHTML = "";
+        dynamicFieldsMap.forEach((data, name) => {
+          const div = document.createElement("div");
+          div.className = "field-item";
+          div.innerHTML = `
+                    <div class="field-name">📊 ${name}</div>
+                    <div class="field-value">${data.value} (${data.path})</div>
+                    <button class="btn-small btn-danger" onclick="removeDynamicField('${name}')">✕</button>
+                `;
+          container.appendChild(div);
+        });
+      }
+
+      function removeDynamicField(name) {
+        dynamicFieldsMap.delete(name);
+        renderDynamicFields();
+      }
+
+      function clearField(field) {
+        if (field === "timestamp") {
+          timestampPath = "";
+          document.getElementById("display-timestamp").textContent =
+            "Tùy chọn (tự động nếu bỏ trống)";
+          document.getElementById("display-timestamp").classList.add("empty");
+        }
+        document
+          .querySelectorAll(".json-value")
+          .forEach((el) => el.classList.remove("selected"));
+      }
+
+      function generateSlug(text) {
+        return text
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+          .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric with dash
+          .replace(/^-+|-+$/g, ""); // Remove leading/trailing dashes
+      }
+
+      async function saveSource() {
+        const name = document.getElementById("sourceName").value;
+        const lat = parseFloat(document.getElementById("sourceLat").value);
+        const lon = parseFloat(document.getElementById("sourceLon").value);
+        const interval = parseInt(
+          document.getElementById("sourceInterval").value
+        );
+        const isNGSILD = document.getElementById("isNGSILD").checked;
+
+        // Auto-generate Station ID from source name FIRST
+        const stationId = name ? "station-" + generateSlug(name) : "";
+
+        if (!name || !stationId || !lat || !lon) {
+          alert("Vui lòng điền đầy đủ: Tên nguồn và Tọa độ");
+          return;
+        }
+
+        // Validate mapping for non-NGSI-LD sources
+        if (!isNGSILD && dynamicFieldsMap.size === 0) {
+          alert(
+            "⚠️ Vui lòng chọn ít nhất 1 trường đo (PM2.5, CO, NO2...) từ JSON bên trái!\n\nHoặc tick vào checkbox 'Dữ liệu đã chuẩn NGSI-LD' nếu API trả về format chuẩn."
+          );
+          return;
+        }
+
+        const fields = {};
+        dynamicFieldsMap.forEach((data, name) => {
+          fields[name] = data.path;
+        });
+
+        const mapping = isNGSILD
+          ? null
+          : {
+              timestampPath: timestampPath || "",
+              fieldMappings: fields,
+            };
+
+        try {
+          const body = {
+            name,
+            stationId,
+            url: currentUrl,
+            latitude: lat,
+            longitude: lon,
+            intervalMinutes: interval,
+            headers: currentApiKey ? { "X-API-Key": currentApiKey } : {},
+            isNGSILD: isNGSILD,
+            mapping: mapping,
+          };
+
+          const response = await fetch(API_BASE, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+
+          if (response.ok) {
+            alert("✅ Đã lưu nguồn thành công!");
+            loadSources();
+            // Clear form
+            document.getElementById("sourceName").value = "";
+            document.getElementById("sourceLat").value = "";
+            document.getElementById("sourceLon").value = "";
+            document.getElementById("sourceInterval").value = "10";
+            document.getElementById("isNGSILD").checked = false;
+            dynamicFieldsMap.clear();
+            timestampPath = "";
+            renderDynamicFields();
+            clearField("timestamp");
+            toggleMappingSection(); // Reset mapping section visibility
+          } else {
+            const errorText = await response.text();
+            alert("❌ Lỗi: " + errorText);
+            console.error("Save error:", errorText);
+          }
+        } catch (error) {
+          alert("❌ Lỗi: " + error.message);
+          console.error("Save exception:", error);
+        }
+      }
+
+      async function loadSources() {
+        const list = document.getElementById("sourceList");
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">⏳</div>
+            <p>Đang tải dữ liệu...</p>
+          </div>
+        `;
+
+        try {
+          const response = await fetch(API_BASE);
+          const sources = await response.json();
+
+          if (sources.length === 0) {
+            list.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <p>Chưa có nguồn dữ liệu nào</p>
+                <p style="font-size: 0.8125rem; margin-top: 0.5rem; color: var(--gray-400);">Thêm nguồn mới ở phía trên</p>
+              </div>
+            `;
+            return;
+          }
+
+          list.innerHTML = sources
+            .map((source) => {
+              const isNGSILD = source.isNGSILD || false;
+              const fieldCount = source.mapping?.fields
+                ? Object.keys(source.mapping.fields).length
+                : 0;
+
+              return `
+                <div class="source-card">
+                  <h3>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2v20M2 12h20"/>
+                    </svg>
+                    ${source.name}
+                    ${
+                      isNGSILD
+                        ? '<span class="badge badge-success">NGSI-LD</span>'
+                        : '<span class="badge badge-warning">Custom JSON</span>'
+                    }
+                  </h3>
+                  
+                  <div class="info-row">
+                    <div class="info-label">URL:</div>
+                    <div class="info-value">${source.url}</div>
+                  </div>
+                  
+                  <div class="info-row">
+                    <div class="info-label">Tọa độ:</div>
+                    <div class="info-value">${source.latitude || "N/A"}, ${
+                source.longitude || "N/A"
+              }</div>
+                  </div>
+                  
+                  <div class="info-row">
+                    <div class="info-label">Định dạng:</div>
+                    <div class="info-value">${
+                      isNGSILD
+                        ? "✅ NGSI-LD chuẩn (không cần mapping)"
+                        : `📊 Custom JSON (${fieldCount} trường đã map)`
+                    }</div>
+                  </div>
+                  
+                  <div class="info-row">
+                    <div class="info-label">Chu kỳ:</div>
+                    <div class="info-value">${source.intervalMinutes} phút</div>
+                  </div>
+                  
+                  <div class="info-row">
+                    <div class="info-label">Trạng thái:</div>
+                    <div class="info-value">
+                      ${
+                        source.isActive !== false
+                          ? '<span style="color: var(--success);">✅ Hoạt động</span>'
+                          : '<span style="color: var(--danger);">❌ Đã tắt</span>'
+                      }
+                      ${
+                        source.failureCount > 0
+                          ? `<span style="color: var(--warning); margin-left: 0.5rem;">(${source.failureCount} lỗi)</span>`
+                          : ""
+                      }
+                    </div>
+                  </div>
+                  
+                  ${
+                    source.lastFetchedAt
+                      ? `
+                  <div class="info-row">
+                    <div class="info-label">Lần cuối:</div>
+                    <div class="info-value">${new Date(
+                      source.lastFetchedAt
+                    ).toLocaleString("vi-VN")}</div>
+                  </div>
+                  `
+                      : ""
+                  }
+                  
+                  ${
+                    source.lastError
+                      ? `
+                  <div class="info-row">
+                    <div class="info-label">Lỗi:</div>
+                    <div class="info-value" style="color: var(--danger); font-size: 0.75rem;">${source.lastError}</div>
+                  </div>
+                  `
+                      : ""
+                  }
+                  
+                  <div class="actions">
+                    <button class="btn-danger btn-small" onclick="deleteSource('${
+                      source.id
+                    }', '${source.name.replace(/'/g, "\\'")}')">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                      Xóa
+                    </button>
+                  </div>
+                </div>
+              `;
+            })
+            .join("");
+        } catch (error) {
+          list.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">❌</div>
+              <p style="color: var(--danger);">Lỗi: ${error.message}</p>
+            </div>
+          `;
+        }
+      }
+
+      async function deleteSource(id, name) {
+        if (!confirm(`Bạn có chắc muốn xóa nguồn "${name}"?`)) return;
+
+        try {
+          await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+          alert("✅ Đã xóa!");
+          loadSources();
+        } catch (error) {
+          alert("❌ Lỗi: " + error.message);
+        }
+      }
+
+      // Load sources on page load
+      loadSources();
+    </script>
+  </body>
+</html>

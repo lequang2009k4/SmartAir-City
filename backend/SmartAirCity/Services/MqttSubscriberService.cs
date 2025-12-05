@@ -56,34 +56,30 @@ public class MqttSubscriberService : BackgroundService
         var host = _configuration["MQTT:BrokerHost"];
         if (string.IsNullOrEmpty(host))
         {
-            var errorMsg = "Cau hinh MQTT:BrokerHost khong duoc tim thay trong appsettings.json. Vui long cau hinh trong appsettings.json";
-            _logger.LogError(errorMsg);
-            throw new InvalidOperationException(errorMsg);
+            _logger.LogWarning("MQTT:BrokerHost khong duoc cau hinh. MqttSubscriberService se khong chay. Neu ban muon su dung MQTT, vui long cau hinh trong appsettings.json");
+            return; // Exit gracefully instead of throwing
         }
         
         // Doc port tu config - khong hardcode
         var portStr = _configuration["MQTT:BrokerPort"];
         if (string.IsNullOrEmpty(portStr) || !int.TryParse(portStr, out var port) || port <= 0)
         {
-            var errorMsg = "Cau hinh MQTT:BrokerPort khong hop le hoac khong duoc tim thay trong appsettings.json. Vui long cau hinh trong appsettings.json";
-            _logger.LogError(errorMsg);
-            throw new InvalidOperationException(errorMsg);
+            _logger.LogWarning("MQTT:BrokerPort khong hop le. MqttSubscriberService se khong chay.");
+            return; // Exit gracefully
         }
         
         var username = _configuration["MQTT:Username"];
         if (string.IsNullOrEmpty(username))
         {
-            var errorMsg = "Cau hinh MQTT:Username khong duoc tim thay trong appsettings.json. Vui long cau hinh trong appsettings.json";
-            _logger.LogError(errorMsg);
-            throw new InvalidOperationException(errorMsg);
+            _logger.LogWarning("MQTT:Username khong duoc cau hinh. MqttSubscriberService se khong chay.");
+            return; // Exit gracefully
         }
         
         var password = _configuration["MQTT:Password"];
         if (string.IsNullOrEmpty(password))
         {
-            var errorMsg = "Cau hinh MQTT:Password khong duoc tim thay trong appsettings.json. Vui long cau hinh trong appsettings.json";
-            _logger.LogError(errorMsg);
-            throw new InvalidOperationException(errorMsg);
+            _logger.LogWarning("MQTT:Password khong duoc cau hinh. MqttSubscriberService se khong chay.");
+            return; // Exit gracefully
         }
         
         // Doc danh sach topics tu config - khong hardcode
@@ -99,9 +95,8 @@ public class MqttSubscriberService : BackgroundService
             }
             else
             {
-                var errorMsg = "Cau hinh MQTT:Topics hoac MQTT:Topic khong duoc tim thay trong appsettings.json. Vui long cau hinh trong appsettings.json";
-                _logger.LogError(errorMsg);
-                throw new InvalidOperationException(errorMsg);
+                _logger.LogWarning("MQTT:Topics hoac MQTT:Topic khong duoc cau hinh. MqttSubscriberService se khong chay.");
+                return; // Exit gracefully
             }
         }
 
