@@ -67,11 +67,14 @@ const requestInterceptor = (config) => {
   // Add timestamp to request
   config.metadata = { startTime: new Date() };
 
-  // TODO: Add authentication token khi implement auth
-  // const token = localStorage.getItem('authToken');
-  // if (token) {
-  //   config.headers.Authorization = `Bearer ${token}`;
-  // }
+  // Add authentication token
+  const token = localStorage.getItem('smartair_auth_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+    console.log('✅ [Auth] Token added to request:', config.url);
+  } else {
+    console.warn('⚠️ [Auth] No token found in localStorage for request:', config.url);
+  }
 
   return config;
 };

@@ -161,7 +161,16 @@ class AirQualityWebSocket {
     this.wsManager.on(WS_EVENTS.AIR_QUALITY.UPDATE, (data) => {
       console.log('✅ [AirQualityWS] Received UPDATE:', data);
       
+      // Extract station ID
+      const stationId = this.extractStationId(data);
+      
       const transformedData = airQualityService.transformAirQualityData(data);
+      
+      // Add stationId to transformed data
+      if (transformedData && stationId) {
+        transformedData.stationId = stationId;
+      }
+      
       this.lastData = transformedData;
       
       this.notifyListeners('update', transformedData);
