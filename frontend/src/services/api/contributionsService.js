@@ -37,12 +37,12 @@ export const uploadFile = async (file, metadata = {}) => {
     const formData = new FormData();
     formData.append('file', file);
     
-    // Add metadata if provided
+    // Add metadata if provided (backend expects 'email' and 'name')
     if (metadata.contributorEmail) {
-      formData.append('contributorEmail', metadata.contributorEmail);
+      formData.append('email', metadata.contributorEmail);
     }
     if (metadata.contributorName) {
-      formData.append('contributorName', metadata.contributorName);
+      formData.append('name', metadata.contributorName);
     }
 
     const response = await airQualityAxios.post(
