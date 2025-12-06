@@ -103,7 +103,7 @@ export const CONTRIBUTIONS_ENDPOINTS = {
 };
 
 // ============================================
-// API ENDPOINTS - STATIONS (NEW)
+// API ENDPOINTS - STATIONS
 // ============================================
 export const STATIONS_ENDPOINTS = {
   // Base URL
@@ -111,6 +111,42 @@ export const STATIONS_ENDPOINTS = {
   
   // Stations Information
   GET_ALL: `${AIR_API_BASE_URL}/api/stations`,
+  GET_FOR_MAP: `${AIR_API_BASE_URL}/api/stations/map`,
+  GET_STATION_DATA: (stationId) => `${AIR_API_BASE_URL}/api/stations/${stationId}/data`,
+};
+
+// ============================================
+// API ENDPOINTS - EXTERNAL HTTP SOURCES
+// ============================================
+export const EXTERNAL_SOURCES_ENDPOINTS = {
+  // Base URL
+  BASE_URL: AIR_API_BASE_URL,
+  
+  // External HTTP Sources Management
+  GET_ALL: `${AIR_API_BASE_URL}/api/sources`,
+  CREATE: `${AIR_API_BASE_URL}/api/sources`,
+  DELETE: (id) => `${AIR_API_BASE_URL}/api/sources/${id}`,
+  REACTIVATE: (id) => `${AIR_API_BASE_URL}/api/sources/${id}/reactivate`,
+  TEST_URL: `${AIR_API_BASE_URL}/api/sources/test`,
+};
+
+// ============================================
+// API ENDPOINTS - EXTERNAL MQTT SOURCES
+// ============================================
+export const EXTERNAL_MQTT_ENDPOINTS = {
+  // Base URL
+  BASE_URL: AIR_API_BASE_URL,
+  
+  // External MQTT Sources Management
+  GET_ALL: `${AIR_API_BASE_URL}/api/mqtt/sources`,
+  GET_BY_ID: (id) => `${AIR_API_BASE_URL}/api/mqtt/sources/${id}`,
+  CREATE: `${AIR_API_BASE_URL}/api/mqtt/sources`,
+  UPDATE: (id) => `${AIR_API_BASE_URL}/api/mqtt/sources/${id}`,
+  DELETE: (id) => `${AIR_API_BASE_URL}/api/mqtt/sources/${id}`,
+  UPDATE_OPENAQ: (id) => `${AIR_API_BASE_URL}/api/mqtt/sources/${id}/openaq`,
+  ACTIVATE: (id) => `${AIR_API_BASE_URL}/api/mqtt/sources/${id}/activate`,
+  DEACTIVATE: (id) => `${AIR_API_BASE_URL}/api/mqtt/sources/${id}/deactivate`,
+  TEST_CONNECTION: `${AIR_API_BASE_URL}/api/mqtt/sources/test`,
 };
 
 // ============================================
@@ -189,6 +225,8 @@ const config = {
   USERS_ENDPOINTS,
   CONTRIBUTIONS_ENDPOINTS,
   STATIONS_ENDPOINTS,
+  EXTERNAL_SOURCES_ENDPOINTS,
+  EXTERNAL_MQTT_ENDPOINTS,
   API_CONFIG,
   buildUrl,
   logApiRequest,
