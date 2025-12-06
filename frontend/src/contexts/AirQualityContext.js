@@ -48,6 +48,14 @@ export const AirQualityProvider = ({ children }) => {
       setError(null);
       
       const data = await airQualityService.getLatestData();
+      console.log('📊 [AirQualityContext] Fetched data:', {
+        count: data?.length || 0,
+        hasData: !!data,
+        sourceTypes: data?.reduce((acc, item) => {
+          acc[item.sourceType] = (acc[item.sourceType] || 0) + 1;
+          return acc;
+        }, {})
+      });
       
       console.log('✅ [AirQualityContext] fetchLatestData success:', data?.length || 0, 'records');
       console.log('📦 [AirQualityContext] First item structure:', data[0]);
@@ -73,15 +81,31 @@ export const AirQualityProvider = ({ children }) => {
       console.log('✅ [AirQualityContext] Final transformed data:', transformedData?.length, 'records');
       console.log('📦 [AirQualityContext] First transformed item:', transformedData[0]);
       
-      // Convert array to object keyed by stationId (extracted from name/location)
+      // Convert array to object keyed by stationId
       if (isMountedRef.current) {
         const stationMap = {};
         transformedData.forEach(item => {
-          // Extract stationId from item (use name as key for now)
-          const stationKey = item.name?.toLowerCase().replace(/\s+/g, '-') || item.id;
+          // Use stationId field first (newly added), fallback to name-based key
+          const stationKey = item.stationId || item.name?.toLowerCase().replace(/\s+/g, '-') || item.id;
           stationMap[stationKey] = item;
+          
+          // Debug: Log MQTT/External sources
+          if (item.sourceType === 'mqtt' || item.sourceType === 'external-http') {
+            console.log(`🔍 [AirQualityContext] Found ${item.sourceType} source:`, {
+              name: item.name,
+              stationId: item.stationId,
+              key: stationKey,
+              location: item.location
+            });
+          }
         });
         console.log('✅ [AirQualityContext] Converted to station map:', Object.keys(stationMap));
+        console.log('📊 [AirQualityContext] Source type distribution:', 
+          Object.values(stationMap).reduce((acc, item) => {
+            acc[item.sourceType] = (acc[item.sourceType] || 0) + 1;
+            return acc;
+          }, {})
+        );
         setLatestData(stationMap);
       }
     } catch (err) {
