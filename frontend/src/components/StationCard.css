@@ -1,0 +1,175 @@
+/*
+SmartAir City – IoT Platform for Urban Air Quality Monitoring
+based on NGSI-LD and FiWARE Standards
+
+SPDX-License-Identifier: MIT
+@version   0.1.x
+@author    SmartAir City Team <smartaircity@gmail.com>
+@copyright © 2025 SmartAir City Team. 
+@license   MIT License
+See LICENSE file in root directory for full license text.
+@see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+
+This software is an open-source component of the SmartAir City initiative.
+It provides real-time environmental monitoring, NGSI-LD–compliant data
+models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+open-data services and smart-city applications. 
+*/
+
+.station-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  min-width: 350px;
+}
+
+.station-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.station-card--no-data {
+  opacity: 0.6;
+}
+
+/* Header */
+.station-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.station-card__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.station-card__id {
+  font-size: 12px;
+  color: #999;
+  background: #f5f5f5;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* AQI Display */
+.station-card__aqi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.station-card__aqi-value {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.station-card__aqi-label {
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* 24h Average */
+.station-card__avg-24h {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.avg-24h__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+}
+
+.avg-24h__value {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* Pollutants */
+.station-card__pollutants {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.pollutant-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.pollutant-item:hover {
+  background: #f0f0f0;
+}
+
+.pollutant-item__label {
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+}
+
+.pollutant-item__value {
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Timestamp */
+.station-card__timestamp {
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* No data */
+.station-card__no-data {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 40px 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .station-card {
+    min-width: 100%;
+  }
+  
+  .station-card__title {
+    font-size: 16px;
+  }
+  
+  .station-card__aqi-value {
+    font-size: 36px;
+  }
+}

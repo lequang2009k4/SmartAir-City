@@ -16,14 +16,6 @@
 
 /**
  * Contributions API Service
- * Service layer for Contributions endpoints
- * 
- * Endpoints:
- * - POST /api/contributions/upload  → uploadFile(file, metadata)
- * - POST /api/contributions         → submitJson(jsonData)
- * - GET /api/contributions          → getAll(limit)
- * - GET /api/contributions/stations → getStations()
- * - GET /api/contributions/station/{stationId} → getByStation(stationId)
  */
 
 import { airQualityAxios } from './axiosInstance';
@@ -78,135 +70,6 @@ export const uploadFile = async (file, metadata = {}) => {
       success: false,
       error: normalizedError.message,
       details: normalizedError.data || null,
-    };
-  }
-};
-
-/**
- * Submit JSON data directly
- * @param {object|array} jsonData - AirQuality data (single object or array)
- * @returns {Promise<object>} Submit response with message, id(s)
- */
-export const submitJson = async (jsonData) => {
-  try {
-    const response = await airQualityAxios.post(
-      CONTRIBUTIONS_ENDPOINTS.SUBMIT,
-      jsonData,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    // Response đã được unwrap bởi interceptor
-    return {
-      success: true,
-      data: response,
-    };
-  } catch (error) {
-    // Nếu error đã được normalize bởi interceptor (có .type), dùng trực tiếp
-    const normalizedError = error.type ? error : normalizeError(error);
-    logError(normalizedError, 'Submit JSON');
-    
-    // Backend error response: {message, errors: []}
-    return {
-      success: false,
-      error: normalizedError.message,
-      details: normalizedError.data || null,
-    };
-  }
-};
-
-/**
- * Get all contributions
- * @param {number} limit - Optional limit for number of records
- * @returns {Promise<array>} List of contributions
- */
-export const getAll = async (limit = null) => {
-  try {
-    const url = limit 
-      ? `${CONTRIBUTIONS_ENDPOINTS.GET_ALL}?limit=${limit}`
-      : CONTRIBUTIONS_ENDPOINTS.GET_ALL;
-
-    const response = await airQualityAxios.get(url);
-
-    // Response đã được unwrap, response chính là array
-    return {
-      success: true,
-      data: Array.isArray(response) ? response : [],
-      count: Array.isArray(response) ? response.length : 0,
-    };
-  } catch (error) {
-    const normalizedError = error.type ? error : normalizeError(error);
-    logError(normalizedError, 'Get All Contributions');
-    
-    return {
-      success: false,
-      error: normalizedError.message,
-      data: [],
-      count: 0,
-    };
-  }
-};
-
-/**
- * Get list of stations that have contributions
- * @returns {Promise<object>} List of station IDs and total count
- */
-export const getStations = async () => {
-  try {
-    const response = await airQualityAxios.get(CONTRIBUTIONS_ENDPOINTS.GET_STATIONS);
-
-    // Response đã unwrap, response = {stations: [], total: n}
-    return {
-      success: true,
-      data: response,
-    };
-  } catch (error) {
-    const normalizedError = error.type ? error : normalizeError(error);
-    logError(normalizedError, 'Get Stations');
-    
-    return {
-      success: false,
-      error: normalizedError.message,
-      data: { stations: [], total: 0 },
-    };
-  }
-};
-
-/**
- * Get contributions by station ID
- * @param {string} stationId - Station ID to filter by
- * @returns {Promise<object>} Contributions for the specified station
- */
-export const getByStation = async (stationId) => {
-  try {
-    if (!stationId) {
-      return {
-        success: false,
-        error: 'Station ID không được để trống',
-        data: null,
-      };
-    }
-
-    const response = await airQualityAxios.get(
-      CONTRIBUTIONS_ENDPOINTS.GET_BY_STATION(stationId)
-    );
-
-    // Response đã unwrap, response = {stationId, total, data: []}
-    return {
-      success: true,
-      data: response,
-    };
-  } catch (error) {
-    const normalizedError = error.type ? error : normalizeError(error);
-    logError(normalizedError, `Get By Station: ${stationId}`);
-    
-    return {
-      success: false,
-      error: normalizedError.message,
-      data: null,
     };
   }
 };
@@ -299,16 +162,193 @@ export const formatContribution = (contribution) => {
 };
 
 // ============================================
+// NEW API METHODS
+// ============================================
+
+/**
+ * Get public contribution statistics
+ * Shows total contributions, total contributors, and top contributors
+ * @returns {Promise<object>} Public stats with success flag and data
+ */
+export const getPublicStats = async () => {
+  try {
+    console.log('📊 [contributionsService] Fetching public stats...');
+    
+    const response = await airQualityAxios.get(CONTRIBUTIONS_ENDPOINTS.PUBLIC_STATS);
+    
+    console.log('✅ [contributionsService] Public stats received:', {
+      totalContributions: response.totalContributions,
+      totalContributors: response.totalContributors,
+    });
+    
+    return {
+      success: true,
+      data: response,
+      totalContributions: response.totalContributions || 0,
+      totalContributors: response.totalContributors || 0,
+      contributors: response.contributors || [],
+    };
+  } catch (error) {
+    const normalizedError = error.type ? error : normalizeError(error);
+    logError(normalizedError, 'Get Public Stats');
+    
+    console.error('❌ [contributionsService] Error fetching public stats:', normalizedError.message);
+    
+    return {
+      success: false,
+      error: normalizedError.message,
+      data: null,
+    };
+  }
+};
+
+/**
+ * Get list of contribution IDs with metadata
+ * @param {string|null} email - Filter by user email (optional)
+ * @returns {Promise<object>} List of contributions with success flag
+ */
+export const getContributionList = async (email = null) => {
+  try {
+    const params = email ? { email } : {};
+    
+    console.log('📋 [contributionsService] Fetching contribution list...', { email });
+    
+    const response = await airQualityAxios.get(CONTRIBUTIONS_ENDPOINTS.LIST, { params });
+    
+    console.log('✅ [contributionsService] Contribution list received:', {
+      total: response.total,
+      count: response.contributions?.length,
+    });
+    
+    return {
+      success: true,
+      data: response,
+      total: response.total || 0,
+      contributions: response.contributions || [],
+    };
+  } catch (error) {
+    const normalizedError = error.type ? error : normalizeError(error);
+    logError(normalizedError, 'Get Contribution List');
+    
+    console.error('❌ [contributionsService] Error fetching contribution list:', normalizedError.message);
+    
+    return {
+      success: false,
+      error: normalizedError.message,
+      data: null,
+    };
+  }
+};
+
+/**
+ * Get latest records from a specific contribution
+ * @param {string} contributionId - Contribution ID
+ * @param {number} limit - Number of latest records to retrieve (default: 5)
+ * @returns {Promise<object>} Latest records with success flag
+ */
+export const getLatestByContributionId = async (contributionId, limit = 5) => {
+  try {
+    if (!contributionId) {
+      return {
+        success: false,
+        error: 'Contribution ID không được để trống',
+        data: null,
+      };
+    }
+    
+    console.log(`🔍 [contributionsService] Fetching latest from contribution ${contributionId}...`);
+    
+    const response = await airQualityAxios.get(
+      CONTRIBUTIONS_ENDPOINTS.LATEST_BY_ID(contributionId),
+      { params: { limit } }
+    );
+    
+    console.log('✅ [contributionsService] Latest records received:', {
+      contributionId: response.contributionId,
+      count: response.count,
+    });
+    
+    return {
+      success: true,
+      data: response,
+      contributionId: response.contributionId,
+      count: response.count || 0,
+      records: response.data || [],
+    };
+  } catch (error) {
+    const normalizedError = error.type ? error : normalizeError(error);
+    logError(normalizedError, `Get Latest By Contribution: ${contributionId}`);
+    
+    console.error('❌ [contributionsService] Error:', normalizedError.message);
+    
+    return {
+      success: false,
+      error: normalizedError.message,
+      data: null,
+    };
+  }
+};
+
+/**
+ * Download all data from a specific contribution as JSON file
+ * @param {string} contributionId - Contribution ID
+ * @returns {Promise<object>} Download result
+ */
+export const downloadContribution = async (contributionId) => {
+  try {
+    if (!contributionId) {
+      return {
+        success: false,
+        error: 'Contribution ID không được để trống',
+      };
+    }
+    
+    console.log(`📥 [contributionsService] Downloading contribution ${contributionId}...`);
+    
+    const response = await airQualityAxios.get(
+      CONTRIBUTIONS_ENDPOINTS.DOWNLOAD_BY_ID(contributionId),
+      { responseType: 'blob' }
+    );
+    
+    // Create download link
+    const url = window.URL.createObjectURL(new Blob([response]));
+    const link = document.createElement('a');
+    link.href = url;
+    const filename = `contribution-${contributionId}-${Date.now()}.json`;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+    console.log('✅ [contributionsService] Download started:', filename);
+    
+    return { success: true, filename };
+  } catch (error) {
+    const normalizedError = error.type ? error : normalizeError(error);
+    logError(normalizedError, `Download Contribution: ${contributionId}`);
+    
+    console.error('❌ [contributionsService] Download error:', normalizedError.message);
+    
+    return {
+      success: false,
+      error: normalizedError.message,
+    };
+  }
+};
+
+// ============================================
 // EXPORT DEFAULT
 // ============================================
 const contributionsService = {
   uploadFile,
-  submitJson,
-  getAll,
-  getStations,
-  getByStation,
   validateJsonStructure,
   formatContribution,
+  // Valid API methods from api.yaml
+  getPublicStats,
+  getContributionList,
+  getLatestByContributionId,
+  downloadContribution,
 };
 
 export default contributionsService;

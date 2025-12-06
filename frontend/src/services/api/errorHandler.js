@@ -16,7 +16,6 @@
 
 /**
  * Error Handler Utilities
- * Chuẩn hóa error messages từ API responses
  */
 
 // ============================================

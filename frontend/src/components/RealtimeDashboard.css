@@ -13,225 +13,99 @@ See LICENSE file in root directory for full license text.
 This software is an open-source component of the SmartAir City initiative.
 It provides real-time environmental monitoring, NGSI-LD–compliant data
 models, MQTT-based data ingestion, and FiWARE Smart Data Models for
-open-data services and smart-city applications. 
+open-data services and smart-city applications.  
 */
 
-/* Realtime Dashboard Component */
-
 .realtime-dashboard {
-  margin-bottom: 30px;
-}
-
-/* Connection Status */
-.connection-status {
-  padding: 12px 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.connection-status.connected {
-  background: #10b981;
-  color: white;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-}
-
-.connection-status.disconnected {
-  background: #ef4444;
-  color: white;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-}
-
-.status-icon {
-  font-size: 1.2em;
-}
-
-/* Loading State */
-.loading-state,
-.no-data-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: #6b7280;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  margin: 0 auto 20px;
-  border: 4px solid #e5e7eb;
-  border-top-color: #667eea;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Dashboard Grid - 3 columns */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-top: 20px;
-}
-
-/* Dashboard Cards */
-.dashboard-card {
-  background: white;
   padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s, box-shadow 0.3s;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.dashboard-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
-}
-
-.dashboard-card h3 {
-  color: #667eea;
-  margin-bottom: 20px;
-  font-size: 1em;
-  font-weight: 600;
-  text-align: center;
-}
-
-/* AQI Card & Average Card */
-.aqi-card,
-.average-card {
-  text-align: center;
-}
-
-.aqi-card h3,
-.average-card h3 {
-  color: #667eea;
-  font-size: 0.95em;
-}
-
-.aqi-value {
-  font-size: 3.5em;
-  font-weight: bold;
-  margin: 15px 0 10px;
-}
-
-.aqi-level {
-  font-size: 1.1em;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.timestamp {
-  color: #6b7280;
-  font-size: 0.85em;
-  margin-top: 10px;
-}
-
-.realtime-badge {
-  margin-top: 12px;
-  padding: 6px 12px;
-  background: #10b981;
-  color: white;
-  border-radius: 6px;
-  font-size: 0.85em;
-  font-weight: 500;
-  display: inline-block;
-}
-
-/* Metrics */
-.metric {
+/* Header */
+.realtime-dashboard__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e5e7eb;
 }
 
-.metric:last-child {
-  border-bottom: none;
+.realtime-dashboard__title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
 }
 
-.metric-label {
-  color: #6b7280;
-  font-weight: 500;
-  font-size: 0.95em;
+.realtime-dashboard__status {
+  display: flex;
+  align-items: center;
 }
 
-.metric-value {
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 600;
-  color: #1f2937;
-  font-size: 1em;
 }
 
-/* AQI Color Classes */
-.aqi-value.good {
-  color: #10b981;
+.status-indicator--connected {
+  background: #d1fae5;
+  color: #065f46;
 }
 
-.aqi-value.moderate {
-  color: #f59e0b;
-}
-
-.aqi-value.unhealthy-sensitive {
-  color: #f97316;
-}
-
-.aqi-value.unhealthy {
-  color: #ef4444;
-}
-
-.aqi-value.very-unhealthy {
+.status-indicator--disconnected {
+  background: #fee2e2;
   color: #991b1b;
 }
 
-.aqi-value.hazardous {
-  color: #7f1d1d;
+/* Grid Layout */
+.realtime-dashboard__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
-.aqi-value.unknown {
+/* Footer */
+.realtime-dashboard__footer {
+  text-align: center;
+  padding: 24px;
+  background: #f9fafb;
+  border-radius: 8px;
   color: #6b7280;
+  font-size: 14px;
+  line-height: 1.8;
 }
 
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 1024px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
+  .realtime-dashboard__grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   }
 }
 
 @media (max-width: 768px) {
-  .aqi-value {
-    font-size: 2.5em;
+  .realtime-dashboard {
+    padding: 16px;
   }
   
-  .aqi-level {
-    font-size: 1em;
+  .realtime-dashboard__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
   
-  .dashboard-card {
-    padding: 20px;
+  .realtime-dashboard__title {
+    font-size: 24px;
   }
-}
-
-/* Dark Mode Support */
-body.dark-mode .dashboard-card {
-  background: #1f2937;
-  color: #f3f4f6;
-}
-
-body.dark-mode .metric-label {
-  color: #9ca3af;
-}
-
-body.dark-mode .metric-value {
-  color: #f3f4f6;
-}
-
-body.dark-mode .metric {
-  border-bottom-color: #374151;
+  
+  .realtime-dashboard__grid {
+    grid-template-columns: 1fr;
+  }
 }

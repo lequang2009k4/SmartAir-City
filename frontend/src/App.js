@@ -20,13 +20,15 @@ import Header from './components/Header';
 import AirQualityChart from './components/AirQualityChart';
 import AirQualityMap from './components/AirQualityMap';
 import RealtimeDashboard from './components/RealtimeDashboard';
-import APIDataViewer from './components/APIDataViewer';
+import OpenDataViewer from './components/OpenDataViewer';
+import SwaggerViewer from './components/SwaggerViewer';
 import About from './components/About';
 import Footer from './components/Footer';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorMessage from './components/ErrorMessage';
 import AuthModal from './components/AuthModal';
 import DeviceManagement from './components/DeviceManagement';
+import { useAirQualityContext } from './contexts/AirQualityContext';
 import UserManagement from './components/UserManagement';
 import ContributionManagement from './components/ContributionManagement';
 import { getUser, removeToken } from './services/api/usersService';
@@ -70,6 +72,74 @@ function App() {
   useEffect(() => {
     setLoading(false);
   }, []);
+
+  // Refresh Button Component
+  const RefreshButton = () => {
+    const { refresh } = useAirQualityContext();
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const handleRefresh = async () => {
+      setIsRefreshing(true);
+      try {
+        if (refresh) {
+          await refresh();
+        }
+      } catch (err) {
+        console.error('❌ Refresh failed:', err);
+      } finally {
+        setIsRefreshing(false);
+      }
+    };
+
+    return (
+      <button
+        onClick={handleRefresh}
+        disabled={isRefreshing}
+        style={{
+          backgroundColor: isRefreshing ? '#95a5a6' : '#3498db',
+          color: 'white',
+          border: 'none',
+          padding: '8px 16px',
+          borderRadius: '4px',
+          fontSize: '14px',
+          fontWeight: '500',
+          cursor: isRefreshing ? 'not-allowed' : 'pointer',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          transition: 'all 0.2s ease',
+          opacity: isRefreshing ? 0.7 : 1,
+          minWidth: '120px',
+          justifyContent: 'center'
+        }}
+        onMouseEnter={(e) => {
+          if (!isRefreshing) {
+            e.currentTarget.style.backgroundColor = '#2980b9';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isRefreshing) {
+            e.currentTarget.style.backgroundColor = '#3498db';
+          }
+        }}
+      >
+        <span style={{ 
+          display: 'inline-block',
+          animation: isRefreshing ? 'spin 1s linear infinite' : 'none'
+        }}>
+          🔄
+        </span>
+        <span>{isRefreshing ? 'Đang tải...' : 'Làm mới'}</span>
+        <style>{`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </button>
+    );
+  };
 
   // Auth handlers
   const handleLoginClick = () => {
@@ -123,25 +193,27 @@ function App() {
         return (
           <>
             <div className="page-header">
-              <h2>Bản đồ - Trạm đo chất lượng không khí</h2>
-              <p className="page-subtitle">
-                Nhấp vào các điểm đo trên bản đồ để xem thông tin chi tiết
-              </p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2>Bản đồ - Trạm đo chất lượng không khí</h2>
+                  <p className="page-subtitle">
+                    Nhấp vào các điểm đo trên bản đồ để xem thông tin chi tiết
+                  </p>
+                </div>
+                <RefreshButton />
+              </div>
             </div>
 
-            {/* Tạm comment SearchFilter vì dùng mockData */}
-            {/* <SearchFilter 
-              stations={stations} 
-              onFilterChange={setFilteredStations}
-            /> */}
-            {/* RealtimeDashboard và AirQualityMap sẽ tự lấy data từ context */}
-            <RealtimeDashboard />
+            {/* Only show map - removed RealtimeDashboard */}
             <AirQualityMap onStationClick={handleStationClick} />
           </>
         );
       
+      case 'api-docs':
+        return <SwaggerViewer />;
+      
       case 'data':
-        return <APIDataViewer />;
+        return <OpenDataViewer />;
       
       case 'about':
         return <About />;

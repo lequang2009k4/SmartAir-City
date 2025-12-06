@@ -1,0 +1,223 @@
+/* 
+SmartAir City – IoT Platform for Urban Air Quality Monitoring
+based on NGSI-LD and FiWARE Standards
+
+SPDX-License-Identifier: MIT
+@version   0.1.x
+@author    SmartAir City Team <smartaircity@gmail.com>
+@copyright © 2025 SmartAir City Team. 
+@license   MIT License
+See LICENSE file in root directory for full license text.
+@see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+
+This software is an open-source component of the SmartAir City initiative.
+It provides real-time environmental monitoring, NGSI-LD–compliant data
+models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+open-data services and smart-city applications.  
+*/
+
+/* Contributor Card Component - Modern Design */
+
+.contributor-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid #e9ecef;
+  border-radius: 16px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.contributor-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.contributor-card:hover {
+  transform: translateY(-4px);
+  border-color: #667eea;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+}
+
+.contributor-card:hover::before {
+  transform: scaleX(1);
+}
+
+.contributor-card.active {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #f0f3ff 0%, #e8ecff 100%);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);
+}
+
+.contributor-card.active::before {
+  transform: scaleX(1);
+}
+
+/* Card Top - Avatar and Badge */
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.contributor-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.contributor-card:hover .contributor-avatar {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.contributor-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  min-width: 50px;
+  text-align: center;
+}
+
+.badge-number {
+  display: block;
+  line-height: 1;
+}
+
+/* Card Content */
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contributor-name {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1a202c;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contributor-email {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #718096;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contribution-label {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #667eea;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .contributor-card {
+    padding: 20px;
+  }
+
+  .contributor-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 1.3rem;
+  }
+
+  .contributor-name {
+    font-size: 1.1rem;
+  }
+
+  .contributor-badge {
+    padding: 6px 12px;
+    font-size: 1rem;
+  }
+}
+
+/* Dark Mode Support */
+.dark-mode .contributor-card {
+  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  border-color: #4a5568;
+}
+
+.dark-mode .contributor-card:hover {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #2d3748 0%, #374151 100%);
+}
+
+.dark-mode .contributor-card.active {
+  background: linear-gradient(135deg, #3730a3 0%, #4c1d95 100%);
+  border-color: #667eea;
+}
+
+.dark-mode .contributor-name {
+  color: #e2e8f0;
+}
+
+.dark-mode .contributor-email {
+  color: #a0aec0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .contributor-card {
+    padding: 1rem;
+  }
+
+  .contributor-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+  }
+
+  .contributor-name {
+    font-size: 1rem;
+  }
+
+  .contributor-email {
+    font-size: 0.8rem;
+  }
+
+  .stat-badge {
+    padding: 0.375rem 0.75rem;
+  }
+
+  .stat-value {
+    font-size: 1rem;
+  }
+}
