@@ -67,8 +67,8 @@ open-data services and smart-city applications.
 /* Grid Layout */
 .realtime-dashboard__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
   margin-bottom: 32px;
 }
 
@@ -86,7 +86,8 @@ open-data services and smart-city applications.
 /* Responsive */
 @media (max-width: 1024px) {
   .realtime-dashboard__grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
   }
 }
 
