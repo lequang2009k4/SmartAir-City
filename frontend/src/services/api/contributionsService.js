@@ -16,14 +16,6 @@
 
 /**
  * Contributions API Service
- * Service layer for Contributions endpoints
- * 
- * Valid Endpoints from api.yaml:
- * - POST /api/contributions/upload   → uploadFile(file, metadata)
- * - GET  /api/contributions/public   → getPublicStats()
- * - GET  /api/contributions/list     → getContributionList(email)
- * - GET  /api/contributions/{id}/latest → getLatestByContributionId(id, limit)
- * - GET  /api/contributions/{id}/download → downloadContribution(id)
  */
 
 import { airQualityAxios } from './axiosInstance';
