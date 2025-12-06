@@ -17,6 +17,8 @@
 import React, { useState, useEffect } from "react";
 import { useAirQualityContext } from "../contexts/AirQualityContext";
 import contributionsService from "../services/api/contributionsService";
+import externalMqttService from "../services/api/externalMqttService";
+import externalSourcesService from "../services/api/externalSourcesService";
 import { getAll, getLatest, getHistory, downloadAirQuality, downloadHistory } from "../services/api/airQualityService";
 import ContributorCard from "./ContributorCard";
 import ContributionRecordCard from "./ContributionRecordCard";
@@ -32,16 +34,6 @@ const OpenDataViewer = () => {
   
   // Sub-tab within Contributions (sensor-data, uploaded-json, third-party-api)
   const [contributionTab, setContributionTab] = useState('uploaded-json');
-  
-  // Sensor form state
-  const [sensorData, setSensorData] = useState({
-    enableMQTT: false,
-    mqttUrl: '',
-    mqttTopic: '',
-    latitude: '',
-    longitude: '',
-    height: ''
-  });
   
   // Air Quality API state
   const [showRaw, setShowRaw] = useState(false);
@@ -73,99 +65,17 @@ const OpenDataViewer = () => {
   const [loadingContributions, setLoadingContributions] = useState(false);
   const [contributionsError, setContributionsError] = useState(null);
   const [showContributionsModal, setShowContributionsModal] = useState(false);
-
-  // Sensor data state (fake data for now)
-  const [selectedSensor, setSelectedSensor] = useState(null);
-  const [sensorRecordsList, setSensorRecordsList] = useState([]);
   
-  // Fake sensor data
-  const fakeSensorsData = {
-    totalSensors: 8,
-    totalRecords: 2458,
-    sensors: [
-      {
-        id: 'SEN001',
-        name: 'Sensor Hà Nội - Hoàn Kiếm',
-        location: 'Quận Hoàn Kiếm, Hà Nội',
-        latitude: 21.028511,
-        longitude: 105.804817,
-        recordCount: 542,
-        lastUpdate: '2025-12-04T10:30:00Z',
-        status: 'active'
-      },
-      {
-        id: 'SEN002',
-        name: 'Sensor TP.HCM - Quận 1',
-        location: 'Quận 1, TP. Hồ Chí Minh',
-        latitude: 10.762622,
-        longitude: 106.660172,
-        recordCount: 438,
-        lastUpdate: '2025-12-04T10:25:00Z',
-        status: 'active'
-      },
-      {
-        id: 'SEN003',
-        name: 'Sensor Đà Nẵng - Hải Châu',
-        location: 'Quận Hải Châu, Đà Nẵng',
-        latitude: 16.047079,
-        longitude: 108.206230,
-        recordCount: 385,
-        lastUpdate: '2025-12-04T10:20:00Z',
-        status: 'active'
-      },
-      {
-        id: 'SEN004',
-        name: 'Sensor Hà Nội - Cầu Giấy',
-        location: 'Quận Cầu Giấy, Hà Nội',
-        latitude: 21.033333,
-        longitude: 105.783333,
-        recordCount: 312,
-        lastUpdate: '2025-12-04T09:45:00Z',
-        status: 'active'
-      },
-      {
-        id: 'SEN005',
-        name: 'Sensor Hải Phòng - Ngô Quyền',
-        location: 'Quận Ngô Quyền, Hải Phòng',
-        latitude: 20.865139,
-        longitude: 106.683830,
-        recordCount: 289,
-        lastUpdate: '2025-12-04T10:15:00Z',
-        status: 'active'
-      },
-      {
-        id: 'SEN006',
-        name: 'Sensor Cần Thơ - Ninh Kiều',
-        location: 'Quận Ninh Kiều, Cần Thơ',
-        latitude: 10.045162,
-        longitude: 105.746857,
-        recordCount: 267,
-        lastUpdate: '2025-12-04T08:30:00Z',
-        status: 'inactive'
-      },
-      {
-        id: 'SEN007',
-        name: 'Sensor Huế - Thành phố',
-        location: 'TP. Huế, Thừa Thiên Huế',
-        latitude: 16.463713,
-        longitude: 107.590866,
-        recordCount: 145,
-        lastUpdate: '2025-12-04T10:00:00Z',
-        status: 'active'
-      },
-      {
-        id: 'SEN008',
-        name: 'Sensor Nha Trang - Trung tâm',
-        location: 'TP. Nha Trang, Khánh Hòa',
-        latitude: 12.238791,
-        longitude: 109.196749,
-        recordCount: 80,
-        lastUpdate: '2025-12-03T22:10:00Z',
-        status: 'inactive'
-      }
-    ]
-  };
-
+  // MQTT Sources state (REAL DATA)
+  const [mqttSources, setMqttSources] = useState([]);
+  const [loadingMqtt, setLoadingMqtt] = useState(false);
+  const [mqttError, setMqttError] = useState(null);
+  
+  // External Sources state (REAL DATA)
+  const [externalSources, setExternalSources] = useState([]);
+  const [loadingExternal, setLoadingExternal] = useState(false);
+  const [externalError, setExternalError] = useState(null);
+  
   // Load public contributors on mount
   useEffect(() => {
     if (activeSubTab === 'contributions') {
@@ -173,86 +83,95 @@ const OpenDataViewer = () => {
     }
   }, [activeSubTab]);
 
-  /**
-   * Handle sensor form input change
-   */
-  const handleSensorInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setSensorData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  /**
-   * Handle sensor form submit
-   */
-  const handleSensorSubmit = (e) => {
-    e.preventDefault();
-    console.log('[OpenDataViewer] Sensor data submitted:', sensorData);
-    // TODO: Implement sensor connection logic
-    alert('Chức năng kết nối sensor đang được phát triển!');
-  };
-
-  /**
-   * Handle sensor card click - show sensor records
-   */
-  const handleSensorClick = (sensor) => {
-    setSelectedSensor(sensor);
-    // Generate fake records for this sensor
-    const fakeRecords = generateFakeSensorRecords(sensor);
-    setSensorRecordsList(fakeRecords);
-  };
-
-  /**
-   * Generate fake sensor records
-   */
-  const generateFakeSensorRecords = (sensor) => {
-    const records = [];
-    const recordCount = sensor.recordCount;
-    const numRecords = Math.min(recordCount, 10); // Show max 10 records
-    
-    for (let i = 0; i < numRecords; i++) {
-      const date = new Date();
-      date.setHours(date.getHours() - i * 2); // Each record 2 hours apart
-      
-      records.push({
-        id: `${sensor.id}_REC${String(i + 1).padStart(4, '0')}`,
-        sensorId: sensor.id,
-        timestamp: date.toISOString(),
-        temperature: (20 + Math.random() * 15).toFixed(1),
-        humidity: (50 + Math.random() * 30).toFixed(1),
-        pm25: (10 + Math.random() * 80).toFixed(1),
-        pm10: (15 + Math.random() * 100).toFixed(1),
-        aqi: Math.floor(50 + Math.random() * 100)
-      });
+  // Load MQTT sources when sensor-data tab is active
+  useEffect(() => {
+    if (contributionTab === 'sensor-data') {
+      loadMqttSources();
     }
+  }, [contributionTab]);
+
+  // Load External sources when third-party-api tab is active
+  useEffect(() => {
+    if (contributionTab === 'third-party-api') {
+      loadExternalSources();
+    }
+  }, [contributionTab]);
+
+  /**
+   * Load MQTT sources from API
+   */
+  const loadMqttSources = async () => {
+    setLoadingMqtt(true);
+    setMqttError(null);
     
-    return records;
+    try {
+      const sources = await externalMqttService.getAll();
+      
+      // Fetch record count for each source
+      const sourcesWithCount = await Promise.all(
+        sources.map(async (source) => {
+          try {
+            // Get ALL records for this stationId to count them (no limit)
+            const records = await getAll(null, source.stationId, true);
+            return {
+              ...source,
+              recordCount: Array.isArray(records) ? records.length : 0,
+            };
+          } catch {
+            return {
+              ...source,
+              recordCount: 0,
+            };
+          }
+        })
+      );
+      
+      setMqttSources(sourcesWithCount);
+    } catch (err) {
+      setMqttError(err.message || 'Không thể tải MQTT sources');
+    } finally {
+      setLoadingMqtt(false);
+    }
   };
 
   /**
-   * Handle view sensor record data
+   * Load External sources from API
    */
-  const handleViewSensorData = (record) => {
-    setViewedData(record);
-    setShowContributionsModal(true);
+  const loadExternalSources = async () => {
+    setLoadingExternal(true);
+    setExternalError(null);
+    
+    try {
+      // externalSourcesService.getAll() throws error, not return {success, data}
+      const sources = await externalSourcesService.getAll();
+      
+      // Fetch record count for each source using getAll() to count total records
+      const sourcesWithCount = await Promise.all(
+        sources.map(async (source) => {
+          try {
+            // Get ALL records for this stationId to count them (no limit)
+            const records = await getAll(null, source.stationId, true);
+            return {
+              ...source,
+              recordCount: Array.isArray(records) ? records.length : 0,
+            };
+          } catch {
+            return {
+              ...source,
+              recordCount: 0,
+            };
+          }
+        })
+      );
+      
+      setExternalSources(sourcesWithCount);
+    } catch (err) {
+      console.error('❌ [OpenDataViewer] Error loading external sources:', err);
+      setExternalError(err.message || 'Không thể tải External sources');
+    } finally {
+      setLoadingExternal(false);
+    }
   };
-
-  /**
-   * Handle download sensor record
-   */
-  const handleDownloadSensorRecord = (record) => {
-    const dataStr = JSON.stringify(record, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `sensor_record_${record.id}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
   // Load contributors from API
   const loadPublicContributors = async () => {
     setLoadingContributions(true);
@@ -488,110 +407,95 @@ const OpenDataViewer = () => {
 
       {/* Tab Content */}
       <div className="tab-content-area">
-        {/* Sensor Data Tab */}
+        {/* Sensor Data Tab - MQTT Sources */}
         {contributionTab === 'sensor-data' && (
           <div className="sensor-data-tab">
-            {/* Sensors List */}
-            {!selectedSensor && (
+            {/* Error Display */}
+            {mqttError && (
+              <div className="error-box">
+                <h4>❌ Lỗi tải dữ liệu</h4>
+                <p>{mqttError}</p>
+              </div>
+            )}
+
+            {/* Loading Display */}
+            {loadingMqtt && (
+              <div className="loading-box">
+                <div className="spinner"></div>
+                <p>Đang tải MQTT sources...</p>
+              </div>
+            )}
+
+            {/* MQTT Sources List */}
+            {!loadingMqtt && mqttSources.length > 0 && (
               <>
-                <div className="stats-summary">
-                  <div className="stat-box">
-                    <div className="stat-icon">🌡️</div>
-                    <div className="stat-info">
-                      <div className="stat-label">Tổng số sensor</div>
-                      <div className="stat-value">{fakeSensorsData.totalSensors}</div>
-                    </div>
-                  </div>
-                  <div className="stat-box">
-                    <div className="stat-icon">📊</div>
-                    <div className="stat-info">
-                      <div className="stat-label">Tổng dữ liệu</div>
-                      <div className="stat-value">{fakeSensorsData.totalRecords}</div>
-                    </div>
-                  </div>
-                  <div className="stat-box">
-                    <div className="stat-icon">✅</div>
-                    <div className="stat-info">
-                      <div className="stat-label">Đang hoạt động</div>
-                      <div className="stat-value">{fakeSensorsData.sensors.filter(s => s.status === 'active').length}</div>
-                    </div>
+                <div className="section-header">
+                  <h3>📡 MQTT Sensor Sources</h3>
+                  <div className="stats-summary">
+                    <span className="stat-item">
+                      <strong>{mqttSources.length}</strong> MQTT sources
+                    </span>
+                    <span className="stat-divider">•</span>
+                    <span className="stat-item">
+                      <strong>{mqttSources.filter(s => s.isActive).length}</strong> active
+                    </span>
                   </div>
                 </div>
 
                 <div className="sensors-grid">
-                  {fakeSensorsData.sensors.map(sensor => (
+                  {mqttSources.map(source => (
                     <div
-                      key={sensor.id}
-                      className={`sensor-card ${sensor.status}`}
-                      onClick={() => handleSensorClick(sensor)}
+                      key={source.id}
+                      className={`sensor-card ${source.isActive ? 'active' : 'inactive'}`}
                     >
                       <div className="sensor-header">
-                        <h3>{sensor.name}</h3>
-                        <span className={`status-badge ${sensor.status}`}>
-                          {sensor.status === 'active' ? '🟢 Hoạt động' : '⚫ Offline'}
+                        <h3>{source.name}</h3>
+                        <span className={`status-badge ${source.isActive ? 'active' : 'inactive'}`}>
+                          {source.isActive ? '🟢 Active' : '🔴 Inactive'}
                         </span>
                       </div>
                       <div className="sensor-info">
-                        <p className="sensor-location">📍 {sensor.location}</p>
                         <p className="sensor-coords">
-                          📌 {sensor.latitude.toFixed(6)}, {sensor.longitude.toFixed(6)}
+                          📍 Vị trí: {source.latitude}, {source.longitude}
+                        </p>
+                        <p className="sensor-coords">
+                          📅 Tạo ngày: {source.createdAt 
+                            ? new Date(source.createdAt).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' })
+                            : 'N/A'}
                         </p>
                       </div>
                       <div className="sensor-stats">
                         <div className="stat-item">
-                          <span className="stat-label">Dữ liệu</span>
-                          <span className="stat-value">{sensor.recordCount}</span>
+                          <span className="stat-label">Số bản ghi</span>
+                          <span className="stat-value">{source.messageCount || source.recordCount || 0}</span>
                         </div>
                         <div className="stat-item">
-                          <span className="stat-label">Cập nhật</span>
-                          <span className="stat-value">{new Date(sensor.lastUpdate).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                          <span className="stat-label">Bản tin cuối</span>
+                          <span className="stat-value">
+                            {source.lastMessageAt 
+                              ? new Date(source.lastMessageAt).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' })
+                              : 'N/A'}
+                          </span>
                         </div>
                       </div>
+                      {source.lastError && (
+                        <div className="error-info">
+                          <span>⚠️ {source.lastError}</span>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
               </>
             )}
 
-            {/* Sensor Records List */}
-            {selectedSensor && (
-              <>
-                <div className="back-button-container">
-                  <button className="back-btn" onClick={() => setSelectedSensor(null)}>
-                    ← Quay lại danh sách sensor
-                  </button>
-                </div>
-
-                <div className="sensor-detail-header">
-                  <h2>{selectedSensor.name}</h2>
-                  <p>📍 {selectedSensor.location}</p>
-                  <p className="sensor-stats-text">
-                    Tổng {selectedSensor.recordCount} bản ghi • Hiển thị {sensorRecordsList.length} bản ghi gần nhất
-                  </p>
-                </div>
-
-                <div className="contributions-list">
-                  {sensorRecordsList.map(record => (
-                    <ContributionRecordCard
-                      key={record.id}
-                      contribution={{
-                        id: record.id,
-                        timestamp: record.timestamp,
-                        location: selectedSensor.location,
-                        data: {
-                          temperature: record.temperature,
-                          humidity: record.humidity,
-                          pm25: record.pm25,
-                          pm10: record.pm10,
-                          aqi: record.aqi
-                        }
-                      }}
-                      onDownload={() => handleDownloadSensorRecord(record)}
-                      onViewData={() => handleViewSensorData(record)}
-                    />
-                  ))}
-                </div>
-              </>
+            {/* No Data */}
+            {!loadingMqtt && mqttSources.length === 0 && (
+              <div className="no-data-box">
+                <h3>📡 Chưa có MQTT sources</h3>
+                <p>Người dùng có thể đóng góp dữ liệu từ sensor MQTT của họ.</p>
+                <p>Vui lòng đăng nhập và thêm MQTT source tại trang Đóng góp dữ liệu.</p>
+              </div>
             )}
           </div>
         )}
@@ -727,13 +631,99 @@ const OpenDataViewer = () => {
         </div>
         )}
 
-        {/* Third Party API Tab */}
+        {/* Third Party API Tab - External HTTP Sources */}
         {contributionTab === 'third-party-api' && (
           <div className="third-party-api-tab">
-            <div className="coming-soon">
-              <h3>🚧 Đang phát triển</h3>
-              <p>Tính năng tích hợp API bên thứ 3 đang được phát triển</p>
-            </div>
+            {/* Error Display */}
+            {externalError && (
+              <div className="error-box">
+                <h4>❌ Lỗi tải dữ liệu</h4>
+                <p>{externalError}</p>
+              </div>
+            )}
+
+            {/* Loading Display */}
+            {loadingExternal && (
+              <div className="loading-box">
+                <div className="spinner"></div>
+                <p>Đang tải External sources...</p>
+              </div>
+            )}
+
+            {/* External Sources List */}
+            {!loadingExternal && externalSources.length > 0 && (
+              <>
+                <div className="section-header">
+                  <h3>🌐 External HTTP API Sources</h3>
+                  <div className="stats-summary">
+                    <span className="stat-item">
+                      <strong>{externalSources.length}</strong> API sources
+                    </span>
+                    <span className="stat-divider">•</span>
+                    <span className="stat-item">
+                      <strong>{externalSources.filter(s => s.isActive).length}</strong> active
+                    </span>
+                  </div>
+                </div>
+
+                <div className="sensors-grid">
+                  {externalSources.map(source => (
+                    <div
+                      key={source.id}
+                      className={`sensor-card ${source.isActive ? 'active' : 'inactive'}`}
+                    >
+                      <div className="sensor-header">
+                        <h3>{source.name}</h3>
+                        <div className="badges">
+                          <span className={`format-badge ${source.isNGSILD ? 'ngsi-ld' : 'custom'}`}>
+                            {source.isNGSILD ? 'NGSI-LD' : 'Custom JSON'}
+                          </span>
+                          <span className={`status-badge ${source.isActive ? 'active' : 'inactive'}`}>
+                            {source.isActive ? '🟢' : '🔴'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="sensor-info">
+                        <p className="sensor-coords">
+                          📍 Vị trí: {source.latitude}, {source.longitude}
+                        </p>
+                        <p className="sensor-coords">
+                          🔄 Thời gian lấy dữ liệu: {source.intervalMinutes} phút
+                        </p>
+                      </div>
+                      <div className="sensor-stats">
+                        <div className="stat-item">
+                          <span className="stat-label">Số bản ghi</span>
+                          <span className="stat-value">{source.recordCount || 0}</span>
+                        </div>
+                        <div className="stat-item">
+                          <span className="stat-label">Last Fetch</span>
+                          <span className="stat-value">
+                            {source.lastFetchedAt 
+                              ? new Date(source.lastFetchedAt).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' })
+                              : 'Chưa có'}
+                          </span>
+                        </div>
+                      </div>
+                      {source.lastError && (
+                        <div className="error-info">
+                          <span>⚠️ {source.lastError}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* No Data */}
+            {!loadingExternal && externalSources.length === 0 && (
+              <div className="no-data-box">
+                <h3>🌐 Chưa có External API sources</h3>
+                <p>Người dùng có thể đóng góp dữ liệu từ API bên thứ 3.</p>
+                <p>Vui lòng đăng nhập và thêm External API source tại trang Đóng góp dữ liệu.</p>
+              </div>
+            )}
           </div>
         )}
       </div>
