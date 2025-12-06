@@ -1,0 +1,134 @@
+[
+  {
+    "id": "urn:ngsi-ld:AirQualityObserved:station-test01:2025-11-23T14:00:00Z",
+    "type": "AirQualityObserved",
+    "@context": [
+      "https://smartdatamodels.org/context.jsonld",
+      {
+        "sosa": "http://www.w3.org/ns/sosa/"
+      }
+    ],
+    "sosa:madeBySensor": "urn:ngsi-ld:Device:mq135-test01",
+    "sosa:observedProperty": "AirQuality",
+    "sosa:hasFeatureOfInterest": "urn:ngsi-ld:Air:urban-test",
+    "location": {
+      "type": "GeoProperty",
+      "value": {
+        "type": "Point",
+        "coordinates": [105.8342, 21.0278]
+      }
+    },
+    "dateObserved": {
+      "type": "Property",
+      "value": "2025-11-23T14:00:00Z"
+    },
+    "pm25": {
+      "type": "Property",
+      "value": 85.5,
+      "unitCode": "GQ",
+      "observedAt": "2025-11-23T14:00:00Z"
+    },
+    "pm10": {
+      "type": "Property",
+      "value": 120.3,
+      "unitCode": "GQ",
+      "observedAt": "2025-11-23T14:00:00Z"
+    },
+    "o3": {
+      "type": "Property",
+      "value": 55.2,
+      "unitCode": "GQ",
+      "observedAt": "2025-11-23T14:00:00Z"
+    },
+    "no2": {
+      "type": "Property",
+      "value": 1.5,
+      "unitCode": "GQ",
+      "observedAt": "2025-11-23T14:00:00Z"
+    },
+    "so2": {
+      "type": "Property",
+      "value": 25.8,
+      "unitCode": "GQ",
+      "observedAt": "2025-11-23T14:00:00Z"
+    },
+    "co": {
+      "type": "Property",
+      "value": 1150.5,
+      "unitCode": "GQ",
+      "observedAt": "2025-11-23T14:00:00Z"
+    },
+    "airQualityIndex": {
+      "type": "Property",
+      "value": 95,
+      "unitCode": "P1",
+      "observedAt": "2025-11-23T14:00:00Z"
+    }
+  },
+  {
+    "id": "urn:ngsi-ld:AirQualityObserved:station-test01:2025-11-23T14:05:00Z",
+    "type": "AirQualityObserved",
+    "@context": [
+      "https://smartdatamodels.org/context.jsonld",
+      {
+        "sosa": "http://www.w3.org/ns/sosa/"
+      }
+    ],
+    "sosa:madeBySensor": "urn:ngsi-ld:Device:mq135-test01",
+    "sosa:observedProperty": "AirQuality",
+    "sosa:hasFeatureOfInterest": "urn:ngsi-ld:Air:urban-test",
+    "location": {
+      "type": "GeoProperty",
+      "value": {
+        "type": "Point",
+        "coordinates": [105.8342, 21.0278]
+      }
+    },
+    "dateObserved": {
+      "type": "Property",
+      "value": "2025-11-23T14:05:00Z"
+    },
+    "pm25": {
+      "type": "Property",
+      "value": 87.2,
+      "unitCode": "GQ",
+      "observedAt": "2025-11-23T14:05:00Z"
+    },
+    "pm10": {
+      "type": "Property",
+      "value": 122.8,
+      "unitCode": "GQ",
+      "observedAt": "2025-11-23T14:05:00Z"
+    },
+    "o3": {
+      "type": "Property",
+      "value": 56.1,
+      "unitCode": "GQ",
+      "observedAt": "2025-11-23T14:05:00Z"
+    },
+    "no2": {
+      "type": "Property",
+      "value": 1.6,
+      "unitCode": "GQ",
+      "observedAt": "2025-11-23T14:05:00Z"
+    },
+    "so2": {
+      "type": "Property",
+      "value": 26.2,
+      "unitCode": "GQ",
+      "observedAt": "2025-11-23T14:05:00Z"
+    },
+    "co": {
+      "type": "Property",
+      "value": 1165.3,
+      "unitCode": "GQ",
+      "observedAt": "2025-11-23T14:05:00Z"
+    },
+    "airQualityIndex": {
+      "type": "Property",
+      "value": 97,
+      "unitCode": "P1",
+      "observedAt": "2025-11-23T14:05:00Z"
+    }
+  }
+]

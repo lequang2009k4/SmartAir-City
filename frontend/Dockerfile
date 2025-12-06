@@ -1,36 +1,36 @@
-# Stage 1: Build the React application
-FROM node:18-alpine AS build
+# SmartAir City – IoT Platform for Urban Air Quality Monitoring
+# based on NGSI-LD and FiWARE Standards
+
+# SPDX-License-Identifier: MIT
+# @version   0.1.x
+# @author    SmartAir City Team <smartaircity@gmail.com>
+# @copyright © 2025 SmartAir City Team. 
+# @license   MIT License
+# See LICENSE file in root directory for full license text.
+# @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+
+# This software is an open-source component of the SmartAir City initiative.
+# It provides real-time environmental monitoring, NGSI-LD–compliant data
+# models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+# open-data services and smart-city applications.
+
+# Use official Node.js image
+FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files first for better layer caching
 COPY package*.json ./
 
-# Install dependencies with force flag to resolve conflicts
-RUN npm install --force
+# Install dependencies
+RUN npm install
 
-# Copy source code
+# Copy all source code into container
 COPY . .
 
-# Build the application
-RUN npm run build
+# Expose port 3000 for React dev server
+EXPOSE 3000
 
-# Stage 2: Serve with Nginx
-FROM nginx:alpine
-
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Copy built files from build stage
-COPY --from=build /app/build /usr/share/nginx/html
-
-# Expose port 80
-EXPOSE 80
-
-# Add healthcheck
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Run React development server
+CMD ["npm", "start"]

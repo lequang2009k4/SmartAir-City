@@ -1,5 +1,18 @@
-// © 2025 SmartAir City Team
-// Licensed under the MIT License. See LICENSE file for details.
+// SmartAir City – IoT Platform for Urban Air Quality Monitoring
+// based on NGSI-LD and FiWARE Standards
+
+// SPDX-License-Identifier: MIT
+// @version   0.1.x
+// @author    SmartAir City Team <smartaircity@gmail.com>
+// @copyright © 2025 SmartAir City Team. 
+// @license   MIT License
+// See LICENSE file in root directory for full license text.
+// @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+
+// This software is an open-source component of the SmartAir City initiative.
+// It provides real-time environmental monitoring, NGSI-LD–compliant data
+// models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+// open-data services and smart-city applications.
 
 /**
  * Air Quality API Service
@@ -66,7 +79,7 @@ export const transformAirQualityData = (ngsiData) => {
     aqi: ngsiData.airQualityIndex?.value || 0,
     aqiUnitCode: ngsiData.airQualityIndex?.unitCode,
     
-    // Pollutants (µg/m³)
+    // Pollutants (GQ = µg/m³ per UN/CEFACT)
     pm25: ngsiData.pm25?.value || 0,
     pm10: ngsiData.pm10?.value || 0,
     o3: ngsiData.o3?.value || 0,
@@ -82,32 +95,32 @@ export const transformAirQualityData = (ngsiData) => {
     pollutants: {
       pm25: {
         value: ngsiData.pm25?.value || 0,
-        unit: ngsiData.pm25?.unitCode || 'µg/m³',
+        unit: ngsiData.pm25?.unitCode || 'GQ',
         observedAt: ngsiData.pm25?.observedAt,
       },
       pm10: {
         value: ngsiData.pm10?.value || 0,
-        unit: ngsiData.pm10?.unitCode || 'µg/m³',
+        unit: ngsiData.pm10?.unitCode || 'GQ',
         observedAt: ngsiData.pm10?.observedAt,
       },
       o3: {
         value: ngsiData.o3?.value || 0,
-        unit: ngsiData.o3?.unitCode || 'µg/m³',
+        unit: ngsiData.o3?.unitCode || 'GQ',
         observedAt: ngsiData.o3?.observedAt,
       },
       no2: {
         value: ngsiData.no2?.value || 0,
-        unit: ngsiData.no2?.unitCode || 'µg/m³',
+        unit: ngsiData.no2?.unitCode || 'GQ',
         observedAt: ngsiData.no2?.observedAt,
       },
       so2: {
         value: ngsiData.so2?.value || 0,
-        unit: ngsiData.so2?.unitCode || 'µg/m³',
+        unit: ngsiData.so2?.unitCode || 'GQ',
         observedAt: ngsiData.so2?.observedAt,
       },
       co: {
         value: ngsiData.co?.value || 0,
-        unit: ngsiData.co?.unitCode || 'µg/m³',
+        unit: ngsiData.co?.unitCode || 'GQ',
         observedAt: ngsiData.co?.observedAt,
       },
     },

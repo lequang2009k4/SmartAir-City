@@ -1,21 +1,46 @@
-//  SPDX-License-Identifier: MIT
-//  © 2025 SmartAir City Team
- 
-//  This source code is licensed under the MIT license found in the
-//  LICENSE file in the root directory of this source tree.
+/**
+ *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
+ *  based on NGSI-LD and FiWARE Standards
+ *
+ *  SPDX-License-Identifier: MIT
+ *  @version   0.1.x
+ *  @author    SmartAir City Team <smartaircity@gmail.com>
+ *  @copyright © 2025 SmartAir City Team. 
+ *  @license   MIT License
+ *  @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+ *
+ *  This software is an open-source component of the SmartAir City initiative.
+ *  It provides real-time environmental monitoring, NGSI-LD–compliant data
+ *  models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+ *  open-data services and smart-city applications.
+ */
+
+
 using SmartAirCity.Data;
 using SmartAirCity.Services;
 using SmartAirCity.Hubs;
+using SmartAirCity.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.OperationFilter<FileUploadOperationFilter>();
+});
 
 // MongoDB
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<AirQualityService>();
+
+// Station Service (lấy danh sách stations từ config + DB)
+builder.Services.AddScoped<StationService>();
+
+// Services for Contributions
+builder.Services.AddScoped<ContributedDataService>();
+builder.Services.AddScoped<ContributionValidationService>();
+builder.Services.AddHttpClient<UserDirectoryClient>();
 
 // OpenAQ
 builder.Services.AddHttpClient();
@@ -24,18 +49,26 @@ builder.Services.AddScoped<OpenAQLiveClient>();
 // Data Normalization
 builder.Services.AddScoped<DataNormalizationService>();
 
-// MQTT Subscriber
+// External Data Sources (HTTP)
+builder.Services.AddScoped<ExternalSourceService>();
+builder.Services.AddScoped<ExternalAirQualityService>();
+builder.Services.AddHostedService<ExternalDataPullService>();
+
+// External Data Sources (MQTT)
+builder.Services.AddScoped<ExternalMqttSourceService>();
+builder.Services.AddHostedService<ExternalMqttSubscriberService>();
+
+// MQTT Subscriber (Main broker) - Trạm của bạn (merge OpenAQ)
 builder.Services.AddHostedService<MqttSubscriberService>();
 
 // SignalR
 builder.Services.AddSignalR();
 
-// ĐỌC AllowedOrigins TỪ appsettings.json
+// CORS
 var allowedOrigins = builder.Configuration
     .GetSection("AllowedOrigins")
     .Get<string[]>() ?? Array.Empty<string>();
 
-// CORS - SỬA LẠI ĐÚNG
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -50,24 +83,20 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Swagger
-
-    app.UseSwagger();
-    app.UseSwaggerUI();
-
-
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseCors();  
-
 app.UseRouting();
 app.UseAuthorization();
 
-// MAP ENDPOINTS
-app.MapControllers();
+// Static Files (wwwroot)
+app.UseStaticFiles();
 
-// anh xa SignalR Hub vao duong dan /airqualityhub
+// Endpoints
+app.MapControllers();
 app.MapHub<AirQualityHub>("/airqualityhub");
 
-Console.WriteLine("SignalR Hub mapped at: /airqualityhub");
-Console.WriteLine($"Application started. Listening on: {builder.Configuration["urls"] ?? "http://localhost:5000"}");
+Console.WriteLine("SmartAir City API Started");
 
 app.Run();

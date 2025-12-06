@@ -1,5 +1,18 @@
-// © 2025 SmartAir City Team
-// Licensed under the MIT License. See LICENSE file for details.
+// SmartAir City – IoT Platform for Urban Air Quality Monitoring
+// based on NGSI-LD and FiWARE Standards
+
+// SPDX-License-Identifier: MIT
+// @version   0.1.x
+// @author    SmartAir City Team <smartaircity@gmail.com>
+// @copyright © 2025 SmartAir City Team. 
+// @license   MIT License
+// See LICENSE file in root directory for full license text.
+// @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+
+// This software is an open-source component of the SmartAir City initiative.
+// It provides real-time environmental monitoring, NGSI-LD–compliant data
+// models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+// open-data services and smart-city applications.
 
 /**
  * API Configuration
@@ -68,6 +81,21 @@ export const USERS_ENDPOINTS = {
   
   // Email
   SEND_EMAIL: `${CORE_API_BASE_URL}/api/Users/email`,
+};
+
+// ============================================
+// API ENDPOINTS - CONTRIBUTIONS
+// ============================================
+export const CONTRIBUTIONS_ENDPOINTS = {
+  // Base URL
+  BASE_URL: AIR_API_BASE_URL,
+  
+  // Contributions Management (Public - for contributors)
+  UPLOAD: `${AIR_API_BASE_URL}/api/contributions/upload`,
+  SUBMIT: `${AIR_API_BASE_URL}/api/contributions`,
+  GET_ALL: `${AIR_API_BASE_URL}/api/contributions`,
+  GET_STATIONS: `${AIR_API_BASE_URL}/api/contributions/stations`,
+  GET_BY_STATION: (stationId) => `${AIR_API_BASE_URL}/api/contributions/station/${stationId}`,
 };
 
 // ============================================
@@ -144,6 +172,7 @@ const config = {
   AIR_QUALITY_ENDPOINTS,
   DEVICES_ENDPOINTS,
   USERS_ENDPOINTS,
+  CONTRIBUTIONS_ENDPOINTS,
   API_CONFIG,
   buildUrl,
   logApiRequest,

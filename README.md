@@ -1,10 +1,7 @@
 # SmartAir City
 
 A real-time air quality monitoring platform that collects, processes, and visualizes environmental data from IoT sensors and third-party APIs.
-
-## Overview
-
-SmartAir City is an IoT-based platform designed to monitor urban air quality metrics including particulate matter (PM2.5, PM10), ozone (O3), nitrogen dioxide (NO2), sulfur dioxide (SO2), carbon monoxide (CO), temperature, and humidity. The system integrates data from IoT sensors and the OpenAQ API, stores it in MongoDB using the NGSI-LD standard, and displays real-time analytics through an interactive web dashboard.
+SmartAir City is an IoT-based platform designed to monitor urban air quality metrics including particulate matter (PM2.5, PM10), ozone (O3), nitrogen dioxide (NO2), sulfur dioxide (SO2), carbon monoxide (CO). The system integrates data from IoT sensors and the OpenAQ API, stores it in MongoDB using the NGSI-LD standard, and displays real-time analytics through an interactive web dashboard.
 
 ## Features
 
@@ -20,284 +17,458 @@ SmartAir City is an IoT-based platform designed to monitor urban air quality met
 ## Technology Stack
 
 ### Backend
+
 - ASP.NET Core 8.0
 - MongoDB 3.5.0
-- Swagger/OpenAPI documentation
-- NGSI-LD data model
 
 ### Frontend
-- React 19.2.0
-- Leaflet.js for interactive maps
-- Chart.js for data visualization
-- Axios for API communication
 
-## System Requirements
+- React 19.2.0
+
+## Project Structure
+
+```
+SmartAir-City/
+│
+├── 📁 backend/                                # Backend services
+│   │
+│   ├── 📁 SmartAirCity/                      # Air Quality monitoring service
+│   │   ├── 📁 Controllers/
+│   │   │   └── AirQualityController.cs       # API endpoints for air quality data
+│   │   │
+│   │   ├── 📁 Data/
+│   │   │   └── MongoDbContext.cs             # MongoDB database context
+│   │   │
+│   │   ├── 📁 Hubs/
+│   │   │   └── AirQualityHub.cs              # SignalR Hub for real-time updates
+│   │   │
+│   │   ├── 📁 Models/
+│   │   │   └── AirQuality.cs                 # NGSI-LD data model for air quality
+│   │   │
+│   │   ├── 📁 Properties/
+│   │   │   └── launchSettings.json           # Launch configuration
+│   │   │
+│   │   ├── 📁 Services/
+│   │   │   ├── AirQualityService.cs          # Business logic for air quality operations
+│   │   │   ├── DataNormalizationService.cs   # Normalize and merge IoT + OpenAQ data
+│   │   │   ├── MqttSubscriberService.cs      # Background service to subscribe MQTT
+│   │   │   └── OpenAQLiveClient.cs           # Client to fetch data from OpenAQ API
+│   │   │
+│   │   ├── 📁 bin/                           # Build output directory
+│   │   │   └── 📁 Debug/
+│   │   │
+│   │   ├── 📁 obj/                           # Build artifacts
+│   │   │   ├── project.assets.json
+│   │   │   ├── SmartAirCity.csproj.nuget.dgspec.json
+│   │   │   ├── SmartAirCity.csproj.nuget.g.props
+│   │   │   ├── SmartAirCity.csproj.nuget.g.targets
+│   │   │   └── 📁 Debug/
+│   │   │
+│   │   ├── appsettings.json                  # Application configuration
+│   │   ├── appsettings.Development.json      # Development environment config
+│   │   ├── Dockerfile                        # Docker container configuration
+│   │   ├── Program.cs                        # Application entry point
+│   │   ├── SmartAirCity.csproj               # Project file
+│   │   └── SmartAirCity.sln                  # Solution file
+│   │
+│   └── 📁 SmartCity-Core/                    # Core device and user management service
+│       ├── 📁 Controllers/
+│       │   ├── DevicesController.cs          # API endpoints for device management
+│       │   └── UsersController.cs            # API endpoints for user management
+│       │
+│       ├── 📁 Models/
+│       │   ├── Device.cs                     # Device data model
+│       │   └── User.cs                       # User data model
+│       │
+│       ├── 📁 Properties/
+│       │   └── launchSettings.json           # Launch configuration
+│       │
+│       ├── 📁 Services/
+│       │   ├── DeviceService.cs              # Business logic for device operations
+│       │   └── UserService.cs                # Business logic for user operations
+│       │
+│       ├── 📁 bin/                           # Build output directory
+│       │   └── 📁 Debug/
+│       │
+│       ├── 📁 obj/                           # Build artifacts
+│       │   ├── project.assets.json
+│       │   ├── SmartCity-Core.csproj.nuget.dgspec.json
+│       │   ├── SmartCity-Core.csproj.nuget.g.props
+│       │   ├── SmartCity-Core.csproj.nuget.g.targets
+│       │   └── 📁 Debug/
+│       │
+│       ├── appsettings.json                  # Application configuration
+│       ├── appsettings.Development.json      # Development environment config
+│       ├── Dockerfile                        # Docker container configuration
+│       ├── Program.cs                        # Application entry point
+│       ├── SmartCity-Core.csproj             # Project file
+│       ├── SmartCity-Core.sln                # Solution file
+│       └── SmartCity-Core.http               # HTTP request collection
+│
+├── 📁 frontend/                              # React frontend application
+│   │
+│   ├── 📁 public/                            # Static assets (not processed by Webpack)
+│   │   ├── favicon.ico                       # Website favicon
+│   │   ├── index.html                        # Main HTML template
+│   │   ├── logo.png                          # Logo image
+│   │   ├── manifest.json                     # PWA manifest
+│   │   ├── mockServiceWorker.js              # MSW service worker
+│   │   └── robots.txt                        # SEO robots configuration
+│   │
+│   ├── 📁 src/                               # Main source code
+│   │   │
+│   │   ├── 📁 components/                    # React Components
+│   │   │   ├── About.js                      # About page
+│   │   │   ├── About.css
+│   │   │   ├── AirQualityChart.js            # Air quality chart visualization
+│   │   │   ├── AirQualityChart.css
+│   │   │   ├── AirQualityMap.js              # Leaflet map displaying stations
+│   │   │   ├── AirQualityMap.css
+│   │   │   ├── AlertBanner.js                # Air quality alert banner
+│   │   │   ├── AlertBanner.css
+│   │   │   ├── APIDataViewer.js              # Direct API data viewer
+│   │   │   ├── APIDataViewer.css
+│   │   │   ├── AuthModal.js                  # Login/Register modal
+│   │   │   ├── AuthModal.css
+│   │   │   ├── DeviceCard.js                 # Device display card
+│   │   │   ├── DeviceCard.css
+│   │   │   ├── DeviceForm.js                 # Add/Edit device form
+│   │   │   ├── DeviceForm.css
+│   │   │   ├── DeviceList.js                 # Device list component
+│   │   │   ├── DeviceList.css
+│   │   │   ├── DeviceManagement.js           # Device management page
+│   │   │   ├── DeviceManagement.css
+│   │   │   ├── EmailModal.js                 # Email sending modal
+│   │   │   ├── EmailModal.css
+│   │   │   ├── ErrorMessage.js               # Error message display component
+│   │   │   ├── ErrorMessage.css
+│   │   │   ├── Footer.js                     # Common footer
+│   │   │   ├── Footer.css
+│   │   │   ├── Header.js                     # Header navigation
+│   │   │   ├── Header.css
+│   │   │   ├── LoadingSpinner.js             # Loading spinner component
+│   │   │   ├── LoadingSpinner.css
+│   │   │   ├── RealtimeDashboard.js          # Real-time dashboard with WebSocket
+│   │   │   ├── RealtimeDashboard.css
+│   │   │   ├── SearchFilter.js               # Search and filter component
+│   │   │   ├── SearchFilter.css
+│   │   │   ├── StationComparisonChart.js     # Station comparison chart
+│   │   │   ├── StationComparisonChart.css
+│   │   │   ├── StatsCards.js                 # Statistics display cards
+│   │   │   ├── StatsCards.css
+│   │   │   ├── UserCard.js                   # User display card
+│   │   │   ├── UserCard.css
+│   │   │   ├── UserForm.js                   # Add/Edit user form
+│   │   │   ├── UserForm.css
+│   │   │   ├── UserList.js                   # User list component
+│   │   │   ├── UserList.css
+│   │   │   ├── UserManagement.js             # User management page
+│   │   │   └── UserManagement.css
+│   │   │
+│   │   ├── 📁 contexts/                      # React Context API
+│   │   │   └── AirQualityContext.js          # AirQuality state management context
+│   │   │
+│   │   ├── 📁 hooks/                         # Custom React Hooks
+│   │   │   ├── index.js                      # Export all hooks
+│   │   │   ├── useAirQuality.js              # Air quality data management hook
+│   │   │   ├── useAuth.js                    # Authentication management hook
+│   │   │   └── useDevices.js                 # Device management hook
+│   │   │
+│   │   ├── 📁 mocks/                         # Mock Service Worker (MSW)
+│   │   │   ├── browser.js                    # MSW browser setup
+│   │   │   ├── index.js                      # MSW initialization
+│   │   │   ├── mockWebSocketAdapter.js       # Mock WebSocket adapter
+│   │   │   ├── mockWebSocketServer.js        # Mock WebSocket server
+│   │   │   ├── README.md                     # MSW usage guide
+│   │   │   │
+│   │   │   ├── 📁 data/                      # Mock data
+│   │   │   │   ├── airQualityData.js         # Mock air quality data
+│   │   │   │   ├── devicesData.js            # Mock devices data
+│   │   │   │   └── usersData.js              # Mock users data
+│   │   │   │
+│   │   │   └── 📁 handlers/                  # MSW Request Handlers
+│   │   │       ├── index.js                  # Export all handlers
+│   │   │       ├── airQualityHandlers.js     # Handlers for Air Quality API
+│   │   │       ├── devicesHandlers.js        # Handlers for Devices API
+│   │   │       └── usersHandlers.js          # Handlers for Users API
+│   │   │
+│   │   ├── 📁 services/                      # Business Logic Layer
+│   │   │   ├── index.js                      # Export all services
+│   │   │   ├── README.md                     # Services documentation
+│   │   │   │
+│   │   │   ├── 📁 api/                       # HTTP API Services
+│   │   │   │   ├── __test__.js               # Test suite for API services
+│   │   │   │   ├── airQualityService.js      # Air Quality API service
+│   │   │   │   ├── axiosInstance.js          # Axios instance configuration
+│   │   │   │   ├── devicesService.js         # Devices API service
+│   │   │   │   ├── errorHandler.js           # Global HTTP error handler
+│   │   │   │   ├── usersService.js           # Users API service
+│   │   │   │   └── README.md                 # API services documentation
+│   │   │   │
+│   │   │   ├── 📁 config/                    # Configuration files
+│   │   │   │   ├── __test__.js               # Test suite for config
+│   │   │   │   ├── apiConfig.js              # API endpoints configuration
+│   │   │   │   └── wsConfig.js               # WebSocket/SignalR configuration
+│   │   │   │
+│   │   │   └── 📁 websocket/                 # WebSocket/SignalR Services
+│   │   │       ├── airQualityWebSocket.js    # SignalR connection for Air Quality
+│   │   │       └── WebSocketManager.js       # WebSocket manager class
+│   │   │
+│   │   ├── 📁 utils/                         # Utility Functions
+│   │   │   └── exportUtils.js                # Export data to CSV/Excel
+│   │   │
+│   │   ├── App.js                            # Root component
+│   │   ├── App.css                           # Global styles for App
+│   │   ├── App.test.js                       # Test suite for App
+│   │   ├── index.js                          # Entry point
+│   │   ├── index.css                         # Global CSS
+│   │   ├── logo.svg                          # Logo SVG
+│   │   ├── reportWebVitals.js                # Web vitals reporting
+│   │   └── setupTests.js                     # Jest setup file
+│   │
+│   ├── 📁 node_modules/                      # Dependencies (generated)
+│   │
+│   ├── .env.development                      # Development environment variables
+│   ├── .env.production                       # Production environment variables
+│   ├── Dockerfile                            # Dockerfile
+│   ├── package.json                          # NPM dependencies and scripts
+│   └── package-lock.json                     # NPM lock file
+│
+├── .env.example                              # Example environment variables for docker
+├── docker-compose.yml                        # Docker-compose
+├── CHANGELOG.md                              # Project changelog
+├── CONTRIBUTING.md                           # Contribution guidelines
+├── COPPYRIGHT.txt                            # Used libary and license
+├── LICENSE                                   # Project license
+└── README.md                                 # Main project README
+
+```
+
+## Usage
+
+### 1. System Requirements
+
+**Local Development**
 
 - .NET 8.0 SDK or later
 - MongoDB 4.4 or later
 - Node.js 16.x or later
 - npm or yarn package manager
 
-For Docker deployment:
+**For Docker Deployment**
+
 - Docker 20.10+
 - Docker Compose 2.0+
 
-## Installation
+---
+
+### 2. Clone the Project
+
+```bash
+# Clone repository
+git clone https://github.com/lequang2009k4/SmartAir-City.git
+
+# Move into project directory
+cd SmartAir-City
+```
+
+---
+
+### 3. Running the Project
+
+## 3.1 Manual Setup
+
+### Configure Environment Variables
+
+**PowerShell (Windows)**
+
+```powershell
+$env:MQTT__BrokerHost = "YOUR_MQTT_BROKER_HOST"
+$env:MQTT__BrokerPort = "YOUR_MQTT_BROKER_PORT"
+$env:MQTT__Username = "YOUR_MQTT_USERNAME"
+$env:MQTT__Password = "YOUR_MQTT_PASSWORD"
+$env:MQTT__Topics__0 = "YOUR_MQTT_TOPIC_1"
+$env:MQTT__Topics__1 = "YOUR_MQTT_TOPIC_2"
+$env:MQTT__Topics__2 = "YOUR_MQTT_TOPIC_3"
+$env:MQTT__Topics__3 = "YOUR_MQTT_TOPIC_4"
+$env:MQTT__Topics__4 = "YOUR_MQTT_TOPIC_5"
+
+$env:OpenAQ__ApiKey = "YOUR_OPENAQ_API_KEY"
+
+$env:SMTP__FromEmail   = "<YOUR_EMAIL>"
+$env:SMTP__FromEmail   = "<YOUR_APP_PASSWORD>"
+```
+
+**Linux/macOS**
+
+```bash
+export MQTT__BrokerHost="YOUR_MQTT_BROKER_HOST"
+export MQTT__BrokerPort="YOUR_MQTT_BROKER_PORT"
+export MQTT__Username="YOUR_MQTT_USERNAME"
+export MQTT__Password="YOUR_MQTT_PASSWORD"
+export MQTT__Topics__0="YOUR_MQTT_TOPIC_1"
+export MQTT__Topics__1="YOUR_MQTT_TOPIC_2"
+export MQTT__Topics__2="YOUR_MQTT_TOPIC_3"
+export MQTT__Topics__3="YOUR_MQTT_TOPIC_4"
+export MQTT__Topics__4="YOUR_MQTT_TOPIC_5"
+
+export OpenAQ__ApiKey="YOUR_OPENAQ_API_KEY"
+
+export SMTP__FromEmail   = "<YOUR_EMAIL>"
+export SMTP__FromEmail   = "<YOUR_APP_PASSWORD>"
+```
+
+---
 
 ### Backend Setup
 
-1. Navigate to the backend directory:
+#### **SmartAirCity API**
+
 ```bash
+# Navigate to backend project
 cd backend/SmartAirCity
-```
 
-2. Restore dependencies:
-```bash
+# Restore dependencies
 dotnet restore
-```
 
-3. Configure MongoDB connection in `appsettings.json`:
-```json
-{
-  "ConnectionStrings": {
-    "MongoDb": "mongodb://localhost:27017"
-  },
-  "Mongo": {
-    "Database": "SmartAirCityDB"
-  }
-}
-```
-
-4. (Optional) Configure OpenAQ API key in `appsettings.json`:
-```json
-{
-  "OpenAQ": {
-    "ApiKey": "your-api-key-here",
-    "City": "Hanoi",
-    "Parameters": "pm25,pm10,o3,no2,so2,co"
-  }
-}
-```
-
-5. Run the backend server:
-```bash
+# Run the backend server
 dotnet run
 ```
 
-The API will be available at `http://localhost:5000` and Swagger UI at `http://localhost:5000`.
+API available at: **http://localhost:51872/swagger**
+
+---
+
+#### **SmartCity-Core API**
+
+```bash
+# Navigate to SmartAirCore
+cd backend/SmartCity-Core
+
+# Restore dependencies
+dotnet restore
+
+# Run the backend server
+dotnet run
+```
+
+API available at: **http://localhost:8080/swagger**
+
+---
 
 ### Frontend Setup
 
-#### Standard Development
-
-1. Navigate to the frontend directory:
 ```bash
+# Navigate to the frontend
 cd frontend
-```
 
-2. Install dependencies:
-```bash
+# Install dependencies
 npm install
-```
 
-3. (Optional) Configure environment variables:
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
+# Prepare environment file
+cp .env.production .env   # Then edit the .env file with your configuration
 
-4. Start the development server:
-
-```bash
+# Start development server
 npm start
 ```
 
-The application will open at `http://localhost:3000`.
+Application available at: **http://localhost:3000**
 
-#### Docker Deployment
+---
 
-1. Navigate to the frontend directory:
+## 3.2 Docker Deployment
+
+### Create the .env File
+
+In the project root, copy a `.env` file:
+
+```env
+cp .env.example .env.local # Then edit the .env file with your configuration
+```
+
+---
+
+### Running Docker Deployment
+
+Navigate to the project root:
+
 ```bash
-cd frontend
+cd SmartAir-City
 ```
 
-2. Build and run with Docker Compose:
+Then run:
+
 ```bash
-docker-compose up -d --build
+docker compose up --build -d
 ```
 
-The application will be available at `http://localhost:3000`.
+This will:
 
-3. View logs:
+- Build all backend & frontend services
+- Create the private Docker network `mynet`
+- Load all environment variables from `.env`
+- Expose the correct service ports
+
+---
+
+### Verify Running Containers
+
 ```bash
-docker-compose logs -f
+docker ps
 ```
 
-4. Stop containers:
-```bash
-docker-compose down
-```
+You should see:
 
-For detailed Docker setup and troubleshooting, see [frontend/README.md](frontend/README.md).
+| Service            | Port  |
+| ------------------ | ----- |
+| smartaircity-api   | 51872 |
+| smartcity-core     | 8080  |
+| smartcity-frontend | 3000  |
 
-## API Endpoints
+---
 
-### POST /api/iot-data
-Receive IoT sensor data in JSON-LD format.
+## Open Data API – Air Quality
 
-**Request Body:**
-```json
-{
-  "id": "urn:ngsi-ld:AirQualityObserved:station-001",
-  "type": "AirQualityObserved",
-  "location": {
-    "type": "GeoProperty",
-    "value": {
-      "type": "Point",
-      "coordinates": [105.8542, 21.0285]
-    }
-  },
-  "temperature": {
-    "type": "Property",
-    "value": 28.5,
-    "unitCode": "CEL"
-  },
-  "humidity": {
-    "type": "Property",
-    "value": 65,
-    "unitCode": "P1"
-  }
-}
-```
+Base URL: **https://opendata.quanglv.com**
 
-### GET /api/airquality
-Retrieve all air quality records.
+This API provides simple public access to real-time and historical air quality data.
 
-**Query Parameters:**
-- `limit` (optional): Maximum number of records to return
+---
 
-### GET /api/airquality/latest
-Get the most recent air quality measurement.
+### 1. GET `/airquality`
 
-### GET /api/airquality/history
+Retrieve a list of air quality records.
+
+**Query Parameters (optional):**
+
+- `limit` — number of records to return
+- `stationId` — filter by station
+- `order` — `asc` or `desc`
+
+---
+
+### 2. GET `/airquality/latest`
+
+Retrieve the most recent air quality measurement.
+
+**Query Parameters (optional):**
+
+- `stationId` — get latest record for a specific station
+
+---
+
+### 3. GET `/airquality/history`
+
 Retrieve historical data within a time range.
 
 **Query Parameters:**
-- `from`: Start date (ISO 8601 format)
-- `to`: End date (ISO 8601 format)
 
-## Project Structure
+- `from` — start time (ISO 8601)
+- `to` — end time (ISO 8601)
+- `stationId` — optional
+- `limit` — optional
 
-```
-SmartAir-City/
-├── backend/
-│   └── SmartAirCity/
-│       ├── Controllers/        # API controllers
-│       ├── Data/              # MongoDB context
-│       ├── Models/            # Data models
-│       ├── Services/          # Business logic
-│       ├── appsettings.json   # Configuration
-│       └── Program.cs         # Application entry point
-├── frontend/
-│   ├── public/                # Static files
-│   └── src/
-│       ├── components/        # React components
-│       ├── data/             # Data utilities
-│       ├── utils/            # Helper functions
-│       └── App.js            # Main application
-├── CHANGELOG.md              # Version history
-├── CONTRIBUTING.md           # Contribution guidelines
-└── LICENSE                   # MIT License
-```
-
-## Configuration
-
-### MongoDB
-Ensure MongoDB is running on your system. The default connection string points to `mongodb://localhost:27017`. Update the connection string in `appsettings.json` if using a different configuration.
-
-### OpenAQ API
-The system can optionally integrate with OpenAQ for additional air quality data. Register for a free API key at [openaq.org](https://openaq.org/) and add it to your configuration.
-
-
-### Frontend Environment Variables
-Create a `.env` file in the frontend directory based on `.env.example`:
-
-```env
-REACT_APP_API_BASE_URL=http://localhost:5000/api
-REACT_APP_API_TIMEOUT=10000
-REACT_APP_MAP_CENTER_LAT=21.0285
-REACT_APP_MAP_CENTER_LNG=105.8542
-REACT_APP_MAP_DEFAULT_ZOOM=12
-```
-
-**Important:** Never commit `.env` files to version control. Use `.env.example` as a template only.
-
-
-## Usage
-
-1. Start MongoDB service
-2. Run the backend API server
-3. Start the frontend development server
-4. Access the dashboard at `http://localhost:3000`
-5. View real-time air quality data on the map and charts
-6. Use the API endpoints to send IoT sensor data or query historical records
-
-## Development
-
-### Running Tests
-
-Backend:
-```bash
-cd backend/SmartAirCity
-dotnet test
-```
-
-Frontend:
-```bash
-cd frontend
-npm test
-```
-
-### Building for Production
-
-Backend:
-```bash
-dotnet publish -c Release
-```
-
-
-Frontend (Standard):
-
-```bash
-npm run build
-```
-
-Frontend (Docker):
-```bash
-cd frontend
-docker-compose up -d --build
-```
-
-## Docker Deployment
-
-### Frontend with Docker
-
-The frontend includes production-ready Docker configuration with:
-- Multi-stage build (Node.js build + Nginx serve)
-- Optimized image size
-- Gzip compression
-- Security headers
-- Health check endpoint
-- React Router support
-
-Quick start:
-```bash
-cd frontend
-docker-compose up -d --build
-```
-
-For detailed instructions, see [frontend/README.md](frontend/README.md).
-
+---
 
 ## Contributing
 
@@ -309,10 +480,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Authors
 
-- Le Van Quang - Initial work - [lequang2009k4](https://github.com/lequang2009k4)
-
-## Acknowledgments
-
-- OpenAQ for providing global air quality data
-- FIWARE NGSI-LD for IoT data standards
-- MongoDB for database support
+- **SmartCity Team** – Initial work  
+  Contact: smartaircity@gmail.com

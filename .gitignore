@@ -6,7 +6,9 @@ obj/
 node_modules/
 .env
 
-backend/
+cau_truc_thu_muc.txt
+frontend/COPYRIGHT.txt 
+frontend/Frontend.md
 
 openapi.yaml
 openapi (1).yaml

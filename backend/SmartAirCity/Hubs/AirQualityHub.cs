@@ -1,13 +1,28 @@
-//  SPDX-License-Identifier: MIT
-//  © 2025 SmartAir City Team
-//  This source code is licensed under the MIT license found in the
-//  LICENSE file in the root directory of this source tree.
+/**
+ *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
+ *  based on NGSI-LD and FiWARE Standards
+ *
+ *  SPDX-License-Identifier: MIT
+ *  @version   0.1.x
+ *  @author    SmartAir City Team <smartaircity@gmail.com>
+ *  @copyright © 2025 SmartAir City Team. 
+ *  @license   MIT License
+ *  See LICENSE file in root directory for full license text.
+ *  @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+ *
+ *  This software is an open-source component of the SmartAir City initiative.
+ *  It provides real-time environmental monitoring, NGSI-LD–compliant data
+ *  models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+ *  open-data services and smart-city applications.
+ */
+
+
 using Microsoft.AspNetCore.SignalR;
 
 namespace SmartAirCity.Hubs;
 
 /// <summary>
-/// SignalR Hub để push realtime air quality data tới frontend
+/// SignalR Hub de push realtime air quality data toi frontend
 /// </summary>
 public class AirQualityHub : Hub
 {
@@ -33,7 +48,7 @@ public class AirQualityHub : Hub
     }
 
     /// <summary>
-    /// duoc goi khi client ngat ket noi
+    /// Duoc goi khi client ngat ket noi
     /// </summary>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {

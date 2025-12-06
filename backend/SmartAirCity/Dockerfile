@@ -1,11 +1,30 @@
+# -----------------------------------------------------------------------------
+#   SmartAir City – IoT Platform for Urban Air Quality Monitoring
+#   based on NGSI-LD and FiWARE Standards
+#
+#   SPDX-License-Identifier: MIT
+#   @version    0.1.x
+#   @author     SmartAir City Team <smartaircity@gmail.com>
+#   @copyright  © 2025 SmartAir City Team. 
+#   @license    MIT License
+#   See LICENSE file in root directory for full license text.
+#   @see        https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+#
+#   This software is an open-source component of the SmartAir City initiative.
+#   It provides real-time environmental monitoring, NGSI-LD–compliant data
+#   models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+#   open-data services and smart-city applications.
+# -----------------------------------------------------------------------------
+
+
+
 # See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER $APP_UID
 WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
+EXPOSE 51872
 
 
 # This stage is used to build the service project

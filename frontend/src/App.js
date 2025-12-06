@@ -1,5 +1,18 @@
-// © 2025 SmartAir City Team
-// Licensed under the MIT License. See LICENSE file for details.
+// SmartAir City – IoT Platform for Urban Air Quality Monitoring
+// based on NGSI-LD and FiWARE Standards
+
+// SPDX-License-Identifier: MIT
+// @version   0.1.x
+// @author    SmartAir City Team <smartaircity@gmail.com>
+// @copyright © 2025 SmartAir City Team. 
+// @license   MIT License
+// See LICENSE file in root directory for full license text.
+// @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+
+// This software is an open-source component of the SmartAir City initiative.
+// It provides real-time environmental monitoring, NGSI-LD–compliant data
+// models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+// open-data services and smart-city applications.
 
 import React, { useState, useEffect } from 'react';
 import './App.css';
@@ -15,6 +28,7 @@ import ErrorMessage from './components/ErrorMessage';
 import AuthModal from './components/AuthModal';
 import DeviceManagement from './components/DeviceManagement';
 import UserManagement from './components/UserManagement';
+import ContributionManagement from './components/ContributionManagement';
 import { getUser, removeToken } from './services/api/usersService';
 import { AirQualityProvider } from './contexts/AirQualityContext';
 // import SearchFilter from './components/SearchFilter'; // TODO: Update to use hooks
@@ -161,6 +175,26 @@ function App() {
           );
         }
         return <UserManagement />;
+      
+      case 'contributions':
+        // Only show if user is logged in
+        if (!user) {
+          return (
+            <div className="access-denied">
+              <h2>🔒 Yêu cầu đăng nhập</h2>
+              <p>Bạn cần đăng nhập để đóng góp dữ liệu chất lượng không khí.</p>
+              <div className="access-denied-actions">
+                <button className="btn-primary" onClick={handleLoginClick}>
+                  🔐 Đăng nhập ngay
+                </button>
+                <button className="btn-back" onClick={() => setActiveTab('home')}>
+                  ← Quay lại trang chủ
+                </button>
+              </div>
+            </div>
+          );
+        }
+        return <ContributionManagement user={user} />;
       
       default:
         return (

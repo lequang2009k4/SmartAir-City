@@ -1,3 +1,21 @@
+/* 
+SmartAir City – IoT Platform for Urban Air Quality Monitoring
+based on NGSI-LD and FiWARE Standards
+
+SPDX-License-Identifier: MIT
+@version   0.1.x
+@author    SmartAir City Team <smartaircity@gmail.com>
+@copyright © 2025 SmartAir City Team. 
+@license   MIT License
+See LICENSE file in root directory for full license text.
+@see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+
+This software is an open-source component of the SmartAir City initiative.
+It provides real-time environmental monitoring, NGSI-LD–compliant data
+models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+open-data services and smart-city applications. 
+*/
+
 /* App Component - Basic Layout */
 
 * {
@@ -411,7 +429,14 @@ body.dark-mode .access-denied p {
   line-height: 1.6;
 }
 
-.btn-back {
+.access-denied-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
@@ -423,9 +448,27 @@ body.dark-mode .access-denied p {
   transition: all 0.3s ease;
 }
 
-.btn-back:hover {
+.btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.btn-back {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  padding: 1rem 2.5rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+  background: #f5f7ff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.2);
 }
 
 /* Responsive Design */

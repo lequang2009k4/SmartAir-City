@@ -1,5 +1,18 @@
-// © 2025 SmartAir City Team
-// Licensed under the MIT License. See LICENSE file for details.
+// SmartAir City – IoT Platform for Urban Air Quality Monitoring
+// based on NGSI-LD and FiWARE Standards
+
+// SPDX-License-Identifier: MIT
+// @version   0.1.x
+// @author    SmartAir City Team <smartaircity@gmail.com>
+// @copyright © 2025 SmartAir City Team. 
+// @license   MIT License
+// See LICENSE file in root directory for full license text.
+// @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+
+// This software is an open-source component of the SmartAir City initiative.
+// It provides real-time environmental monitoring, NGSI-LD–compliant data
+// models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+// open-data services and smart-city applications.
 
 import React, { useState, useEffect, useRef } from 'react';
 import './Header.css';
@@ -84,11 +97,19 @@ const Header = ({ activeTab, setActiveTab, user, onLoginClick, onLogout }) => {
                   {/* User Dropdown Menu */}
                   {showAdminMenu && (
                     <div className="admin-dropdown-menu">
+                      {/* Contributions - Available for all logged-in users */}
+                      <button
+                        className="dropdown-item"
+                        onClick={() => {
+                          setActiveTab('contributions');
+                          setShowAdminMenu(false);
+                        }}
+                      >
+                        Đóng góp dữ liệu
+                      </button>
+                      
                       {user.role === 'admin' && (
                         <>
-                          <div className="dropdown-header">
-                            🔧 Quản lý hệ thống
-                          </div>
                           <button
                             className="dropdown-item"
                             onClick={() => {
@@ -96,7 +117,7 @@ const Header = ({ activeTab, setActiveTab, user, onLoginClick, onLogout }) => {
                               setShowAdminMenu(false);
                             }}
                           >
-                            📡 Quản lý thiết bị
+                            Quản lý thiết bị
                           </button>
                           <button
                             className="dropdown-item"
@@ -105,11 +126,12 @@ const Header = ({ activeTab, setActiveTab, user, onLoginClick, onLogout }) => {
                               setShowAdminMenu(false);
                             }}
                           >
-                            👥 Quản lý người dùng
+                            Quản lý người dùng
                           </button>
-                          <div className="dropdown-divider"></div>
                         </>
                       )}
+                      
+                      <div className="dropdown-divider"></div>
                       <button
                         className="dropdown-item dropdown-logout"
                         onClick={() => {

@@ -1,0 +1,562 @@
+/* 
+SmartAir City – IoT Platform for Urban Air Quality Monitoring
+based on NGSI-LD and FiWARE Standards
+
+SPDX-License-Identifier: MIT
+@version   0.1.x
+@author    SmartAir City Team <smartaircity@gmail.com>
+@copyright © 2025 SmartAir City Team. 
+@license   MIT License
+See LICENSE file in root directory for full license text.
+@see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+
+This software is an open-source component of the SmartAir City initiative.
+It provides real-time environmental monitoring, NGSI-LD–compliant data
+models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+open-data services and smart-city applications. 
+*/
+
+/* SmartAir City – Contribution List Styles */
+
+.contribution-list {
+  width: 100%;
+}
+
+/* ============================================
+   LIST HEADER
+   ============================================ */
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.header-left h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.8rem;
+}
+
+.total-count {
+  padding: 6px 12px;
+  background: #667eea;
+  color: white;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #555;
+  white-space: nowrap;
+}
+
+.filter-group select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.filter-group select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.filter-group select:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.btn-refresh {
+  padding: 8px 16px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-refresh:hover:not(:disabled) {
+  background: #5568d3;
+  transform: translateY(-2px);
+}
+
+.btn-refresh:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   ERROR & EMPTY STATES
+   ============================================ */
+.error-message {
+  padding: 20px;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  color: #721c24;
+  text-align: center;
+}
+
+.error-message button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.error-message button:hover {
+  background: #c82333;
+}
+
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+  color: #999;
+  font-size: 1.2rem;
+}
+
+/* ============================================
+   CONTRIBUTIONS GRID
+   ============================================ */
+.contributions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+/* ============================================
+   CONTRIBUTION CARD
+   ============================================ */
+.contribution-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.contribution-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.contribution-card.expanded {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Card Header */
+.card-header {
+  padding: 15px 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.station-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-approved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-unknown {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.aqi-badge {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 1rem;
+  color: white;
+  white-space: nowrap;
+}
+
+.aqi-badge.aqi-good {
+  background: #28a745;
+}
+
+.aqi-badge.aqi-moderate {
+  background: #ffc107;
+  color: #333;
+}
+
+.aqi-badge.aqi-unhealthy-sensitive {
+  background: #fd7e14;
+}
+
+.aqi-badge.aqi-unhealthy {
+  background: #dc3545;
+}
+
+.aqi-badge.aqi-very-unhealthy {
+  background: #6f42c1;
+}
+
+.aqi-badge.aqi-hazardous {
+  background: #8b0000;
+}
+
+/* Card Body */
+.card-body {
+  padding: 20px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.info-row .label {
+  color: #777;
+  font-weight: 500;
+}
+
+.info-row .value {
+  color: #333;
+  font-weight: 600;
+}
+
+/* Pollutants Quick View */
+.pollutants-quick {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 15px 0;
+  margin: 15px 0;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.pollutant-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.pollutant-name {
+  font-size: 0.75rem;
+  color: #777;
+  font-weight: 600;
+}
+
+.pollutant-value {
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 700;
+}
+
+/* Contributor Info */
+.contributor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 15px 0;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.contributor-info .label {
+  color: #555;
+  font-weight: 600;
+}
+
+.contributor-info .value {
+  color: #333;
+}
+
+/* Expanded Details */
+.expanded-details {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #e0e0e0;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+  }
+}
+
+.expanded-details h4 {
+  margin: 0 0 15px 0;
+  color: #667eea;
+  font-size: 1.1rem;
+}
+
+.all-pollutants {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.pollutant-detail {
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.pollutant-detail strong {
+  color: #555;
+}
+
+/* Raw JSON */
+.raw-json {
+  margin-top: 15px;
+}
+
+.raw-json summary {
+  cursor: pointer;
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #555;
+  transition: all 0.3s ease;
+}
+
+.raw-json summary:hover {
+  background: #e0e0e0;
+}
+
+.raw-json pre {
+  margin: 10px 0 0 0;
+  padding: 15px;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Card Footer */
+.card-footer {
+  padding: 12px 20px;
+  background: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.btn-toggle-details {
+  padding: 8px 20px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  color: #667eea;
+}
+
+.btn-toggle-details:hover {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 1200px) {
+  .contributions-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .list-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-controls {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .filter-group select {
+    flex: 1;
+  }
+
+  .btn-refresh {
+    width: 100%;
+  }
+
+  .contributions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pollutants-quick {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .all-pollutants {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
+   DARK MODE SUPPORT
+   ============================================ */
+.dark-mode .contribution-list .header-left h2 {
+  color: #e2e8f0;
+}
+
+.dark-mode .filter-group label {
+  color: #cbd5e0;
+}
+
+.dark-mode .filter-group select {
+  background: #2d3748;
+  border-color: #4a5568;
+  color: #e2e8f0;
+}
+
+.dark-mode .contribution-card {
+  background: #2d3748;
+  border-color: #4a5568;
+}
+
+.dark-mode .card-header {
+  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  border-color: #4a5568;
+}
+
+.dark-mode .station-info h3 {
+  color: #e2e8f0;
+}
+
+.dark-mode .info-row .label {
+  color: #a0aec0;
+}
+
+.dark-mode .info-row .value {
+  color: #e2e8f0;
+}
+
+.dark-mode .pollutant-name {
+  color: #a0aec0;
+}
+
+.dark-mode .pollutant-value {
+  color: #e2e8f0;
+}
+
+.dark-mode .contributor-info {
+  background: #1a202c;
+}
+
+.dark-mode .pollutant-detail {
+  background: #1a202c;
+}
+
+.dark-mode .expanded-details h4 {
+  color: #90cdf4;
+}
+
+.dark-mode .raw-json summary {
+  background: #1a202c;
+  color: #cbd5e0;
+}
+
+.dark-mode .card-footer {
+  background: #1a202c;
+  border-color: #4a5568;
+}
+
+.dark-mode .btn-toggle-details {
+  background: #2d3748;
+  border-color: #4a5568;
+  color: #90cdf4;
+}
+
+.dark-mode .btn-toggle-details:hover {
+  background: #667eea;
+  color: white;
+}
