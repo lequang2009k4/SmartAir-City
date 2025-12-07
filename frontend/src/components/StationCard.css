@@ -17,17 +17,41 @@ open-data services and smart-city applications.
 */
 
 .station-card {
-  background: white;
-  border-radius: 12px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 350px;
+  transform-style: preserve-3d;
+  position: relative;
+  overflow: hidden;
+}
+
+.station-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, 
+    rgba(102, 126, 234, 0.1) 0%, 
+    rgba(118, 75, 162, 0.1) 100%);
+  transform: translateZ(-1px);
+  transition: transform 0.6s ease;
+  z-index: -1;
 }
 
 .station-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-12px) rotateX(5deg) scale(1.02);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2), 
+              0 10px 20px rgba(102, 126, 234, 0.15),
+              inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.station-card:hover::before {
+  transform: translateZ(-1px) scale(1.1) rotate(5deg);
 }
 
 .station-card--no-data {
@@ -66,10 +90,40 @@ open-data services and smart-city applications.
   align-items: center;
   justify-content: center;
   padding: 24px;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-bottom: 16px;
   color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  transform: translateZ(20px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2), 
+              inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  transition: transform 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.station-card__aqi::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(255, 255, 255, 0.1) 50%, 
+    transparent 70%);
+  transform: rotate(45deg);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) rotate(45deg); }
+}
+
+.station-card:hover .station-card__aqi {
+  transform: translateZ(30px) scale(1.05);
 }
 
 .station-card__aqi-value {
