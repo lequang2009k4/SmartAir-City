@@ -39,6 +39,37 @@ const CACHE_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
  */
 const AirQualityChart = () => {
   const { latestData, isConnected } = useAirQualityContext();
+  const chartRef = useRef(null);
+  const [tiltStyle, setTiltStyle] = useState({});
+
+  // Handle mouse move for 3D tilt effect
+  const handleMouseMove = (e) => {
+    if (!chartRef.current) return;
+    
+    const chart = chartRef.current;
+    const rect = chart.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    const rotateX = ((y - centerY) / centerY) * -3; // Max 3deg (lighter than cards)
+    const rotateY = ((x - centerX) / centerX) * 3;
+    
+    setTiltStyle({
+      transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
+      transition: 'transform 0.1s ease-out'
+    });
+  };
+
+  // Reset tilt on mouse leave
+  const handleMouseLeave = () => {
+    setTiltStyle({
+      transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg)',
+      transition: 'transform 0.3s ease'
+    });
+  };
   
   // Station name mapping
   const stationNames = {
@@ -161,7 +192,13 @@ const AirQualityChart = () => {
   };
 
   return (
-    <div className="chart-container">
+    <div 
+      className="chart-container"
+      ref={chartRef}
+      style={tiltStyle}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
       <div className="chart-header">
         <h3>Biểu đồ theo dõi chất lượng không khí</h3>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
