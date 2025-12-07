@@ -34,6 +34,9 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<AirQualityService>();
 
+// Station Service (lấy danh sách stations từ config + DB)
+builder.Services.AddScoped<StationService>();
+
 // Services for Contributions
 builder.Services.AddScoped<ContributedDataService>();
 builder.Services.AddScoped<ContributionValidationService>();
@@ -46,7 +49,16 @@ builder.Services.AddScoped<OpenAQLiveClient>();
 // Data Normalization
 builder.Services.AddScoped<DataNormalizationService>();
 
-// MQTT Subscriber
+// External Data Sources (HTTP)
+builder.Services.AddScoped<ExternalSourceService>();
+builder.Services.AddScoped<ExternalAirQualityService>();
+builder.Services.AddHostedService<ExternalDataPullService>();
+
+// External Data Sources (MQTT)
+builder.Services.AddScoped<ExternalMqttSourceService>();
+builder.Services.AddHostedService<ExternalMqttSubscriberService>();
+
+// MQTT Subscriber (Main broker) - Trạm của bạn (merge OpenAQ)
 builder.Services.AddHostedService<MqttSubscriberService>();
 
 // SignalR
@@ -77,6 +89,9 @@ app.UseSwaggerUI();
 app.UseCors();  
 app.UseRouting();
 app.UseAuthorization();
+
+// Static Files (wwwroot)
+app.UseStaticFiles();
 
 // Endpoints
 app.MapControllers();

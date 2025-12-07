@@ -28,8 +28,8 @@
 // ENVIRONMENT VARIABLES
 // ============================================
 const ENV = process.env.REACT_APP_ENV || 'development';
-const AIR_API_BASE_URL = process.env.REACT_APP_AIR_API_URL || 'http://localhost:5182';
-const CORE_API_BASE_URL = process.env.REACT_APP_CORE_API_URL || 'http://3.27.249.236:5252';
+const AIR_API_BASE_URL = process.env.REACT_APP_AIR_API_URL;
+const CORE_API_BASE_URL = process.env.REACT_APP_CORE_API_URL;
 const API_TIMEOUT = parseInt(process.env.REACT_APP_API_TIMEOUT) || 10000;
 const AUTO_REFRESH_INTERVAL = parseInt(process.env.REACT_APP_AUTO_REFRESH_INTERVAL) || 30000;
 
@@ -44,6 +44,10 @@ export const AIR_QUALITY_ENDPOINTS = {
   GET_ALL: `${AIR_API_BASE_URL}/api/airquality`,
   GET_LATEST: `${AIR_API_BASE_URL}/api/airquality/latest`,
   GET_HISTORY: `${AIR_API_BASE_URL}/api/airquality/history`,
+  
+  // Download Endpoints (NEW)
+  DOWNLOAD: `${AIR_API_BASE_URL}/api/airquality/download`,
+  DOWNLOAD_HISTORY: `${AIR_API_BASE_URL}/api/airquality/history/download`,
   
   // IoT Ingest Endpoint (Private - for admin only)
   POST_IOT_DATA: `${AIR_API_BASE_URL}/api/iot-data`,
@@ -90,12 +94,59 @@ export const CONTRIBUTIONS_ENDPOINTS = {
   // Base URL
   BASE_URL: AIR_API_BASE_URL,
   
-  // Contributions Management (Public - for contributors)
+  // Valid Contributions Endpoints from api.yaml
   UPLOAD: `${AIR_API_BASE_URL}/api/contributions/upload`,
-  SUBMIT: `${AIR_API_BASE_URL}/api/contributions`,
-  GET_ALL: `${AIR_API_BASE_URL}/api/contributions`,
-  GET_STATIONS: `${AIR_API_BASE_URL}/api/contributions/stations`,
-  GET_BY_STATION: (stationId) => `${AIR_API_BASE_URL}/api/contributions/station/${stationId}`,
+  PUBLIC_STATS: `${AIR_API_BASE_URL}/api/contributions/public`,
+  LIST: `${AIR_API_BASE_URL}/api/contributions/list`,
+  LATEST_BY_ID: (contributionId) => `${AIR_API_BASE_URL}/api/contributions/${contributionId}/latest`,
+  DOWNLOAD_BY_ID: (contributionId) => `${AIR_API_BASE_URL}/api/contributions/${contributionId}/download`,
+};
+
+// ============================================
+// API ENDPOINTS - STATIONS
+// ============================================
+export const STATIONS_ENDPOINTS = {
+  // Base URL
+  BASE_URL: AIR_API_BASE_URL,
+  
+  // Stations Information
+  GET_ALL: `${AIR_API_BASE_URL}/api/stations`,
+  GET_FOR_MAP: `${AIR_API_BASE_URL}/api/stations/map`,
+  GET_STATION_DATA: (stationId) => `${AIR_API_BASE_URL}/api/stations/${stationId}/data`,
+};
+
+// ============================================
+// API ENDPOINTS - EXTERNAL HTTP SOURCES
+// ============================================
+export const EXTERNAL_SOURCES_ENDPOINTS = {
+  // Base URL
+  BASE_URL: AIR_API_BASE_URL,
+  
+  // External HTTP Sources Management
+  GET_ALL: `${AIR_API_BASE_URL}/api/sources`,
+  CREATE: `${AIR_API_BASE_URL}/api/sources`,
+  DELETE: (id) => `${AIR_API_BASE_URL}/api/sources/${id}`,
+  REACTIVATE: (id) => `${AIR_API_BASE_URL}/api/sources/${id}/reactivate`,
+  TEST_URL: `${AIR_API_BASE_URL}/api/sources/test`,
+};
+
+// ============================================
+// API ENDPOINTS - EXTERNAL MQTT SOURCES
+// ============================================
+export const EXTERNAL_MQTT_ENDPOINTS = {
+  // Base URL
+  BASE_URL: AIR_API_BASE_URL,
+  
+  // External MQTT Sources Management
+  GET_ALL: `${AIR_API_BASE_URL}/api/mqtt/sources`,
+  GET_BY_ID: (id) => `${AIR_API_BASE_URL}/api/mqtt/sources/${id}`,
+  CREATE: `${AIR_API_BASE_URL}/api/mqtt/sources`,
+  UPDATE: (id) => `${AIR_API_BASE_URL}/api/mqtt/sources/${id}`,
+  DELETE: (id) => `${AIR_API_BASE_URL}/api/mqtt/sources/${id}`,
+  UPDATE_OPENAQ: (id) => `${AIR_API_BASE_URL}/api/mqtt/sources/${id}/openaq`,
+  ACTIVATE: (id) => `${AIR_API_BASE_URL}/api/mqtt/sources/${id}/activate`,
+  DEACTIVATE: (id) => `${AIR_API_BASE_URL}/api/mqtt/sources/${id}/deactivate`,
+  TEST_CONNECTION: `${AIR_API_BASE_URL}/api/mqtt/sources/test`,
 };
 
 // ============================================
@@ -173,6 +224,9 @@ const config = {
   DEVICES_ENDPOINTS,
   USERS_ENDPOINTS,
   CONTRIBUTIONS_ENDPOINTS,
+  STATIONS_ENDPOINTS,
+  EXTERNAL_SOURCES_ENDPOINTS,
+  EXTERNAL_MQTT_ENDPOINTS,
   API_CONFIG,
   buildUrl,
   logApiRequest,

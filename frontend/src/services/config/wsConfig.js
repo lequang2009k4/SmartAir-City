@@ -25,7 +25,7 @@
 // ============================================
 // ENVIRONMENT VARIABLES
 // ============================================
-const AIR_WS_BASE_URL = process.env.REACT_APP_AIR_WS_URL || 'http://3.27.249.236:51762';
+const AIR_WS_BASE_URL = process.env.REACT_APP_AIR_WS_URL;
 const ENABLE_WEBSOCKET = process.env.REACT_APP_ENABLE_WEBSOCKET === 'true';
 const WS_RECONNECT_INTERVAL = parseInt(process.env.REACT_APP_WS_RECONNECT_INTERVAL) || 5000;
 const DEBUG_MODE = process.env.REACT_APP_DEBUG_MODE === 'true';
@@ -57,7 +57,7 @@ export const WS_ENDPOINTS = {
 export const WS_EVENTS = {
   // Air Quality events
   AIR_QUALITY: {
-    NEW_DATA: 'NewAirQualityData',  // ✅ Fixed: Match backend event name
+    NEW_DATA: 'NewAirQualityData',  
     UPDATE: 'NewAirQualityData',     // Same as NEW_DATA
     LATEST_DATA: 'ReceiveLatestData',
     ALERT: 'ReceiveAlert',

@@ -53,6 +53,41 @@ public class ContributedDataService
     }
 
     /// <summary>
+    /// Upsert - Insert or Update based on NGSI-LD Id (prevents duplicates)
+    /// Used by External Data Pull Service for auto-pulled NGSI-LD data
+    /// </summary>
+    public async Task<string> UpsertAsync(ContributedAirQuality data, CancellationToken ct = default)
+    {
+        // Dam bao co ID
+        if (string.IsNullOrEmpty(data.Id))
+        {
+            var uniqueId = Guid.NewGuid().ToString("N")[..8];
+            data.Id = $"urn:ngsi-ld:AirQualityObserved:contributed:{DateTime.UtcNow:yyyy-MM-ddTHH-mm-ss}-{uniqueId}";
+        }
+
+        var filter = Builders<ContributedAirQuality>.Filter.Eq(x => x.Id, data.Id);
+        
+        // Check if document exists to preserve its _id (MongoDB doesn't allow changing _id)
+        var existing = await _db.ContributedData.Find(filter).FirstOrDefaultAsync(ct);
+        if (existing != null)
+        {
+            // Preserve existing MongoId to avoid _id immutable error
+            data.MongoId = existing.MongoId;
+        }
+        else if (string.IsNullOrEmpty(data.MongoId))
+        {
+            // New document - generate MongoId
+            data.MongoId = MongoDB.Bson.ObjectId.GenerateNewId().ToString();
+        }
+
+        var options = new ReplaceOptions { IsUpsert = true };
+        await _db.ContributedData.ReplaceOneAsync(filter, data, options, cancellationToken: ct);
+        _logger.LogDebug("Upsert du lieu dong gop voi ID: {Id}", data.Id);
+        
+        return data.Id;
+    }
+
+    /// <summary>
     /// Lay tat ca du lieu dong gop
     /// </summary>
     public async Task<List<ContributedAirQuality>> GetAllAsync(CancellationToken ct = default)
