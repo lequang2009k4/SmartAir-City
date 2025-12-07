@@ -71,13 +71,6 @@ const DeviceManagement = () => {
   };
 
   /**
-   * Handle Add Device
-   */
-  const handleAddDevice = () => {
-    setEditingDevice(null);
-    setIsFormOpen(true);
-  };
-  /**
    * Handle Toggle Device Status
    */
   const handleToggleStatus = async (device) => {
@@ -96,7 +89,20 @@ const DeviceManagement = () => {
       // Refresh devices to show updated status
       fetchDevices();
     } catch (err) {
-      alert(`Lỗi khi cập nhật trạng thái: ${err.message}`);
+      console.error('Error updating device status:', err);
+      
+      // Better error message
+      let errorMessage = 'Lỗi khi cập nhật trạng thái thiết bị';
+      
+      if (err.response?.status === 500) {
+        errorMessage = 'Lỗi máy chủ: Không thể kết nối đến MQTT broker. Vui lòng kiểm tra cấu hình MQTT hoặc liên hệ quản trị viên.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = `Lỗi: ${err.message}`;
+      }
+      
+      alert(errorMessage);
     }
   };
 
@@ -183,13 +189,6 @@ const DeviceManagement = () => {
             title="Làm mới dữ liệu"
           >
             🔄 Làm mới
-          </button>
-          <button 
-            className="btn btn-primary" 
-            onClick={handleAddDevice}
-            disabled={isLoading}
-          >
-            ➕ Thêm thiết bị mới
           </button>
         </div>
       </div>
