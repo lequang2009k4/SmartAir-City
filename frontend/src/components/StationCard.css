@@ -175,13 +175,17 @@ open-data services and smart-city applications.
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: #f9f9f9;
-  border-radius: 6px;
-  transition: background 0.2s;
+  background: linear-gradient(135deg, #f9f9f9 0%, #f0f0f0 100%);
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(5px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .pollutant-item:hover {
-  background: #f0f0f0;
+  background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%);
+  transform: translateZ(10px) translateX(5px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
 }
 
 .pollutant-item__label {

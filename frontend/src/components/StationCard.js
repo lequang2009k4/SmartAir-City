@@ -15,7 +15,7 @@
 // open-data services and smart-city applications. 
 
 
-import React, { useMemo } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import "./StationCard.css";
 
 /**
@@ -23,6 +23,37 @@ import "./StationCard.css";
  * Hiển thị thông tin 1 station: name, AQI, pollutants (exclude CO)
  */
 const StationCard = ({ stationId, data }) => {
+  const cardRef = useRef(null);
+  const [tiltStyle, setTiltStyle] = useState({});
+
+  // Handle mouse move for 3D tilt effect
+  const handleMouseMove = (e) => {
+    if (!cardRef.current) return;
+    
+    const card = cardRef.current;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    const rotateX = ((y - centerY) / centerY) * -10; // Max 10deg
+    const rotateY = ((x - centerX) / centerX) * 10; // Max 10deg
+    
+    setTiltStyle({
+      transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`,
+      transition: 'transform 0.1s ease-out'
+    });
+  };
+
+  // Reset tilt on mouse leave
+  const handleMouseLeave = () => {
+    setTiltStyle({
+      transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
+      transition: 'transform 0.3s ease'
+    });
+  };
   // Calculate current AQI for this station (from data.aqi or average of pollutants)
   const currentAqi = useMemo(() => {
     if (!data) return 0;
@@ -95,7 +126,13 @@ const StationCard = ({ stationId, data }) => {
   const textColor = getTextColor(currentAqi);
 
   return (
-    <div className="station-card">
+    <div 
+      className="station-card" 
+      ref={cardRef}
+      style={tiltStyle}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
       {/* Header */}
       <div className="station-card__header">
         <h3 className="station-card__title">{getStationName()}</h3>

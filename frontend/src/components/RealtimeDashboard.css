@@ -68,8 +68,10 @@ open-data services and smart-city applications.
 .realtime-dashboard__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 24px;
+  gap: 32px;
   margin-bottom: 32px;
+  perspective: 1200px;
+  perspective-origin: center;
 }
 
 /* Footer */
