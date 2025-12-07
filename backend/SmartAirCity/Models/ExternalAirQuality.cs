@@ -1,4 +1,4 @@
-/**
+/*
  *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
  *  based on NGSI-LD and FiWARE Standards
  *
@@ -81,6 +81,13 @@ public class ExternalAirQuality
     [BsonExtraElements]
     [JsonExtensionData]
     public Dictionary<string, object>? Properties { get; set; }
+
+    // StationId for linking with Stations collection
+    // This is set from ExternalSource.StationId when data is pulled
+    [BsonElement("stationId")]
+    [JsonPropertyName("stationId")]
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? StationId { get; set; }
 
     // Metadata for external source tracking (optional, not part of NGSI-LD standard)
     // Lưu trong DB nhưng không trả về trong API response

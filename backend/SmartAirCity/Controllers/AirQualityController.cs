@@ -1,4 +1,4 @@
-/**
+/*
  *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
  *  based on NGSI-LD and FiWARE Standards
  *
@@ -114,6 +114,16 @@ public class AirQualityController : ControllerBase
             result = result.Take(limit.Value).ToList();
         }
 
+        // Check if data items have StationId property and set to null to hide from API response
+        foreach (var item in result)
+        {
+            var dataObj = ((dynamic)item).data;
+            // Check if property exists using reflection or dynamic bind
+            try {
+                if (dataObj != null) dataObj.StationId = null; 
+            } catch {}
+        }
+
         return result;
     }
 
@@ -121,12 +131,32 @@ public class AirQualityController : ControllerBase
     
     // GET /api/airquality?stationId={stationId}&limit=100
     // Lấy dữ liệu từ tất cả nguồn (official + external)
+    // stationId là BẮT BUỘC
+    /// <summary>
+    /// Get air quality observations
+    /// </summary>
+    /// <remarks>
+    /// Retrieve air quality observations for a specific monitoring station. 
+    /// Returns NGSI-LD normalized format as per ETSI specification. 
+    /// Data includes various air quality parameters (PM2.5, PM10, CO, NO2, O3, SO2, temperature, humidity, etc.) 
+    /// depending on station capabilities and sensor availability.
+    /// </remarks>
+    /// <param name="stationId">Station ID (required)</param>
+    /// <param name="limit">Maximum number of records to return (optional)</param>
+    /// <response code="200">Returns air quality data successfully</response>
+    /// <response code="400">stationId is required</response>
     [HttpGet("airquality")]
     public async Task<IActionResult> GetAll(
-        [FromQuery] string? stationId, 
+        [FromQuery] string stationId,  // Required parameter
         [FromQuery] int? limit,
         CancellationToken ct = default)
     {
+        // Validate stationId
+        if (string.IsNullOrWhiteSpace(stationId))
+        {
+            return BadRequest(new { message = "stationId is required" });
+        }
+
         const string source = "all"; // Luôn lấy từ tất cả nguồn
 
         var data = await GetAirQualityDataAsync(stationId, limit, source, ct);
@@ -139,13 +169,34 @@ public class AirQualityController : ControllerBase
     
     // GET /api/airquality/download?stationId={stationId}&limit=100&format=json
     // API de DOWNLOAD file du lieu
+    // stationId là BẮT BUỘC
+    /// <summary>
+    /// Download air quality data as file
+    /// </summary>
+    /// <remarks>
+    /// Download air quality observations for a specific monitoring station as JSON file. 
+    /// Returns NGSI-LD normalized format as per ETSI specification. 
+    /// Data includes various air quality parameters (PM2.5, PM10, CO, NO2, O3, SO2, temperature, humidity, etc.) 
+    /// depending on station capabilities and sensor availability.
+    /// </remarks>
+    /// <param name="stationId">Station ID (required)</param>
+    /// <param name="limit">Maximum number of records to return (optional)</param>
+    /// <param name="format">File format (json only, default: json)</param>
+    /// <response code="200">Returns downloadable JSON file</response>
+    /// <response code="400">stationId is required or format not supported</response>
     [HttpGet("airquality/download")]
     public async Task<IActionResult> DownloadAll(
-        [FromQuery] string? stationId, 
+        [FromQuery] string stationId,  // Required parameter
         [FromQuery] int? limit,
         CancellationToken ct = default,
         [FromQuery] string format = "json")
     {
+        // Validate stationId
+        if (string.IsNullOrWhiteSpace(stationId))
+        {
+            return BadRequest(new { message = "stationId is required" });
+        }
+
         const string source = "all";
 
         var data = await GetAirQualityDataAsync(stationId, limit, source, ct);
@@ -171,39 +222,47 @@ public class AirQualityController : ControllerBase
 
     // GET /api/airquality/latest?stationId={stationId}
     // Lấy bản ghi mới nhất từ tất cả nguồn
+    // stationId là BẮT BUỘC
+    /// <summary>
+    /// Get latest air quality observations
+    /// </summary>
+    /// <remarks>
+    /// Retrieve the most recent air quality observation for a specific monitoring station. 
+    /// Returns NGSI-LD normalized format as per ETSI specification. 
+    /// Data includes various air quality parameters (PM2.5, PM10, CO, NO2, O3, SO2, temperature, humidity, etc.) 
+    /// depending on station capabilities and sensor availability.
+    /// </remarks>
+    /// <param name="stationId">Station ID (required)</param>
+    /// <response code="200">Returns latest air quality data successfully</response>
+    /// <response code="400">stationId is required</response>
+    /// <response code="404">No data found for the station</response>
     [HttpGet("airquality/latest")]
     public async Task<IActionResult> GetLatest(
-        [FromQuery] string? stationId,
+        [FromQuery] string stationId,  // Required parameter
         CancellationToken ct = default)
     {
+        // Validate stationId
+        if (string.IsNullOrWhiteSpace(stationId))
+        {
+            return BadRequest(new { message = "stationId is required" });
+        }
+
         var results = new List<object>();
 
-        // Get official latest
-        if (!string.IsNullOrWhiteSpace(stationId))
+        // Get official latest for specific station
+        var stationData = await _service.GetByStationAsync(stationId, 1, ct);
+        if (stationData?.Count > 0)
         {
-            var stationData = await _service.GetByStationAsync(stationId, 1, ct);
-            if (stationData?.Count > 0)
-                results.Add(new { _source = "official", data = stationData[0] });
-        }
-        else
-        {
-            var data = await _service.GetLatestAsync(ct);
-            if (data != null)
-                results.Add(new { _source = "official", data = data });
+            stationData[0].StationId = null; // Hide from API response
+            results.Add(new { _source = "official", data = stationData[0] });
         }
 
-        // Get external latest
-        if (!string.IsNullOrWhiteSpace(stationId))
+        // Get external latest for specific station
+        var extData = await _externalService.GetLatestByStationIdAsync(stationId);
+        if (extData != null)
         {
-            var extData = await _externalService.GetLatestByStationIdAsync(stationId);
-            if (extData != null)
-                results.Add(new { _source = "external", data = extData });
-        }
-        else
-        {
-            var extData = await _externalService.GetLatestAsync();
-            if (extData != null)
-                results.Add(new { _source = "external", data = extData });
+            extData.StationId = null; // Hide from API response
+            results.Add(new { _source = "external", data = extData });
         }
 
         if (results.Count == 0)
@@ -234,18 +293,21 @@ public class AirQualityController : ControllerBase
         // Get official history
         if (source == "official" || source == "all")
         {
-            var data = await _service.GetByTimeRangeAsync(from, to, ct);
+            List<AirQuality> data;
             
-            // neu co stationId thi filter theo tram
+            // neu co stationId thi filter theo tram ngay tai database
             if (!string.IsNullOrWhiteSpace(stationId))
             {
-                data = data
-                    .Where(x => ExtractStationIdFromData(x)?.Equals(stationId, StringComparison.OrdinalIgnoreCase) == true)
-                    .ToList();
+                data = await _service.GetByTimeRangeAndStationAsync(from, to, stationId, ct);
+            }
+            else
+            {
+                data = await _service.GetByTimeRangeAsync(from, to, ct);
             }
 
             foreach (var item in data)
             {
+                item.StationId = null; // Hide from API response
                 result.Add(new { _source = "official", data = item });
             }
         }
@@ -253,17 +315,21 @@ public class AirQualityController : ControllerBase
         // Get external history
         if (source == "external" || source == "all")
         {
-            var extData = await _externalService.GetByTimeRangeAsync(from, to);
+            List<ExternalAirQuality> extData;
             
             // Filter by stationId if provided
             if (!string.IsNullOrWhiteSpace(stationId))
             {
-                var pattern = $"urn:ngsi-ld:AirQualityObserved:{stationId}:";
-                extData = extData.Where(x => x.Id.StartsWith(pattern)).ToList();
+                extData = await _externalService.GetByTimeRangeAndStationAsync(from, to, stationId);
+            }
+            else
+            {
+                extData = await _externalService.GetByTimeRangeAsync(from, to);
             }
 
             foreach (var item in extData)
             {
+                item.StationId = null; // Hide from API response
                 result.Add(new { _source = "external", data = item });
             }
         }
@@ -273,13 +339,34 @@ public class AirQualityController : ControllerBase
 
     // GET /api/airquality/history?stationId={stationId}&from=...&to=...
     // API de XEM lich su du lieu (tra ve JSON response)
+    // stationId là BẮT BUỘC
+    /// <summary>
+    /// Get historical air quality data
+    /// </summary>
+    /// <remarks>
+    /// Retrieve historical air quality observations for a specific monitoring station within a date range. 
+    /// Returns NGSI-LD normalized format as per ETSI specification. 
+    /// Data includes various air quality parameters (PM2.5, PM10, CO, NO2, O3, SO2, temperature, humidity, etc.) 
+    /// depending on station capabilities and sensor availability.
+    /// </remarks>
+    /// <param name="stationId">Station ID (required)</param>
+    /// <param name="from">Start date (ISO 8601 format, required)</param>
+    /// <param name="to">End date (ISO 8601 format, required)</param>
+    /// <response code="200">Returns historical air quality data successfully</response>
+    /// <response code="400">Invalid parameters (stationId, from, or to missing/invalid)</response>
     [HttpGet("airquality/history")]
     public async Task<IActionResult> GetHistory(
-        [FromQuery] string? stationId, 
+        [FromQuery] string stationId,  // Required parameter
         [FromQuery] DateTime from, 
         [FromQuery] DateTime to,
         CancellationToken ct = default)
     {
+        // Validate stationId
+        if (string.IsNullOrWhiteSpace(stationId))
+        {
+            return BadRequest(new { message = "stationId is required" });
+        }
+
         if (from >= to)
             return BadRequest(new { message = "Thoi gian 'from' phai nho hon 'to'." });
 
@@ -292,14 +379,36 @@ public class AirQualityController : ControllerBase
 
     // GET /api/airquality/history/download?stationId={stationId}&from=...&to=...&format=json
     // API de DOWNLOAD lich su du lieu
+    // stationId là BẮT BUỘC
+    /// <summary>
+    /// Download historical air quality data as file
+    /// </summary>
+    /// <remarks>
+    /// Download historical air quality observations for a specific monitoring station within a date range as JSON file. 
+    /// Returns NGSI-LD normalized format as per ETSI specification. 
+    /// Data includes various air quality parameters (PM2.5, PM10, CO, NO2, O3, SO2, temperature, humidity, etc.) 
+    /// depending on station capabilities and sensor availability.
+    /// </remarks>
+    /// <param name="stationId">Station ID (required)</param>
+    /// <param name="from">Start date (ISO 8601 format, required)</param>
+    /// <param name="to">End date (ISO 8601 format, required)</param>
+    /// <param name="format">File format (json only, default: json)</param>
+    /// <response code="200">Returns downloadable JSON file with historical data</response>
+    /// <response code="400">Invalid parameters or format not supported</response>
     [HttpGet("airquality/history/download")]
     public async Task<IActionResult> DownloadHistory(
-        [FromQuery] string? stationId, 
+        [FromQuery] string stationId,  // Required parameter
         [FromQuery] DateTime from, 
         [FromQuery] DateTime to,
         CancellationToken ct = default,
         [FromQuery] string format = "json")
     {
+        // Validate stationId
+        if (string.IsNullOrWhiteSpace(stationId))
+        {
+            return BadRequest(new { message = "stationId is required" });
+        }
+
         if (from >= to)
             return BadRequest(new { message = "Thoi gian 'from' phai nho hon 'to'." });
 
