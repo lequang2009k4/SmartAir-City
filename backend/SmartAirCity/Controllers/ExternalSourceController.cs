@@ -1,4 +1,4 @@
-/**
+/*
  *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
  *  based on NGSI-LD and FiWARE Standards
  *
@@ -30,12 +30,20 @@ namespace SmartAirCity.Controllers;
 public class ExternalSourceController : ControllerBase
 {
     private readonly ExternalSourceService _service;
+    private readonly StationService _stationService;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<ExternalSourceController> _logger;
 
-    public ExternalSourceController(ExternalSourceService service, IHttpClientFactory httpClientFactory)
+    public ExternalSourceController(
+        ExternalSourceService service, 
+        StationService stationService,
+        IHttpClientFactory httpClientFactory,
+        ILogger<ExternalSourceController> logger)
     {
         _service = service;
+        _stationService = stationService;
         _httpClientFactory = httpClientFactory;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -59,10 +67,14 @@ public class ExternalSourceController : ControllerBase
             return BadRequest(new { message = "Url is required" });
         }
 
-        if (string.IsNullOrWhiteSpace(source.StationId))
-        {
-            return BadRequest(new { message = "StationId is required" });
-        }
+        // Auto-generate StationId from Name (user doesn't need to provide it)
+        var slug = System.Text.RegularExpressions.Regex.Replace(
+            source.Name.ToLowerInvariant().Trim(),
+            @"[^a-z0-9-]",
+            "-"
+        ).Replace("--", "-").Trim('-');
+        
+        source.StationId = $"station-{slug}";
 
         // Check duplicate URL
         var existingByUrl = await _service.GetByUrlAsync(source.Url);
@@ -85,21 +97,40 @@ public class ExternalSourceController : ControllerBase
             return Conflict(new { message = $"StationId '{source.StationId}' đã tồn tại. Vui lòng chọn StationId khác." });
         }
 
-        // Validate mapping for non-NGSI-LD sources
-        if (!source.IsNGSILD)
+        // All external sources must return NGSI-LD format (no mapping needed)
+        var created = await _service.CreateAsync(source);
+
+        // Auto-create Station immediately for visibility
+        try 
         {
-            if (source.Mapping == null || source.Mapping.FieldMappings == null || source.Mapping.FieldMappings.Count == 0)
+            // Reset checking if station exists, just try to get it first
+            var existingStation = await _stationService.GetStationByIdAsync(source.StationId);
+            if (existingStation == null)
             {
-                return BadRequest(new { message = "Mapping.FieldMappings is required for non-NGSI-LD sources. Set IsNGSILD=true if API returns NGSI-LD format." });
+                var newStation = new Station
+                {
+                    StationId = source.StationId,
+                    Name = source.Name,
+                    Latitude = source.Latitude ?? 0,
+                    Longitude = source.Longitude ?? 0,
+                    Type = "external-http",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    Metadata = new Dictionary<string, object?>
+                    {
+                        ["sourceUrl"] = source.Url
+                    }
+                };
+                await _stationService.CreateStationAsync(newStation);
+                _logger.LogInformation("Auto-created station from external API source: {StationId}", source.StationId);
             }
         }
-        else
+        catch (Exception ex)
         {
-            // For NGSI-LD sources, mapping is not needed
-            source.Mapping = null;
+            _logger.LogError(ex, "Failed to auto-create station for source {Id}", created.Id);
+            // Non-blocking error, continue
         }
 
-        var created = await _service.CreateAsync(source);
         return CreatedAtAction(nameof(GetAll), new { id = created.Id }, created);
     }
 

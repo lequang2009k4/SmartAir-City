@@ -1,4 +1,4 @@
-/**
+/*
  *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
  *  based on NGSI-LD and FiWARE Standards
  *
@@ -59,9 +59,15 @@ public class ContributionController : ControllerBase
     }
 
     /// <summary>
-    /// POST /api/contributions/upload
-    /// Nhan file JSON, validate va luu vao collection ContributedData
+    /// Receive JSON file, validate and save to ContributedData collection
     /// </summary>
+    /// <remarks>
+    /// Upload air quality data contributed by community members or external sources. 
+    /// The uploaded JSON file will be validated against NGSI-LD schema and stored in the ContributedData collection.
+    /// Each contribution is assigned a unique contributionId for tracking and retrieval.
+    /// </remarks>
+    /// <response code="200">File uploaded and validated successfully</response>
+    /// <response code="400">Invalid file format or validation failed</response>
     [HttpPost("upload")]
 [Consumes("multipart/form-data")]
 public async Task<IActionResult> UploadContribution(CancellationToken ct = default)
@@ -144,10 +150,15 @@ public async Task<IActionResult> UploadContribution(CancellationToken ct = defau
     }
 
     /// <summary>
-    /// GET /api/contributions/public
-    /// Hien thi TAT CA nguoi dung da dong gop va tong so dong gop cua ho
-    /// (Khong theo chuan NGSI-LD - Simple JSON format)
+    /// Display ALL users who contributed and their total contribution count
+    /// (Not NGSI-LD compliant - Simple JSON format)
     /// </summary>
+    /// <remarks>
+    /// Retrieve a list of all contributors and their contribution statistics. 
+    /// Returns simplified JSON format (not NGSI-LD) for easy display in leaderboards or public dashboards.
+    /// Includes contributor email/name and total number of contributions.
+    /// </remarks>
+    /// <response code="200">Returns list of contributors successfully</response>
     [HttpGet("public")]
     public async Task<IActionResult> GetPublicContributions(CancellationToken ct = default)
     {
@@ -253,10 +264,16 @@ public async Task<IActionResult> UploadContribution(CancellationToken ct = defau
     }
 
     /// <summary>
-    /// GET /api/contributions/list?email={email}
-    /// Lay danh sach tat ca contributionId voi metadata (so luong ban ghi, ngay upload)
-    /// Optional: filter theo email (khong lo userId)
+    /// Get list of all contributionIds with metadata (record count, upload date)
+    /// Optional: filter by email (userId not exposed)
     /// </summary>
+    /// <remarks>
+    /// Retrieve metadata for all contributions, optionally filtered by contributor email. 
+    /// Returns contribution IDs, record counts, and upload timestamps.
+    /// Useful for browsing available contributed datasets before downloading full data.
+    /// </remarks>
+    /// <param name="email">Optional email filter to show only specific contributor's data</param>
+    /// <response code="200">Returns list of contributions with metadata</response>
     [HttpGet("list")]
     public async Task<IActionResult> GetContributionIds(
         [FromQuery] string? email = null,
@@ -297,9 +314,17 @@ public async Task<IActionResult> UploadContribution(CancellationToken ct = defau
     }
 
     /// <summary>
-    /// GET /api/contributions/{contributionId}/latest?limit=5
-    /// Lay N ban ghi data cuoi trong lut dong gop do (mac dinh 5 ban ghi)
+    /// Get N latest data records in that contribution (default 5 records)
     /// </summary>
+    /// <remarks>
+    /// Retrieve contributed air quality observations. 
+    /// Returns NGSI-LD normalized format as per ETSI specification. 
+    /// Data includes various air quality parameters depending on contributor's sensors and data source.
+    /// </remarks>
+    /// <param name="contributionId">Unique contribution identifier</param>
+    /// <param name="limit">Maximum number of records to return (default: 5)</param>
+    /// <response code="200">Returns latest contributed data successfully</response>
+    /// <response code="404">Contribution not found</response>
     [HttpGet("{contributionId}/latest")]
     public async Task<IActionResult> GetLatestByContributionId(
         [FromRoute] string contributionId,
@@ -362,9 +387,16 @@ public async Task<IActionResult> UploadContribution(CancellationToken ct = defau
     }
 
     /// <summary>
-    /// GET /api/contributions/{contributionId}/download
-    /// Download toan bo du lieu cua lut dong gop do duoi dang JSON file
+    /// Download all data from that contribution as JSON file
     /// </summary>
+    /// <remarks>
+    /// Download complete contributed dataset as a JSON file. 
+    /// Returns NGSI-LD normalized format as per ETSI specification. 
+    /// Useful for offline analysis or data archiving.
+    /// </remarks>
+    /// <param name="contributionId">Unique contribution identifier</param>
+    /// <response code="200">Returns downloadable JSON file</response>
+    /// <response code="404">Contribution not found</response>
     [HttpGet("{contributionId}/download")]
     public async Task<IActionResult> DownloadByContributionId(
         [FromRoute] string contributionId,

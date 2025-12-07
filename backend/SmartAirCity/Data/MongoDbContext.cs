@@ -1,17 +1,17 @@
-/**
- *  SmartAir City - IoT Platform for Urban Air Quality Monitoring
+/*
+ *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
  *  based on NGSI-LD and FiWARE Standards
  *
  *  SPDX-License-Identifier: MIT
  *  @version   0.1.x
  *  @author    SmartAir City Team <smartaircity@gmail.com>
- *  @copyright 2025 SmartAir City Team. 
+ *  @copyright © 2025 SmartAir City Team. 
  *  @license   MIT License
  *  See LICENSE file in root directory for full license text.
  *  @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
  *
  *  This software is an open-source component of the SmartAir City initiative.
- *  It provides real-time environmental monitoring, NGSI-LD-compliant data
+ *  It provides real-time environmental monitoring, NGSI-LD–compliant data
  *  models, MQTT-based data ingestion, and FiWARE Smart Data Models for
  *  open-data services and smart-city applications.
  */
@@ -31,6 +31,8 @@ public class MongoDbContext
     public IMongoCollection<ExternalSource> ExternalSources { get; }
     public IMongoCollection<ExternalAirQuality> ExternalAirQuality { get; }
     public IMongoCollection<ExternalMqttSource> ExternalMqttSources { get; }
+    public IMongoCollection<Station> Stations { get; }
+
 
     static MongoDbContext()
     {
@@ -65,6 +67,8 @@ public class MongoDbContext
         ExternalSources = Database.GetCollection<ExternalSource>("ExternalSources");
         ExternalAirQuality = Database.GetCollection<ExternalAirQuality>("ExternalAirQuality");
         ExternalMqttSources = Database.GetCollection<ExternalMqttSource>("ExternalMqttSources");
+        Stations = Database.GetCollection<Station>("Stations");
+
         
         logger.LogInformation("MongoDB da ket noi toi database: {DatabaseName}", dbName);
     }
