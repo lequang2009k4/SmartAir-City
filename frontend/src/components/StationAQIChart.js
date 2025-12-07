@@ -109,7 +109,7 @@ const StationAQIChart = () => {
 
   return (
     <div className="station-aqi-chart">
-      <h3 className="chart-title">📊 AQI Trung Bình Các Trạm (Loại trừ CO)</h3>
+      <h3 className="chart-title">AQI Trung Bình Các Trạm (Loại trừ CO)</h3>
       <ResponsiveContainer width="100%" height={400}>
         <BarChart
           data={chartData}

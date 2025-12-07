@@ -105,7 +105,6 @@ const SearchFilter = ({ stations, onFilterChange }) => {
     <div className="search-filter">
       {/* Search Box */}
       <div className="search-box">
-        <span className="search-icon">🔍</span>
         <input
           type="text"
           className="search-input"
@@ -169,7 +168,7 @@ const SearchFilter = ({ stations, onFilterChange }) => {
       {/* Clear Filters Button */}
       {(searchTerm || selectedLevel !== 'all') && (
         <button className="clear-filters-btn" onClick={handleClearFilters}>
-          🔄 Xóa bộ lọc
+          Xóa bộ lọc
         </button>
       )}
     </div>

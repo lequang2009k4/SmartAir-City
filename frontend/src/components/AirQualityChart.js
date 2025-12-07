@@ -268,8 +268,7 @@ const AirQualityChart = () => {
         <p>
           Biểu đồ hiển thị {maxDataPoints} điểm dữ liệu gần nhất, tự động cập nhật khi có dữ liệu mới
         </p>
-        <p>📊 <strong>5 đường biểu diễn AQI trung bình của 5 trạm</strong></p>
-        <p>🚫 <strong>Biểu đồ CO đã được loại bỏ theo yêu cầu</strong></p>
+        <p><strong>5 đường biểu diễn AQI trung bình của 5 trạm</strong></p>
       </div>
     </div>
   );

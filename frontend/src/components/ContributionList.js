@@ -102,7 +102,7 @@ const ContributionList = ({ user, refreshTrigger }) => {
       {/* Error Display */}
       {error && (
         <div className="error-box">
-          <h4>❌ Lỗi</h4>
+          <h4>Lỗi</h4>
           <p>{error}</p>
         </div>
       )}
@@ -118,7 +118,7 @@ const ContributionList = ({ user, refreshTrigger }) => {
       {/* No User */}
       {!user && (
         <div className="empty-state">
-          <h3>🔐 Vui lòng đăng nhập</h3>
+          <h3>Vui lòng đăng nhập</h3>
           <p>Bạn cần đăng nhập để xem dữ liệu đã đóng góp</p>
         </div>
       )}
@@ -126,7 +126,7 @@ const ContributionList = ({ user, refreshTrigger }) => {
       {/* No Contributions */}
       {!loading && user && contributionsList.length === 0 && (
         <div className="empty-state">
-          <h3>📭 Chưa có dữ liệu đóng góp</h3>
+          <h3>Chưa có dữ liệu đóng góp</h3>
           <p>Bạn chưa đóng góp dữ liệu nào. Hãy chuyển sang tab "Đóng góp mới" để bắt đầu!</p>
         </div>
       )}
@@ -135,7 +135,7 @@ const ContributionList = ({ user, refreshTrigger }) => {
       {!loading && contributionsList.length > 0 && !viewedData && (
         <>
           <div className="section-header">
-            <h3>📦 Dữ liệu đã đóng góp của bạn</h3>
+            <h3>Dữ liệu đã đóng góp của bạn</h3>
             <div className="total-count">
               <span className="count-number">{contributionsList.length}</span>
               <span className="count-label">contributions</span>
@@ -160,8 +160,8 @@ const ContributionList = ({ user, refreshTrigger }) => {
         <div className="json-modal-overlay" onClick={handleCloseViewer}>
           <div className="json-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>📄 Dữ liệu JSON (ID: {viewedData.contributionId?.slice(0, 8)}...)</h3>
-              <button className="btn-close" onClick={handleCloseViewer}>✕</button>
+              <h3>Dữ liệu JSON (ID: {viewedData.contributionId?.slice(0, 8)}...)</h3>
+              <button className="btn-close" onClick={handleCloseViewer}>×</button>
             </div>
             <div className="modal-body">
               <div className="viewer-info">
@@ -180,7 +180,7 @@ const ContributionList = ({ user, refreshTrigger }) => {
                     alert('Đã copy JSON vào clipboard!');
                   }}
                 >
-                  📋 Copy JSON
+                  Copy JSON
                 </button>
               </div>
               <pre className="json-viewer">

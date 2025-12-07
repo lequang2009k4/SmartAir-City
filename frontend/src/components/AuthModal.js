@@ -180,7 +180,7 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
         <button className="modal-close" onClick={handleClose}>×</button>
         
         <div className="modal-header">
-          <h2>{mode === 'login' ? '🔐 Đăng nhập' : '📝 Đăng ký'}</h2>
+          <h2>{mode === 'login' ? 'Đăng nhập' : 'Đăng ký'}</h2>
           <p className="modal-subtitle">
             {mode === 'login' 
               ? 'Đăng nhập để truy cập quản lý thiết bị và người dùng' 
@@ -190,7 +190,7 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
 
         {serverError && (
           <div className="auth-error">
-            ❌ {serverError}
+            {serverError}
           </div>
         )}
 
@@ -257,11 +257,7 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
                 disabled={isLoading}
                 title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
-                {showPassword ? (
-                  <span className="eye-slash">👁</span>
-                ) : (
-                  <span>👁</span>
-                )}
+                {showPassword ? '×' : '•••'}
               </button>
             </div>
             {errors.password && (
@@ -292,11 +288,7 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
                   disabled={isLoading}
                   title={showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                 >
-                  {showConfirmPassword ? (
-                    <span className="eye-slash">👁</span>
-                  ) : (
-                    <span>👁</span>
-                  )}
+                  {showConfirmPassword ? '×' : '•••'}
                 </button>
               </div>
               {errors.confirmPassword && (
@@ -311,8 +303,8 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
             disabled={isLoading}
           >
             {isLoading 
-              ? '⏳ Đang xử lý...' 
-              : mode === 'login' ? '🔓 Đăng nhập' : '✅ Đăng ký'}
+              ? 'Đang xử lý...' 
+              : mode === 'login' ? 'Đăng nhập' : 'Đăng ký'}
           </button>
         </form>
 

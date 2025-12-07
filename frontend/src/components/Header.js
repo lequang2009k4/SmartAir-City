@@ -145,7 +145,7 @@ const Header = ({ activeTab, setActiveTab, user, onLoginClick, onLogout }) => {
                           onLogout();
                         }}
                       >
-                        🚪 Đăng xuất
+                        Đăng xuất
                       </button>
                     </div>
                   )}
@@ -153,7 +153,7 @@ const Header = ({ activeTab, setActiveTab, user, onLoginClick, onLogout }) => {
               </>
             ) : (
               <button className="btn-login" onClick={onLoginClick}>
-                🔐 Đăng nhập
+                Đăng nhập
               </button>
             )}
           </div>
