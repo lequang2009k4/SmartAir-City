@@ -46,6 +46,14 @@ public class ExternalSourceController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Get all external HTTP sources
+    /// </summary>
+    /// <remarks>
+    /// Retrieve all configured external HTTP API sources. 
+    /// Returns list of sources with their configuration including URL, polling interval, headers, and status.
+    /// </remarks>
+    /// <response code="200">Returns list of external sources successfully</response>
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -53,6 +61,20 @@ public class ExternalSourceController : ControllerBase
         return Ok(sources);
     }
 
+    /// <summary>
+    /// Register new external HTTP API source
+    /// </summary>
+    /// <remarks>
+    /// Register a new external HTTP API as a data source. 
+    /// The API must return NGSI-LD compliant JSON format.
+    /// Configure polling interval, headers for authentication, and station mapping.
+    /// StationId will be auto-generated from the source name if not provided.
+    /// A station will be automatically created for this source.
+    /// </remarks>
+    /// <param name="source">External source configuration</param>
+    /// <response code="201">External source created successfully</response>
+    /// <response code="400">Invalid configuration (name or URL missing)</response>
+    /// <response code="409">URL or StationId already exists</response>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ExternalSource source)
     {
@@ -134,6 +156,17 @@ public class ExternalSourceController : ControllerBase
         return CreatedAtAction(nameof(GetAll), new { id = created.Id }, created);
     }
 
+    /// <summary>
+    /// Delete external HTTP source
+    /// </summary>
+    /// <remarks>
+    /// Remove an external HTTP source from the system. 
+    /// The source will be deleted and polling will stop.
+    /// Historical data from this source will be preserved.
+    /// </remarks>
+    /// <param name="id">External source ID</param>
+    /// <response code="204">Source deleted successfully</response>
+    /// <response code="404">Source not found</response>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
@@ -144,6 +177,13 @@ public class ExternalSourceController : ControllerBase
     /// <summary>
     /// Reactivate a source that was auto-deactivated after failures
     /// </summary>
+    /// <remarks>
+    /// Reactivate an external source that was automatically deactivated due to consecutive failures. 
+    /// The system will resume polling from this source.
+    /// </remarks>
+    /// <param name="id">External source ID</param>
+    /// <response code="200">Source reactivated successfully</response>
+    /// <response code="404">Source not found</response>
     [HttpPost("{id}/reactivate")]
     public async Task<IActionResult> Reactivate(string id)
     {
@@ -151,6 +191,17 @@ public class ExternalSourceController : ControllerBase
         return Ok(new { message = "Source reactivated successfully", id });
     }
 
+    /// <summary>
+    /// Test external API URL
+    /// </summary>
+    /// <remarks>
+    /// Test connectivity and response format of an external API URL before registering it as a source. 
+    /// Validates that the URL is accessible and returns valid JSON.
+    /// Can include custom headers for authentication testing.
+    /// </remarks>
+    /// <param name="request">Test request with URL and optional headers</param>
+    /// <response code="200">URL test successful - returns the API response</response>
+    /// <response code="400">URL test failed - invalid URL or connection error</response>
     [HttpPost("test")]
     public async Task<IActionResult> TestUrl([FromBody] TestUrlRequest request)
     {
