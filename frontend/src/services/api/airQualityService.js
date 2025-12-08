@@ -283,12 +283,19 @@ export const transformAirQualityArray = (ngsiArray) => {
  * @returns {Promise<array>} Array of air quality records
  */
 export const getAll = async (limit = 50, stationId = null, transform = true) => {
-  const params = { limit };
+  const params = {};
+  
+  // Only add limit if it's a valid number (not null/undefined)
+  if (limit !== null && limit !== undefined) {
+    params.limit = limit;
+  }
+  
   if (stationId) {
     params.stationId = stationId;
     console.log(`🔍 [airQualityService] Filtering by stationId: ${stationId}`);
   }
   
+  console.log(`📊 [airQualityService] Query params:`, params);
   const data = await airQualityAxios.get(AIR_QUALITY_ENDPOINTS.GET_ALL, { params });
   
   console.log('📦 [airQualityService] getAll raw data:', data?.length, 'items, transform:', transform);
