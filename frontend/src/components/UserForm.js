@@ -186,7 +186,7 @@ const UserForm = ({ user, onSubmit, onCancel, isLoading }) => {
         {/* Email */}
         <div className="form-group">
           <label htmlFor="email" className="required">
-            📧 Email
+            Email
           </label>
           <input
             type="email"
@@ -204,7 +204,7 @@ const UserForm = ({ user, onSubmit, onCancel, isLoading }) => {
         {/* Full Name */}
         <div className="form-group">
           <label htmlFor="fullName" className="required">
-            📝 Họ và tên
+            Họ và tên
           </label>
           <input
             type="text"
@@ -222,7 +222,7 @@ const UserForm = ({ user, onSubmit, onCancel, isLoading }) => {
         {/* Phone */}
         <div className="form-group">
           <label htmlFor="phone">
-            📱 Số điện thoại
+            Số điện thoại
           </label>
           <input
             type="tel"
@@ -238,7 +238,7 @@ const UserForm = ({ user, onSubmit, onCancel, isLoading }) => {
         {/* Password */}
         <div className="form-group">
           <label htmlFor="password" className={!isEditMode ? 'required' : ''}>
-            🔒 Mật khẩu {isEditMode && '(để trống nếu không đổi)'}
+            Mật khẩu {isEditMode && '(để trống nếu không đổi)'}
           </label>
           <input
             type="password"
@@ -300,7 +300,7 @@ const UserForm = ({ user, onSubmit, onCancel, isLoading }) => {
               onChange={handleChange}
               disabled={isLoading}
             />
-            <span>✅ Tài khoản đang hoạt động</span>
+            <span>Tài khoản đang hoạt động</span>
           </label>
         </div>
 
@@ -312,14 +312,14 @@ const UserForm = ({ user, onSubmit, onCancel, isLoading }) => {
             onClick={onCancel}
             disabled={isLoading}
           >
-            ❌ Hủy
+            Hủy
           </button>
           <button
             type="submit"
             className="btn btn-submit"
             disabled={isLoading}
           >
-            {isLoading ? '⏳ Đang xử lý...' : (isEditMode ? '💾 Lưu thay đổi' : '➕ Thêm người dùng')}
+            {isLoading ? 'Đang xử lý...' : (isEditMode ? 'Lưu thay đổi' : 'Thêm người dùng')}
           </button>
         </div>
       </form>

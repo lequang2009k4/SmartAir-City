@@ -29,7 +29,7 @@ const MqttSourceManager = () => {
   const [formData, setFormData] = useState({
     name: '',
     brokerHost: '',
-    brokerPort: 1883,
+    brokerPort: '',
     username: '',
     password: '',
     useTls: false,
@@ -230,7 +230,7 @@ const MqttSourceManager = () => {
     <div className="mqtt-source-manager">
       {/* Header */}
       <div className="manager-header">
-        <h2>🌐 Đăng ký MQTT Broker</h2>
+        <h2>Đăng ký MQTT Broker</h2>
         <p>Kết nối MQTT broker của bạn để đóng góp dữ liệu chất lượng không khí từ sensor</p>
       </div>
 
@@ -238,21 +238,21 @@ const MqttSourceManager = () => {
       {error && (
         <div className="alert alert-error">
           {error}
-          <button className="alert-close" onClick={() => setError(null)}>✕</button>
+          <button className="alert-close" onClick={() => setError(null)}>×</button>
         </div>
       )}
       
       {success && (
         <div className="alert alert-success">
           {success}
-          <button className="alert-close" onClick={() => setSuccess(null)}>✕</button>
+          <button className="alert-close" onClick={() => setSuccess(null)}>×</button>
         </div>
       )}
 
       {/* Registration Form */}
       <form onSubmit={handleCreateSource} className="mqtt-form">
         <div className="form-section">
-          <h3>📝 Thông tin MQTT Broker</h3>
+          <h3>Thông tin MQTT Broker</h3>
           
           <div className="form-group">
             <label>
@@ -266,7 +266,7 @@ const MqttSourceManager = () => {
               placeholder="VD: My Home Sensor Station"
               required
             />
-            <small>📌 Station ID sẽ tự động tạo từ tên này</small>
+            <small>Station ID sẽ tự động tạo từ tên này</small>
           </div>
 
           <div className="form-row">
@@ -344,14 +344,14 @@ const MqttSourceManager = () => {
               name="topic"
               value={formData.topic}
               onChange={handleInputChange}
-              placeholder="VD: sensors/airquality/#"
+              placeholder="VD: sensor/air/#"
               required
             />
           </div>
         </div>
 
         <div className="form-section">
-          <h3>📍 Vị trí cảm biến</h3>
+          <h3>Vị trí cảm biến</h3>
           
           <div className="form-row">
             <div className="form-group">
@@ -393,7 +393,7 @@ const MqttSourceManager = () => {
             onClick={handleTestConnection}
             disabled={testLoading || !formData.brokerHost || !formData.topic}
           >
-            {testLoading ? '🔄 Đang test...' : '🔌 Test Connection'}
+            {testLoading ? 'Đang test...' : 'Test Connection'}
           </button>
           
           <button
@@ -401,7 +401,7 @@ const MqttSourceManager = () => {
             className="btn btn-primary"
             disabled={loading}
           >
-            {loading ? '🔄 Đang đăng ký...' : '✅ Đăng ký Broker'}
+            {loading ? 'Đang đăng ký...' : 'Đăng ký Broker'}
           </button>
           
           <button
@@ -410,14 +410,14 @@ const MqttSourceManager = () => {
             onClick={loadSources}
             disabled={loading}
           >
-            🔄 Refresh List
+            Refresh List
           </button>
         </div>
       </form>
 
       {/* Sources List */}
       <div className="sources-section">
-        <h3>📋 Danh sách MQTT Sources</h3>
+        <h3>Danh sách MQTT Sources</h3>
         
         {loading && <LoadingSpinner />}
         
@@ -433,7 +433,10 @@ const MqttSourceManager = () => {
               <div key={source.id} className={`source-card ${source.isActive ? 'active' : 'inactive'}`}>
                 <div className="source-header">
                   <h4>
-                    {source.name} {source.isActive ? '🟢' : '🔴'}
+                    {source.name}
+                    <span className={`status-badge ${source.isActive ? 'active' : 'inactive'}`}>
+                      {source.isActive ? 'Active' : 'Inactive'}
+                    </span>
                   </h4>
                 </div>
                 
@@ -453,7 +456,7 @@ const MqttSourceManager = () => {
                       onClick={() => handleDeactivate(source.id)}
                       disabled={loading}
                     >
-                      ⏸️ Tạm dừng
+                      Tạm dừng
                     </button>
                   ) : (
                     <button
@@ -461,7 +464,7 @@ const MqttSourceManager = () => {
                       onClick={() => handleActivate(source.id)}
                       disabled={loading}
                     >
-                      ▶️ Kích hoạt
+                      Kích hoạt
                     </button>
                   )}
                   
@@ -470,7 +473,7 @@ const MqttSourceManager = () => {
                     onClick={() => handleDelete(source.id, source.name)}
                     disabled={loading}
                   >
-                    🗑️ Xóa
+                    Xóa
                   </button>
                 </div>
               </div>

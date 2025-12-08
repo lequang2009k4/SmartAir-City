@@ -379,7 +379,7 @@ const OpenDataViewer = () => {
     <div className="open-data-viewer">
       {/* Page Header */}
       <div className="page-header">
-        <h1>📊 Dữ liệu đóng góp</h1>
+        <h1>Dữ liệu đóng góp</h1>
         <p>Dữ liệu chất lượng không khí từ cộng đồng</p>
       </div>
 
@@ -389,19 +389,19 @@ const OpenDataViewer = () => {
           className={`sub-tab-btn ${contributionTab === 'sensor-data' ? 'active' : ''}`}
           onClick={() => setContributionTab('sensor-data')}
         >
-          🌡️ Dữ liệu từ sensor
+          Dữ liệu từ sensor
         </button>
         <button
           className={`sub-tab-btn ${contributionTab === 'uploaded-json' ? 'active' : ''}`}
           onClick={() => setContributionTab('uploaded-json')}
         >
-          📤 Đã tải lên JSON
+          Đã tải lên JSON
         </button>
         <button
           className={`sub-tab-btn ${contributionTab === 'third-party-api' ? 'active' : ''}`}
           onClick={() => setContributionTab('third-party-api')}
         >
-          🔗 API bên thứ 3
+          API bên thứ 3
         </button>
       </div>
 
@@ -413,7 +413,7 @@ const OpenDataViewer = () => {
             {/* Error Display */}
             {mqttError && (
               <div className="error-box">
-                <h4>❌ Lỗi tải dữ liệu</h4>
+                <h4>Lỗi tải dữ liệu</h4>
                 <p>{mqttError}</p>
               </div>
             )}
@@ -430,7 +430,7 @@ const OpenDataViewer = () => {
             {!loadingMqtt && mqttSources.length > 0 && (
               <>
                 <div className="section-header">
-                  <h3>📡 MQTT Sensor Sources</h3>
+                  <h3>MQTT Sensor Sources</h3>
                   <div className="stats-summary">
                     <span className="stat-item">
                       <strong>{mqttSources.length}</strong> MQTT sources
@@ -451,15 +451,15 @@ const OpenDataViewer = () => {
                       <div className="sensor-header">
                         <h3>{source.name}</h3>
                         <span className={`status-badge ${source.isActive ? 'active' : 'inactive'}`}>
-                          {source.isActive ? '🟢 Active' : '🔴 Inactive'}
+                          {source.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </div>
                       <div className="sensor-info">
                         <p className="sensor-coords">
-                          📍 Vị trí: {source.latitude}, {source.longitude}
+                          Vị trí: {source.latitude}, {source.longitude}
                         </p>
                         <p className="sensor-coords">
-                          📅 Tạo ngày: {source.createdAt 
+                          Tạo ngày: {source.createdAt 
                             ? new Date(source.createdAt).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' })
                             : 'N/A'}
                         </p>
@@ -492,7 +492,7 @@ const OpenDataViewer = () => {
             {/* No Data */}
             {!loadingMqtt && mqttSources.length === 0 && (
               <div className="no-data-box">
-                <h3>📡 Chưa có MQTT sources</h3>
+                <h3>Chưa có MQTT sources</h3>
                 <p>Người dùng có thể đóng góp dữ liệu từ sensor MQTT của họ.</p>
                 <p>Vui lòng đăng nhập và thêm MQTT source tại trang Đóng góp dữ liệu.</p>
               </div>
@@ -506,7 +506,7 @@ const OpenDataViewer = () => {
           {/* Error Display */}
           {contributionsError && (
             <div className="error-box">
-              <h4>❌ Lỗi tải dữ liệu</h4>
+              <h4>Lỗi tải dữ liệu</h4>
               <p>{contributionsError}</p>
             </div>
           )}
@@ -523,7 +523,7 @@ const OpenDataViewer = () => {
           {!loadingContributions && contributorsData && (
             <>
               <div className="section-header">
-                <h3>👥 Danh sách người đóng góp</h3>
+                <h3>Danh sách người đóng góp</h3>
                 <div className="stats-summary">
                   <span className="stat-item">
                     <strong>{contributorsData.totalContributors || 0}</strong> contributors
@@ -547,7 +547,7 @@ const OpenDataViewer = () => {
                   ))
                 ) : (
                   <div className="no-data-box">
-                    <p>⚠️ Chưa có contributors nào</p>
+                    <p>Chưa có contributors nào</p>
                   </div>
                 )}
               </div>

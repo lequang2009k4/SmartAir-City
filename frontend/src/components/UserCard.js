@@ -38,8 +38,8 @@ const UserCard = ({ user, onSendEmail, onDelete }) => {
   // Get active status
   const getActiveStatus = (isActive) => {
     return isActive 
-      ? { label: 'Hoạt động', className: 'active-yes', icon: '✅' }
-      : { label: 'Vô hiệu hóa', className: 'active-no', icon: '⛔' };
+      ? { label: 'Hoạt động', className: 'active-yes', icon: '✓' }
+      : { label: 'Vô hiệu hóa', className: 'active-no', icon: '×' };
   };
 
   // Format date

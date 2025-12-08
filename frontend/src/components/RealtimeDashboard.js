@@ -50,11 +50,11 @@ const RealtimeDashboard = () => {
       {/* Header */}
       <div className="realtime-dashboard__header">
         <h1 className="realtime-dashboard__title">
-          🌍 Theo Dõi Chất Lượng Không Khí Realtime
+          Theo Dõi Chất Lượng Không Khí Realtime
         </h1>
         <div className="realtime-dashboard__status">
           <span className={`status-indicator ${isConnected ? 'status-indicator--connected' : 'status-indicator--disconnected'}`}>
-            {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
+            {isConnected ? 'Connected' : 'Disconnected'}
           </span>
         </div>
       </div>
@@ -70,16 +70,6 @@ const RealtimeDashboard = () => {
         ))}
       </div>
 
-      {/* Info Footer */}
-      <div className="realtime-dashboard__footer">
-        <p>
-          📡 Dữ liệu cập nhật realtime qua WebSocket SignalR
-          <br />
-          🚫 Biểu đồ CO đã được loại bỏ theo yêu cầu
-          <br />
-          📊 AQI tính trung bình từ 5 chất ô nhiễm: PM2.5, PM10, O₃, NO₂, SO₂
-        </p>
-      </div>
     </div>
   );
 };

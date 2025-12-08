@@ -43,7 +43,6 @@ const ContributionRecordCard = ({ contribution, onDownload, onViewData }) => {
   return (
     <div className="contribution-record-card">
       <div className="record-content">
-        <div className="record-icon">📊</div>
         <div className="record-info">
           <h4 className="record-id">ID: {contributionId?.slice(0, 8)}...</h4>
           <p className="record-meta">
@@ -63,14 +62,14 @@ const ContributionRecordCard = ({ contribution, onDownload, onViewData }) => {
           onClick={() => onViewData(contributionId)}
           title="Xem dữ liệu"
         >
-          👁️
+          Xem
         </button>
         <button
           className="action-btn btn-download"
           onClick={() => onDownload(contributionId)}
           title="Tải xuống JSON"
         >
-          💾
+          Tải
         </button>
       </div>
     </div>

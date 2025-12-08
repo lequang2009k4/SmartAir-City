@@ -61,19 +61,19 @@ const ContributionManagement = ({ user }) => {
           className={`sub-tab-btn ${contributionTab === 'sensor-data' ? 'active' : ''}`}
           onClick={() => setContributionTab('sensor-data')}
         >
-          🌡️ Dữ liệu từ sensor
+          Dữ liệu từ sensor
         </button>
         <button
           className={`sub-tab-btn ${contributionTab === 'uploaded-json' ? 'active' : ''}`}
           onClick={() => setContributionTab('uploaded-json')}
         >
-          📤 Đã tải lên JSON
+          Đã tải lên JSON
         </button>
         <button
           className={`sub-tab-btn ${contributionTab === 'third-party-api' ? 'active' : ''}`}
           onClick={() => setContributionTab('third-party-api')}
         >
-          🔗 API bên thứ 3
+          API bên thứ 3
         </button>
       </div>
 
@@ -135,10 +135,10 @@ const ContributionManagement = ({ user }) => {
         <div className="info-card">
           <h3>Gợi ý sử dụng</h3>
           <ul>
-            <li>🔹 Sử dụng <strong>Upload File</strong> nếu bạn có file JSON sẵn</li>
-            <li>🔹 Sử dụng <strong>Paste JSON</strong> để test nhanh hoặc gửi dữ liệu đơn lẻ</li>
-            <li>🔹 Click <strong>"Tải JSON mẫu"</strong> để xem cấu trúc dữ liệu chuẩn</li>
-            <li>🔹 Sử dụng <strong>"Validate"</strong> để kiểm tra JSON trước khi gửi</li>
+            <li>Sử dụng <strong>Upload File</strong> nếu bạn có file JSON sẵn</li>
+            <li>Sử dụng <strong>Paste JSON</strong> để test nhanh hoặc gửi dữ liệu đơn lẻ</li>
+            <li>Click <strong>"Đải JSON mẫu"</strong> để xem cấu trúc dữ liệu chuẩn</li>
+            <li>Sử dụng <strong>"Validate"</strong> để kiểm tra JSON trước khi gửi</li>
           </ul>
         </div>
       </div>

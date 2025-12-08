@@ -63,6 +63,7 @@ const ExternalSourceManager = () => {
   const [showMappingSection, setShowMappingSection] = useState(false);
   const [testUrlInput, setTestUrlInput] = useState('');
   const [testApiKeyInput, setTestApiKeyInput] = useState('');
+  const [currentStep, setCurrentStep] = useState(1); // Thêm state để theo dõi bước hiện tại
 
   // Load sources on mount
   useEffect(() => {
@@ -138,10 +139,12 @@ const ExternalSourceManager = () => {
       if (detected) {
         // NGSI-LD detected: skip mapping, go to Step 3
         setShowMappingSection(false);
+        setCurrentStep(3); // Bỏ qua bước 2, chuyển thẳng sang bước 3
         setSuccess('✅ Phát hiện dữ liệu chuẩn NGSI-LD! Có thể bỏ qua mapping.');
       } else {
         // Custom JSON: show mapping section
         setShowMappingSection(true);
+        setCurrentStep(2); // Chuyển sang bước 2 để mapping
         setFieldMapping({});
         setTimestampPath('');
       }
@@ -149,6 +152,7 @@ const ExternalSourceManager = () => {
       setError('❌ Test thất bại: ' + (err.message || 'Không thể kết nối'));
       setJsonData(null);
       setShowMappingSection(false);
+      setCurrentStep(1); // Quay lại bước 1 nếu test thất bại
     } finally {
       setTestLoading(false);
     }
@@ -319,6 +323,7 @@ const ExternalSourceManager = () => {
       setTestUrlInput('');
       setTestApiKeyInput('');
       setIsNGSILD(false);
+      setCurrentStep(1); // Reset về bước 1
 
       // Reload sources immediately
       await loadSources();
@@ -463,7 +468,7 @@ const ExternalSourceManager = () => {
     <div className="external-source-manager">
       {/* Header */}
       <div className="manager-header">
-        <h2>🔗 Quản lý API bên thứ 3</h2>
+        <h2>Quản lý API bên thứ 3</h2>
         <p>Kết nối với các API bên ngoài để tự động thu thập dữ liệu chất lượng không khí</p>
       </div>
 
@@ -471,65 +476,67 @@ const ExternalSourceManager = () => {
       {error && (
         <div className="alert alert-error">
           {error}
-          <button className="alert-close" onClick={() => setError(null)}>✕</button>
+          <button className="alert-close" onClick={() => setError(null)}>×</button>
         </div>
       )}
       
       {success && (
         <div className="alert alert-success">
           {success}
-          <button className="alert-close" onClick={() => setSuccess(null)}>✕</button>
+          <button className="alert-close" onClick={() => setSuccess(null)}>×</button>
         </div>
       )}
 
       {/* Step 1: Test URL */}
-      <div className="form-section">
-        <div className="section-badge">Bước 1</div>
-        <h3>Kiểm tra kết nối API</h3>
-        
-        <div className="form-group">
-          <label>URL Endpoint</label>
-          <input
-            type="text"
-            value={testUrlInput}
-            onChange={(e) => setTestUrlInput(e.target.value)}
-            placeholder="https://api.openaq.org/v3/locations/4946811/latest"
-          />
-        </div>
+      {currentStep === 1 && (
+        <div className="form-section">
+          <div className="section-badge">Bước 1/3</div>
+          <h3>Kiểm tra kết nối API</h3>
+          
+          <div className="form-group">
+            <label>URL Endpoint <span className="required">*</span></label>
+            <input
+              type="text"
+              value={testUrlInput}
+              onChange={(e) => setTestUrlInput(e.target.value)}
+              placeholder="https://api.openaq.org/v3/locations/4946811/latest"
+            />
+          </div>
 
-        <div className="form-group">
-          <label>API Key (tùy chọn)</label>
-          <input
-            type="text"
-            value={testApiKeyInput}
-            onChange={(e) => setTestApiKeyInput(e.target.value)}
-            placeholder="Nhập API key nếu cần"
-          />
-        </div>
+          <div className="form-group">
+            <label>API Key (tùy chọn)</label>
+            <input
+              type="text"
+              value={testApiKeyInput}
+              onChange={(e) => setTestApiKeyInput(e.target.value)}
+              placeholder="Nhập API key nếu cần"
+            />
+          </div>
 
-        <button
-          className="btn btn-primary"
-          onClick={handleTestUrl}
-          disabled={testLoading}
-        >
-          {testLoading ? '🔄 Đang test...' : '🔌 Test kết nối'}
-        </button>
-      </div>
+          <button
+            className="btn btn-primary"
+            onClick={handleTestUrl}
+            disabled={testLoading || !testUrlInput}
+          >
+            {testLoading ? 'Đang test...' : 'Test kết nối và tiếp tục'}
+          </button>
+        </div>
+      )}
 
       {/* Step 2: Mapping (only for non-NGSI-LD) */}
-      {showMappingSection && (
+      {currentStep === 2 && showMappingSection && (
         <div className="form-section">
-          <div className="section-badge">Bước 2</div>
+          <div className="section-badge">Bước 2/3</div>
           <h3>Định dạng dữ liệu</h3>
           
           {isNGSILD ? (
             <div className="alert alert-info">
-              ✅ Tự động phát hiện: API này trả về chuẩn NGSI-LD. Không cần mapping thủ công.
+              Tự động phát hiện: API này trả về chuẩn NGSI-LD. Không cần mapping thủ công.
             </div>
           ) : (
             <>
               <div className="alert alert-info">
-                📍 Hướng dẫn: Click vào giá trị trong JSON bên dưới để chọn trường dữ liệu. Nhập tên trường đo (PM2.5, CO2, Temperature...) và trường sẽ được thêm vào mapping.
+                Hướng dẫn: Click vào giá trị trong JSON bên dưới để chọn trường dữ liệu. Nhập tên trường đo (PM2.5, CO2, Temperature...) và trường sẽ được thêm vào mapping.
               </div>
 
               <div className="mapping-grid">
@@ -564,99 +571,133 @@ const ExternalSourceManager = () => {
               </div>
             </>
           )}
+
+          <div className="form-actions" style={{ marginTop: '1rem' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => {
+                setCurrentStep(1);
+                setShowMappingSection(false);
+              }}
+            >
+              Quay lại
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => setCurrentStep(3)}
+              disabled={!isNGSILD && Object.keys(fieldMapping).length === 0}
+            >
+              Tiếp tục
+            </button>
+          </div>
         </div>
       )}
 
       {/* Step 3: Source Configuration */}
-      <form onSubmit={handleCreateSource} className="form-section">
-        <div className="section-badge">Bước 3</div>
-        <h3>Thông tin nguồn dữ liệu</h3>
-        
-        <div className="form-group">
-          <label>
-            Tên nguồn dữ liệu <span className="required">*</span>
-          </label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            placeholder="VD: OpenAQ Hanoi Central Station"
-            required
-          />
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label>
-              Latitude (vĩ độ) <span className="required">*</span>
-            </label>
-            <input
-              type="number"
-              step="0.000001"
-              name="latitude"
-              value={formData.latitude}
-              onChange={handleInputChange}
-              placeholder="21.028511"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>
-              Longitude (kinh độ) <span className="required">*</span>
-            </label>
-            <input
-              type="number"
-              step="0.000001"
-              name="longitude"
-              value={formData.longitude}
-              onChange={handleInputChange}
-              placeholder="105.804817"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label>
-            Chu kỳ lấy dữ liệu (phút) <span className="required">*</span>
-          </label>
-          <input
-            type="number"
-            name="fetchIntervalMinutes"
-            value={formData.fetchIntervalMinutes}
-            onChange={handleInputChange}
-            min="1"
-            placeholder="15"
-            required
-          />
-          <small>Khuyến nghị: 15-60 phút để tránh quá tải API</small>
-        </div>
-
-        <div className="form-actions">
-          <button
-            type="submit"
-            className="btn btn-success"
-            disabled={loading}
-          >
-            {loading ? '🔄 Đang tạo...' : '✅ Lưu cấu hình'}
-          </button>
+      {currentStep === 3 && (
+        <form onSubmit={handleCreateSource} className="form-section">
+          <div className="section-badge">Bước 3/3</div>
+          <h3>Thông tin nguồn dữ liệu</h3>
           
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={loadSources}
-            disabled={loading}
-          >
-            🔄 Refresh List
-          </button>
-        </div>
-      </form>
+          <div className="form-group">
+            <label>
+              Tên nguồn dữ liệu <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              placeholder="VD: OpenAQ Hanoi Central Station"
+              required
+            />
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>
+                Latitude (vĩ độ) <span className="required">*</span>
+              </label>
+              <input
+                type="number"
+                step="0.000001"
+                name="latitude"
+                value={formData.latitude}
+                onChange={handleInputChange}
+                placeholder="21.028511"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>
+                Longitude (kinh độ) <span className="required">*</span>
+              </label>
+              <input
+                type="number"
+                step="0.000001"
+                name="longitude"
+                value={formData.longitude}
+                onChange={handleInputChange}
+                placeholder="105.804817"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>
+              Chu kỳ lấy dữ liệu (phút) <span className="required">*</span>
+            </label>
+            <input
+              type="number"
+              name="fetchIntervalMinutes"
+              value={formData.fetchIntervalMinutes}
+              onChange={handleInputChange}
+              min="1"
+              placeholder="15"
+              required
+            />
+            <small>Khuyến nghị: 15-60 phút để tránh quá tải API</small>
+          </div>
+
+          <div className="form-actions">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => {
+                if (isNGSILD) {
+                  setCurrentStep(1);
+                } else {
+                  setCurrentStep(2);
+                }
+              }}
+            >
+              Quay lại
+            </button>
+            <button
+              type="submit"
+              className="btn btn-success"
+              disabled={loading}
+            >
+              {loading ? 'Đang tạo...' : 'Lưu cấu hình'}
+            </button>
+          </div>
+        </form>
+      )}
 
       {/* Sources List */}
       <div className="sources-section">
-        <h3>📋 Danh sách External Sources</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h3 style={{ margin: 0 }}>Danh sách External Sources</h3>
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={loadSources}
+            disabled={loading}
+          >
+            Refresh
+          </button>
+        </div>
         
         {loading && <LoadingSpinner />}
         
@@ -672,7 +713,10 @@ const ExternalSourceManager = () => {
               <div key={source.id} className={`source-card ${source.isActive ? 'active' : 'inactive'}`}>
                 <div className="source-header">
                   <h4>
-                    {source.name} {source.isActive ? '🟢' : '🔴'}
+                    {source.name}
+                    <span className={`status-badge ${source.isActive ? 'active' : 'inactive'}`}>
+                      {source.isActive ? 'Active' : 'Inactive'}
+                    </span>
                   </h4>
                   <span className="format-badge">
                     {source.isNGSILD ? 'NGSI-LD' : 'Custom JSON'}
@@ -696,7 +740,7 @@ const ExternalSourceManager = () => {
                       onClick={() => handleReactivate(source.id)}
                       disabled={loading}
                     >
-                      ▶️ Reactivate
+                      Reactivate
                     </button>
                   )}
                   
@@ -705,7 +749,7 @@ const ExternalSourceManager = () => {
                     onClick={() => handleDelete(source.id, source.name)}
                     disabled={loading}
                   >
-                    🗑️ Xóa
+                    Xóa
                   </button>
                 </div>
               </div>
