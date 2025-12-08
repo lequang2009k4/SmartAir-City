@@ -1,0 +1,1620 @@
+openapi: 3.0.3
+info:
+  title: SmartAir City - Open Environmental Data API
+  version: 1.0.0
+  description: |
+    🌍 **Open API for Urban Air Quality Monitoring**
+
+    This API provides real-time and historical environmental data for urban air quality monitoring, including:
+
+    - 🌡️ **Air quality metrics** (PM2.5, PM10, CO, NO2, O3, SO2, temperature, humidity, etc.)
+    - 📍 **Monitoring stations** (IoT sensors, official stations, external data sources)
+    - 📈 **Historical time-series data** with flexible date range queries
+    - 👥 **Citizen contributions** for community-driven environmental monitoring
+    - 🔌 **External data integration** (HTTP APIs, MQTT brokers)
+
+    ## 📊 Data Sources & Updates
+
+    - **Real-time IoT data**: Updated continuously via MQTT
+    - **OpenAQ Air Quality Data**: Integrated from OpenAQ API (https://openaq.org/)
+    - **External APIs**: Configurable polling intervals (default: 60 minutes)
+    - **Citizen contributions**: Community-uploaded environmental data
+    - **Storage**: MongoDB with NGSI-LD compliant data models
+
+    ## 🔓 Open Data License
+
+    ### Data License
+    Data is released under **Creative Commons Attribution 4.0 International (CC BY 4.0)**
+
+    ### API Code License
+    API implementation © 2025 SmartAir City Team  
+    Licensed under **MIT License**
+
+    ## 🌐 NGSI-LD Compliance
+
+    This API follows **ETSI NGSI-LD specification** and **FIWARE Smart Data Models** standards:
+    - **AirQualityObserved**: Air quality data model (FIWARE)
+    - **WeatherObserved**: Weather data model (FIWARE)
+    - **Device**: IoT sensor model (FIWARE)
+    - **Context**: NGSI-LD @context for semantic interoperability
+  contact:
+    name: SmartAir City Development Team
+    email: smartaircity@gmail.com
+    url: https://github.com/lequang2009k4/SmartAir-City
+  license:
+    name: 'Data: CC BY 4.0 | Code: MIT License'
+    url: https://creativecommons.org/licenses/by/4.0/
+
+servers:
+  - url: http://localhost:5182
+    description: Development server
+  - url: https://api.smartaircity.com
+    description: Production server (example)
+
+tags:
+  - name: Air Quality
+    description: Air quality observations and historical data
+  - name: Stations
+    description: Monitoring station management
+  - name: Contributions
+    description: Citizen-contributed air quality data
+  - name: External Sources
+    description: External HTTP API data sources
+  - name: External MQTT
+    description: External MQTT broker data sources
+
+paths:
+  # ============================================
+  # AIR QUALITY ENDPOINTS
+  # ============================================
+  /api/airquality:
+    get:
+      tags:
+        - Air Quality
+      summary: Get air quality observations
+      description: |
+        Retrieve air quality observations for a specific monitoring station. 
+        Returns NGSI-LD normalized format as per ETSI specification. 
+        Data includes various air quality parameters (PM2.5, PM10, CO, NO2, O3, SO2, temperature, humidity, etc.) 
+        depending on station capabilities and sensor availability.
+      operationId: getAirQuality
+      parameters:
+        - name: stationId
+          in: query
+          required: true
+          description: Station ID (required)
+          schema:
+            type: string
+            example: "station-hanoi-oceanpark"
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of records to return (optional)
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+            maximum: 1000
+      responses:
+        '200':
+          description: Returns air quality data successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AirQuality'
+        '400':
+          description: stationId is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/airquality/latest:
+    get:
+      tags:
+        - Air Quality
+      summary: Get latest air quality observations
+      description: |
+        Retrieve the most recent air quality observation for a specific monitoring station. 
+        Returns NGSI-LD normalized format as per ETSI specification. 
+        Data includes various air quality parameters (PM2.5, PM10, CO, NO2, O3, SO2, temperature, humidity, etc.) 
+        depending on station capabilities and sensor availability.
+      operationId: getLatestAirQuality
+      parameters:
+        - name: stationId
+          in: query
+          required: true
+          description: Station ID (required)
+          schema:
+            type: string
+            example: "station-hanoi-oceanpark"
+      responses:
+        '200':
+          description: Returns latest air quality data successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AirQuality'
+        '400':
+          description: stationId is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No data found for the station
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/airquality/history:
+    get:
+      tags:
+        - Air Quality
+      summary: Get historical air quality data
+      description: |
+        Retrieve historical air quality observations for a specific monitoring station within a date range. 
+        Returns NGSI-LD normalized format as per ETSI specification. 
+        Data includes various air quality parameters (PM2.5, PM10, CO, NO2, O3, SO2, temperature, humidity, etc.) 
+        depending on station capabilities and sensor availability.
+      operationId: getAirQualityHistory
+      parameters:
+        - name: stationId
+          in: query
+          required: true
+          description: Station ID (required)
+          schema:
+            type: string
+            example: "station-hanoi-oceanpark"
+        - name: from
+          in: query
+          required: true
+          description: Start date (ISO 8601 format, required)
+          schema:
+            type: string
+            format: date-time
+            example: "2025-01-01T00:00:00Z"
+        - name: to
+          in: query
+          required: true
+          description: End date (ISO 8601 format, required)
+          schema:
+            type: string
+            format: date-time
+            example: "2025-01-31T23:59:59Z"
+      responses:
+        '200':
+          description: Returns historical air quality data successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AirQuality'
+        '400':
+          description: Invalid parameters (stationId, from, or to missing/invalid)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/airquality/download:
+    get:
+      tags:
+        - Air Quality
+      summary: Download air quality data as file
+      description: |
+        Download air quality observations for a specific monitoring station as JSON file. 
+        Returns NGSI-LD normalized format as per ETSI specification. 
+        Data includes various air quality parameters (PM2.5, PM10, CO, NO2, O3, SO2, temperature, humidity, etc.) 
+        depending on station capabilities and sensor availability.
+      operationId: downloadAirQuality
+      parameters:
+        - name: stationId
+          in: query
+          required: true
+          description: Station ID (required)
+          schema:
+            type: string
+            example: "station-hanoi-oceanpark"
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of records to return (optional)
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+            maximum: 1000
+        - name: format
+          in: query
+          required: false
+          description: "File format (json only, default: json)"
+          schema:
+            type: string
+            enum: [json]
+            default: json
+      responses:
+        '200':
+          description: Returns downloadable JSON file
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: stationId is required or format not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/airquality/history/download:
+    get:
+      tags:
+        - Air Quality
+      summary: Download historical air quality data as file
+      description: |
+        Download historical air quality observations for a specific monitoring station within a date range as JSON file. 
+        Returns NGSI-LD normalized format as per ETSI specification. 
+        Data includes various air quality parameters (PM2.5, PM10, CO, NO2, O3, SO2, temperature, humidity, etc.) 
+        depending on station capabilities and sensor availability.
+      operationId: downloadAirQualityHistory
+      parameters:
+        - name: stationId
+          in: query
+          required: true
+          description: Station ID (required)
+          schema:
+            type: string
+            example: "station-hanoi-oceanpark"
+        - name: from
+          in: query
+          required: true
+          description: Start date (ISO 8601 format, required)
+          schema:
+            type: string
+            format: date-time
+            example: "2025-01-01T00:00:00Z"
+        - name: to
+          in: query
+          required: true
+          description: End date (ISO 8601 format, required)
+          schema:
+            type: string
+            format: date-time
+            example: "2025-01-31T23:59:59Z"
+        - name: format
+          in: query
+          required: false
+          description: "File format (json only, default: json)"
+          schema:
+            type: string
+            enum: [json]
+            default: json
+      responses:
+        '200':
+          description: Returns downloadable JSON file with historical data
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid parameters or format not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # STATION ENDPOINTS
+  # ============================================
+  /api/stations:
+    get:
+      tags:
+        - Stations
+      summary: Retrieve all stations from MongoDB
+      description: |
+        Get a list of all monitoring stations in the system.
+        Returns station metadata including location, name, and configuration.
+      operationId: getStations
+      responses:
+        '200':
+          description: Returns list of stations successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StationsResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - Stations
+      summary: Create new station
+      description: |
+        Register a new monitoring station in the system. 
+        Provide station metadata including name, location (latitude/longitude), and type.
+      operationId: createStation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Station'
+      responses:
+        '201':
+          description: Station created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Station'
+        '400':
+          description: Invalid station data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Station already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/stations/{stationId}:
+    get:
+      tags:
+        - Stations
+      summary: Get specific station information
+      description: |
+        Retrieve detailed information for a specific monitoring station by its ID.
+        Includes station metadata, location, type, and configuration.
+      operationId: getStation
+      parameters:
+        - name: stationId
+          in: path
+          required: true
+          description: Station identifier
+          schema:
+            type: string
+            example: "station-hanoi-oceanpark"
+      responses:
+        '200':
+          description: Returns station details successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Station'
+        '404':
+          description: Station not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Stations
+      summary: Update station
+      description: |
+        Update configuration and metadata for an existing monitoring station.
+        Can modify station name, location, type, or other properties.
+      operationId: updateStation
+      parameters:
+        - name: stationId
+          in: path
+          required: true
+          description: Station identifier
+          schema:
+            type: string
+            example: "station-hanoi-oceanpark"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Station'
+      responses:
+        '200':
+          description: Station updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Station not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Stations
+      summary: Delete station
+      description: |
+        Remove a monitoring station from the system. 
+        Historical data from this station will be preserved.
+      operationId: deleteStation
+      parameters:
+        - name: stationId
+          in: path
+          required: true
+          description: Station identifier
+          schema:
+            type: string
+            example: "station-hanoi-oceanpark"
+      responses:
+        '200':
+          description: Station deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Station not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/stations/map:
+    get:
+      tags:
+        - Stations
+      summary: Get minimal data for Map display
+      description: |
+        Retrieve lightweight station data optimized for map visualization. 
+        Returns only essential fields: station ID, name, coordinates, and type.
+        Useful for rendering station markers on interactive maps.
+      operationId: getStationsForMap
+      responses:
+        '200':
+          description: Returns minimal station data for map display
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StationMapItem'
+
+  # ============================================
+  # CONTRIBUTION ENDPOINTS
+  # ============================================
+  /api/contributions/upload:
+    post:
+      tags:
+        - Contributions
+      summary: Upload JSON file with air quality data
+      description: |
+        Upload air quality data contributed by community members or external sources. 
+        The uploaded JSON file will be validated against NGSI-LD schema and stored in the ContributedData collection.
+        Each contribution is assigned a unique contributionId for tracking and retrieval.
+      operationId: uploadContribution
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - email
+                - file
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Contributor email address
+                  example: "user@example.com"
+                file:
+                  type: string
+                  format: binary
+                  description: JSON file containing NGSI-LD compliant air quality data
+      responses:
+        '200':
+          description: File uploaded and validated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContributionUploadResponse'
+        '400':
+          description: Invalid file format or validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/contributions/public:
+    get:
+      tags:
+        - Contributions
+      summary: Display ALL users who contributed and their total contribution count
+      description: |
+        Retrieve a list of all contributors and their contribution statistics. 
+        Returns simplified JSON format (not NGSI-LD) for easy display in leaderboards or public dashboards.
+        Includes contributor email/name and total number of contributions.
+      operationId: getPublicContributions
+      responses:
+        '200':
+          description: Returns list of contributors successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicContributionsResponse'
+
+  /api/contributions/list:
+    get:
+      tags:
+        - Contributions
+      summary: Get list of all contributionIds with metadata
+      description: |
+        Retrieve metadata for all contributions, optionally filtered by contributor email. 
+        Returns contribution IDs, record counts, and upload timestamps.
+        Useful for browsing available contributed datasets before downloading full data.
+      operationId: getContributionIds
+      parameters:
+        - name: email
+          in: query
+          required: false
+          description: Optional email filter to show only specific contributor's data
+          schema:
+            type: string
+            format: email
+            example: "user@example.com"
+      responses:
+        '200':
+          description: Returns list of contributions with metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContributionsListResponse'
+
+  /api/contributions/{contributionId}/latest:
+    get:
+      tags:
+        - Contributions
+      summary: Get N latest data records in that contribution
+      description: |
+        Retrieve contributed air quality observations. 
+        Returns NGSI-LD normalized format as per ETSI specification. 
+        Data includes various air quality parameters depending on contributor's sensors and data source.
+      operationId: getLatestByContributionId
+      parameters:
+        - name: contributionId
+          in: path
+          required: true
+          description: Unique contribution identifier
+          schema:
+            type: string
+            example: "550e8400-e29b-41d4-a716-446655440000"
+        - name: limit
+          in: query
+          required: false
+          description: "Maximum number of records to return (default: 5)"
+          schema:
+            type: integer
+            default: 5
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Returns latest contributed data successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContributionDataResponse'
+        '404':
+          description: Contribution not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/contributions/{contributionId}/download:
+    get:
+      tags:
+        - Contributions
+      summary: Download all data from that contribution as JSON file
+      description: |
+        Download complete contributed dataset as a JSON file. 
+        Returns NGSI-LD normalized format as per ETSI specification. 
+        Useful for offline analysis or data archiving.
+      operationId: downloadByContributionId
+      parameters:
+        - name: contributionId
+          in: path
+          required: true
+          description: Unique contribution identifier
+          schema:
+            type: string
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Returns downloadable JSON file
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Contribution not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # EXTERNAL SOURCE (HTTP) ENDPOINTS
+  # ============================================
+  /api/sources:
+    get:
+      tags:
+        - External Sources
+      summary: Get all external HTTP sources
+      description: Retrieve all configured external HTTP API sources
+      operationId: getAllExternalSources
+      responses:
+        '200':
+          description: Returns list of external sources
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalSource'
+    post:
+      tags:
+        - External Sources
+      summary: Register new external HTTP API source
+      description: |
+        Register a new external HTTP API as a data source. 
+        The API must return NGSI-LD compliant JSON format.
+        Configure polling interval, headers for authentication, and station mapping.
+      operationId: createExternalSource
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalSource'
+      responses:
+        '201':
+          description: External source created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalSource'
+        '400':
+          description: Invalid configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: URL or StationId already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sources/{id}:
+    delete:
+      tags:
+        - External Sources
+      summary: Delete external HTTP source
+      description: Remove an external HTTP source from the system
+      operationId: deleteExternalSource
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: External source ID
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Source deleted successfully
+        '404':
+          description: Source not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sources/{id}/reactivate:
+    post:
+      tags:
+        - External Sources
+      summary: Reactivate a source that was auto-deactivated after failures
+      description: Reactivate an external source that was automatically deactivated due to consecutive failures
+      operationId: reactivateExternalSource
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: External source ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Source reactivated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /api/sources/test:
+    post:
+      tags:
+        - External Sources
+      summary: Test external API URL
+      description: Test connectivity and response format of an external API URL before registering it as a source
+      operationId: testExternalSourceUrl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestUrlRequest'
+      responses:
+        '200':
+          description: URL test successful
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: URL test failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # EXTERNAL MQTT ENDPOINTS
+  # ============================================
+  /api/mqtt/sources:
+    get:
+      tags:
+        - External MQTT
+      summary: Get list of all external MQTT sources
+      description: |
+        Retrieve all configured external MQTT broker sources. 
+        Returns connection details, topics, and status for each registered MQTT source.
+      operationId: getAllMqttSources
+      responses:
+        '200':
+          description: Returns list of MQTT sources successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalMqttSource'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - External MQTT
+      summary: Register new MQTT broker
+      description: |
+        Register a new external MQTT broker as a data source. 
+        Configure broker address, port, credentials, and topic subscriptions.
+        The system will automatically connect and start receiving data from specified topics.
+      operationId: createMqttSource
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalMqttSource'
+      responses:
+        '201':
+          description: MQTT source created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalMqttSource'
+        '400':
+          description: Invalid configuration or connection failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/mqtt/sources/{id}:
+    get:
+      tags:
+        - External MQTT
+      summary: Get information of 1 source
+      description: |
+        Retrieve detailed configuration and status for a specific external MQTT source.
+        Includes broker connection details, subscribed topics, and current connection status.
+      operationId: getMqttSourceById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: MQTT source ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns source details successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalMqttSource'
+        '404':
+          description: Source not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - External MQTT
+      summary: Update source
+      description: |
+        Update configuration for an existing external MQTT source. 
+        Can modify broker connection details, topics, or credentials.
+        The connection will be restarted with new configuration.
+      operationId: updateMqttSource
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: MQTT source ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalMqttSource'
+      responses:
+        '200':
+          description: Source updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalMqttSource'
+        '404':
+          description: Source not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - External MQTT
+      summary: Delete source
+      description: |
+        Remove an external MQTT source from the system. 
+        The connection will be terminated and the source configuration will be deleted.
+        Historical data from this source will be preserved.
+      operationId: deleteMqttSource
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: MQTT source ID
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Source deleted successfully
+        '404':
+          description: Source not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/mqtt/sources/{id}/openaq:
+    patch:
+      tags:
+        - External MQTT
+      summary: Update OpenAQ LocationId for source
+      description: |
+        Associate an OpenAQ location ID with this MQTT source for data enrichment. 
+        Allows merging MQTT sensor data with OpenAQ reference data for the same location.
+      operationId: updateMqttSourceOpenAQ
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: MQTT source ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                openAQLocationId:
+                  type: integer
+                  nullable: true
+                  description: OpenAQ Location ID
+                  example: 4946811
+      responses:
+        '200':
+          description: OpenAQ LocationId updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Source not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/mqtt/sources/{id}/activate:
+    post:
+      tags:
+        - External MQTT
+      summary: Activate source
+      description: |
+        Activate a previously deactivated MQTT source. 
+        The system will reconnect to the broker and resume data collection.
+      operationId: activateMqttSource
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: MQTT source ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Source activated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Source not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/mqtt/sources/{id}/deactivate:
+    post:
+      tags:
+        - External MQTT
+      summary: Deactivate source
+      description: |
+        Temporarily deactivate an MQTT source without deleting it. 
+        The connection will be terminated but configuration is preserved for later reactivation.
+      operationId: deactivateMqttSource
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: MQTT source ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Source deactivated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Source not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/mqtt/sources/test:
+    post:
+      tags:
+        - External MQTT
+      summary: Test connection to MQTT broker
+      description: |
+        Test connectivity to an MQTT broker before registering it as a source. 
+        Validates broker address, port, and credentials without saving the configuration.
+        Useful for troubleshooting connection issues.
+      operationId: testMqttConnection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestMqttConnectionRequest'
+      responses:
+        '200':
+          description: Connection test successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MqttTestResponse'
+        '400':
+          description: Connection test failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    AirQuality:
+      type: object
+      description: NGSI-LD compliant AirQualityObserved entity
+      properties:
+        id:
+          type: string
+          description: Unique entity identifier (URN format)
+          example: "urn:ngsi-ld:AirQualityObserved:station-hanoi-oceanpark:2025-01-15T10:30:00Z"
+        type:
+          type: string
+          description: Entity type
+          example: "AirQualityObserved"
+        '@context':
+          type: array
+          description: NGSI-LD context
+          items:
+            oneOf:
+              - type: string
+              - type: object
+          example:
+            - "https://smartdatamodels.org/context.jsonld"
+            - sosa: "http://www.w3.org/ns/sosa/"
+        sosa:madeBySensor:
+          $ref: '#/components/schemas/Relationship'
+        sosa:observedProperty:
+          $ref: '#/components/schemas/Relationship'
+        sosa:hasFeatureOfInterest:
+          $ref: '#/components/schemas/Relationship'
+        location:
+          $ref: '#/components/schemas/LocationProperty'
+        dateObserved:
+          $ref: '#/components/schemas/DateTimeProperty'
+        PM25:
+          $ref: '#/components/schemas/NumericProperty'
+        PM10:
+          $ref: '#/components/schemas/NumericProperty'
+        CO:
+          $ref: '#/components/schemas/NumericProperty'
+        NO2:
+          $ref: '#/components/schemas/NumericProperty'
+        O3:
+          $ref: '#/components/schemas/NumericProperty'
+        SO2:
+          $ref: '#/components/schemas/NumericProperty'
+        temperature:
+          $ref: '#/components/schemas/NumericProperty'
+        humidity:
+          $ref: '#/components/schemas/NumericProperty'
+        airQualityIndex:
+          $ref: '#/components/schemas/NumericProperty'
+      additionalProperties: true
+
+    Relationship:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "Relationship"
+        object:
+          type: string
+          description: URN reference
+          example: "urn:ngsi-ld:Device:mq135-hanoi-oceanpark"
+
+    LocationProperty:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "GeoProperty"
+        value:
+          $ref: '#/components/schemas/GeoValue'
+
+    GeoValue:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "Point"
+        coordinates:
+          type: array
+          items:
+            type: number
+          minItems: 2
+          maxItems: 2
+          example: [105.804817, 21.028511]
+
+    DateTimeProperty:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "Property"
+        value:
+          type: string
+          format: date-time
+          example: "2025-01-15T10:30:00Z"
+
+    NumericProperty:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "Property"
+        value:
+          type: number
+          nullable: true
+          description: Numeric measurement value
+          example: 45.5
+        unitCode:
+          type: string
+          nullable: true
+          description: Unit of measurement code
+          example: "UGM3"
+        observedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Observation timestamp
+          example: "2025-01-15T10:30:00Z"
+
+    Station:
+      type: object
+      required:
+        - stationId
+        - name
+      properties:
+        id:
+          type: string
+          description: MongoDB ObjectId (internal)
+          example: "507f1f77bcf86cd799439011"
+        stationId:
+          type: string
+          description: Unique station identifier
+          example: "station-hanoi-oceanpark"
+        name:
+          type: string
+          description: Station display name
+          example: "Hanoi - Ocean Park"
+        latitude:
+          type: number
+          format: double
+          description: Latitude coordinate
+          example: 21.028511
+        longitude:
+          type: number
+          format: double
+          description: Longitude coordinate
+          example: 105.804817
+        type:
+          type: string
+          description: Station type
+          enum: [official, external-http, external-mqtt, iot]
+          example: "official"
+        isActive:
+          type: boolean
+          description: Whether station is active
+          example: true
+        openAQLocationId:
+          type: integer
+          nullable: true
+          description: OpenAQ Location ID (if applicable)
+          example: 4946811
+        sensorUrn:
+          type: string
+          nullable: true
+          description: Sensor URN
+          example: "urn:ngsi-ld:Device:mq135-oceanpark"
+        featureOfInterest:
+          type: string
+          nullable: true
+          description: Feature of Interest URN
+          example: "urn:ngsi-ld:Air:urban-hanoi"
+        metadata:
+          type: object
+          nullable: true
+          description: Additional metadata
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+          example: "2025-01-01T00:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last update timestamp
+          example: "2025-01-15T10:30:00Z"
+
+    StationsResponse:
+      type: object
+      properties:
+        totalStations:
+          type: integer
+          description: Total number of stations
+        summary:
+          type: object
+          description: Summary grouped by station type
+          additionalProperties:
+            type: integer
+        stations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Station'
+
+    StationMapItem:
+      type: object
+      properties:
+        stationId:
+          type: string
+          example: "station-hanoi-oceanpark"
+        name:
+          type: string
+          example: "Hanoi - Ocean Park"
+        latitude:
+          type: number
+          format: double
+          example: 21.028511
+        longitude:
+          type: number
+          format: double
+          example: 105.804817
+        type:
+          type: string
+          example: "official"
+        isActive:
+          type: boolean
+          example: true
+
+    ExternalSource:
+      type: object
+      required:
+        - name
+        - url
+      properties:
+        id:
+          type: string
+          description: MongoDB ObjectId (internal)
+          example: "507f1f77bcf86cd799439011"
+        name:
+          type: string
+          description: Source name
+          example: "Hanoi Air Quality API"
+        url:
+          type: string
+          format: uri
+          description: API endpoint URL (must return NGSI-LD compliant JSON)
+          example: "https://api.example.com/airquality"
+        stationId:
+          type: string
+          description: Auto-generated station ID
+          example: "station-hanoi-air-quality-api"
+        intervalMinutes:
+          type: integer
+          description: Polling interval in minutes
+          default: 60
+          minimum: 1
+          example: 60
+        latitude:
+          type: number
+          format: double
+          nullable: true
+          description: Latitude coordinate
+          example: 21.028511
+        longitude:
+          type: number
+          format: double
+          nullable: true
+          description: Longitude coordinate
+          example: 105.804817
+        headers:
+          type: object
+          description: HTTP headers for API authentication
+          additionalProperties:
+            type: string
+          example:
+            X-API-Key: "your-api-key"
+        lastFetchedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last fetch timestamp (system-managed)
+        failureCount:
+          type: integer
+          description: Consecutive failure count (system-managed)
+          default: 0
+        isActive:
+          type: boolean
+          description: Whether source is active (system-managed)
+          default: true
+        lastError:
+          type: string
+          nullable: true
+          description: Last error message (system-managed)
+
+    ExternalMqttSource:
+      type: object
+      required:
+        - name
+        - brokerHost
+        - topic
+      properties:
+        id:
+          type: string
+          description: MongoDB ObjectId (internal)
+          example: "507f1f77bcf86cd799439011"
+        name:
+          type: string
+          description: Station/sensor name
+          example: "Hanoi Thuyloi Sensor"
+        stationId:
+          type: string
+          description: Auto-generated station ID
+          example: "station-hanoi-thuyloi"
+        brokerHost:
+          type: string
+          description: MQTT broker hostname
+          example: "broker.hivemq.com"
+        brokerPort:
+          type: integer
+          description: MQTT broker port
+          default: 1883
+          minimum: 1
+          maximum: 65535
+          example: 1883
+        topic:
+          type: string
+          description: MQTT topic to subscribe
+          example: "home/hanoi/sensor1"
+        username:
+          type: string
+          nullable: true
+          description: MQTT username (optional)
+        password:
+          type: string
+          nullable: true
+          description: MQTT password (optional)
+        useTls:
+          type: boolean
+          description: Use TLS/SSL connection
+          default: false
+        latitude:
+          type: number
+          format: double
+          description: Latitude coordinate
+          example: 21.028511
+        longitude:
+          type: number
+          format: double
+          description: Longitude coordinate
+          example: 105.804817
+        openAQLocationId:
+          type: integer
+          nullable: true
+          description: OpenAQ Location ID (optional)
+          example: 4946811
+        isActive:
+          type: boolean
+          description: Whether source is active
+          default: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        lastConnectedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last successful connection timestamp
+        lastMessageAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last message received timestamp
+        lastError:
+          type: string
+          nullable: true
+          description: Last error message
+        messageCount:
+          type: integer
+          description: Total messages received
+          default: 0
+
+    ContributionUploadResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Luu thanh cong 10 ban ghi!"
+        count:
+          type: integer
+          description: Number of records saved
+          example: 10
+        contributionId:
+          type: string
+          description: Unique contribution identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        ids:
+          type: array
+          items:
+            type: string
+          description: MongoDB IDs of saved records
+
+    PublicContributionsResponse:
+      type: object
+      properties:
+        totalContributions:
+          type: integer
+          description: Total number of contributions
+        totalContributors:
+          type: integer
+          description: Total number of unique contributors
+        contributors:
+          type: array
+          items:
+            type: object
+            properties:
+              userName:
+                type: string
+                example: "John Doe"
+              email:
+                type: string
+                format: email
+                example: "user@example.com"
+              contributionCount:
+                type: integer
+                description: Number of contributions by this user
+                example: 15
+
+    ContributionsListResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total number of contributions
+        contributions:
+          type: array
+          items:
+            type: object
+            properties:
+              contributionId:
+                type: string
+                example: "550e8400-e29b-41d4-a716-446655440000"
+              recordCount:
+                type: integer
+                description: Number of records in this contribution
+                example: 10
+              uploadDate:
+                type: string
+                format: date-time
+                description: Upload timestamp
+
+    ContributionDataResponse:
+      type: object
+      properties:
+        contributionId:
+          type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        count:
+          type: integer
+          description: Number of records returned
+          example: 5
+        limit:
+          type: integer
+          description: Requested limit
+          example: 5
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AirQuality'
+
+    TestUrlRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+          description: URL to test
+          example: "https://api.example.com/airquality"
+        headers:
+          type: object
+          description: Optional HTTP headers
+          additionalProperties:
+            type: string
+
+    TestMqttConnectionRequest:
+      type: object
+      required:
+        - brokerHost
+        - brokerPort
+      properties:
+        brokerHost:
+          type: string
+          description: MQTT broker hostname
+          example: "broker.hivemq.com"
+        brokerPort:
+          type: integer
+          description: MQTT broker port
+          minimum: 1
+          maximum: 65535
+          example: 1883
+        username:
+          type: string
+          nullable: true
+          description: MQTT username (optional)
+        password:
+          type: string
+          nullable: true
+          description: MQTT password (optional)
+        useTls:
+          type: boolean
+          description: Use TLS/SSL connection
+          default: false
+
+    MqttTestResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Connection successful"
+        broker:
+          type: string
+          example: "broker.hivemq.com:1883"
+        resultCode:
+          type: string
+          nullable: true
+          description: MQTT connection result code (if failed)
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+          example: "stationId is required"
+        error:
+          type: string
+          nullable: true
+          description: Detailed error information
+
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Operation completed successfully"
+        stationId:
+          type: string
+          nullable: true
+          example: "station-hanoi-oceanpark"
+
