@@ -89,21 +89,12 @@ export const transformSourceToBackend = (sourceData) => {
     intervalMinutes: sourceData.intervalMinutes || 60,
     latitude: sourceData.latitude,
     longitude: sourceData.longitude,
-    isNGSILD: sourceData.isNGSILD || false,
+    isNGSILD: true, // Always NGSI-LD for new API
   };
 
   // Add headers if provided
   if (sourceData.headers && Object.keys(sourceData.headers).length > 0) {
     backendData.headers = sourceData.headers;
-  }
-
-  // Add mapping for non-NGSI-LD sources
-  if (!sourceData.isNGSILD && sourceData.mapping) {
-    backendData.mapping = {
-      dataPath: sourceData.mapping.dataPath || '$',
-      fieldMappings: sourceData.mapping.fieldMappings || {},
-      timestampPath: sourceData.mapping.timestampPath || '',
-    };
   }
 
   return backendData;
@@ -151,15 +142,6 @@ export const validateSourceData = (sourceData) => {
     errors.push('Longitude là bắt buộc');
   } else if (sourceData.longitude < -180 || sourceData.longitude > 180) {
     errors.push('Longitude phải trong khoảng -180 đến 180');
-  }
-
-  // Validate mapping for non-NGSI-LD sources
-  if (!sourceData.isNGSILD) {
-    if (!sourceData.mapping || !sourceData.mapping.fieldMappings) {
-      errors.push('Mapping là bắt buộc cho nguồn không phải NGSI-LD');
-    } else if (Object.keys(sourceData.mapping.fieldMappings).length === 0) {
-      errors.push('Cần có ít nhất một field mapping');
-    }
   }
 
   return {
@@ -317,7 +299,7 @@ export const reactivate = async (id) => {
 
 /**
  * Test if an external API URL is accessible and returns valid data
- * @param {object} urlData - URL test data { url, apiKey }
+ * @param {object} urlData - URL test data { url, headers }
  * @returns {Promise<object>} Test result with API response
  */
 export const testUrl = async (urlData) => {
@@ -328,16 +310,14 @@ export const testUrl = async (urlData) => {
 
     console.log('🔍 [externalSourcesService] Testing URL...', urlData.url);
     
-    // Build headers object if apiKey is provided
-    const headers = {};
-    if (urlData.apiKey) {
-      headers['X-API-Key'] = urlData.apiKey;
-    }
-    
     const testPayload = {
       url: urlData.url,
-      headers: headers,
     };
+    
+    // Add headers if provided
+    if (urlData.headers && Object.keys(urlData.headers).length > 0) {
+      testPayload.headers = urlData.headers;
+    }
     
     // Test endpoint doesn't require authentication
     // Remove Authorization header for this request
