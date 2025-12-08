@@ -116,6 +116,17 @@ public class ExternalAirQualityService
         return count > 0;
     }
 
+    /// <summary>
+    /// Check if data with same Id AND DateObserved already exists (for history mode)
+    /// </summary>
+    public async Task<bool> ExistsByUniqueKeyAsync(string id, DateTime observedAt)
+    {
+        var count = await _collection.CountDocumentsAsync(x => 
+            x.Id == id && 
+            x.DateObserved.Value == observedAt);
+        return count > 0;
+    }
+
     public async Task InsertAsync(ExternalAirQuality data)
     {
         await _collection.InsertOneAsync(data);

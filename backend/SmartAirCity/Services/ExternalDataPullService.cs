@@ -231,8 +231,19 @@ public class ExternalDataPullService : BackgroundService
                         FetchedAt = DateTime.UtcNow
                     };
 
-                    // Use Upsert to prevent duplicates - saves to ExternalAirQuality collection
-                    await externalAirQualityService.UpsertAsync(ngsiData);
+                    // Check for duplicate data (Id + Timestamp) to enable history mode
+                    var exists = await externalAirQualityService.ExistsByUniqueKeyAsync(ngsiData.Id, ngsiData.DateObserved.Value);
+                    if (exists)
+                    {
+                        _logger.LogDebug("Skipping duplicate data for {Id} at {Time}", 
+                            ngsiData.Id, ngsiData.DateObserved.Value.ToString("yyyy-MM-dd HH:mm:ss"));
+                        continue;
+                    }
+
+                    // Insert as NEW record to keep history (instead of Upsert)
+                    ngsiData.MongoId = null;
+                    await externalAirQualityService.InsertAsync(ngsiData);
+                    
                     await hubContext.Clients.All.SendAsync("NewExternalData", ngsiData);
                     savedCount++;
                     
