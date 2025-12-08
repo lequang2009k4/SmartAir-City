@@ -27,6 +27,7 @@
 import WebSocketManager from './WebSocketManager';
 import { getWebSocketUrl, WS_EVENTS, isWebSocketEnabled } from '../config/wsConfig';
 import airQualityService from '../api/airQualityService';
+import { normalizeStationId } from '../../utils/stationUtils';
 
 class AirQualityWebSocket {
   constructor() {
@@ -37,6 +38,8 @@ class AirQualityWebSocket {
     this.listeners = new Map();
     this.lastData = null;
   }
+
+  // Note: normalizeStationId is now imported from stationUtils
 
   /**
    * Extract station ID from NGSI-LD data
@@ -138,19 +141,30 @@ class AirQualityWebSocket {
       console.log('✅ [AirQualityWS] ✨✨✨ Received NEW_DATA event!');
       console.log('📦 [AirQualityWS] Raw data:', data);
       
-      // Extract station ID
-      const stationId = this.extractStationId(data);
-      console.log('🏢 [AirQualityWS] Detected stationId:', stationId);
-      
-      // Transform data
+      // Transform data FIRST
       const transformedData = airQualityService.transformAirQualityData(data);
+      console.log('📦 [AirQualityWS] Transformed data:', transformedData);
       
-      // Add stationId to transformed data
-      if (transformedData && stationId) {
-        transformedData.stationId = stationId;
+      // Extract station ID if not already in transformed data
+      if (!transformedData.stationId) {
+        const stationId = this.extractStationId(data);
+        console.log('🏢 [AirQualityWS] Detected stationId (fallback):', stationId);
+        if (stationId) {
+          transformedData.stationId = stationId;
+        }
+      } else {
+        console.log('✅ [AirQualityWS] Using stationId from transformed data:', transformedData.stationId);
+        
+        // NORMALIZE stationId to match dashboard format
+        // "station-oceanpark" -> "hanoi-oceanpark"
+        const normalizedStationId = normalizeStationId(transformedData.stationId);
+        if (normalizedStationId) {
+          transformedData.stationId = normalizedStationId;
+          console.log('🔄 [AirQualityWS] Normalized stationId to:', normalizedStationId);
+        }
       }
       
-      console.log('📦 [AirQualityWS] Transformed data with stationId:', transformedData);
+      console.log('📦 [AirQualityWS] Final data with stationId:', transformedData.stationId);
       this.lastData = transformedData;
       
       // Notify listeners
@@ -161,14 +175,21 @@ class AirQualityWebSocket {
     this.wsManager.on(WS_EVENTS.AIR_QUALITY.UPDATE, (data) => {
       console.log('✅ [AirQualityWS] Received UPDATE:', data);
       
-      // Extract station ID
-      const stationId = this.extractStationId(data);
-      
+      // Transform data FIRST
       const transformedData = airQualityService.transformAirQualityData(data);
       
-      // Add stationId to transformed data
-      if (transformedData && stationId) {
-        transformedData.stationId = stationId;
+      // Extract station ID if not already in transformed data
+      if (!transformedData.stationId) {
+        const stationId = this.extractStationId(data);
+        if (stationId) {
+          transformedData.stationId = stationId;
+        }
+      } else {
+        // NORMALIZE stationId to match dashboard format
+        const normalizedStationId = normalizeStationId(transformedData.stationId);
+        if (normalizedStationId) {
+          transformedData.stationId = normalizedStationId;
+        }
       }
       
       this.lastData = transformedData;
