@@ -41,7 +41,6 @@ const AlertBanner = ({ stations: stationsProp }) => {
   if (!hasDangerousStations && !hasUnhealthyStations && !hasModerateStations) {
     return (
       <div className="alert-banner good">
-        <span className="alert-icon">✅</span>
         <div className="alert-content">
           <strong>Chất lượng không khí tốt!</strong> 
           Tất cả các khu vực đều có chất lượng không khí ở mức an toàn. 
@@ -52,7 +51,7 @@ const AlertBanner = ({ stations: stationsProp }) => {
               fontSize: '11px', 
               color: '#51cf66' 
             }}>
-              🟢 Realtime
+              Realtime
             </span>
           )}
         </div>
@@ -65,7 +64,6 @@ const AlertBanner = ({ stations: stationsProp }) => {
     const latestAlert = recentAlerts[0];
     return (
       <div className="alert-banner danger" style={{ borderLeft: '4px solid #ff6b6b' }}>
-        <span className="alert-icon">🔔</span>
         <div className="alert-content">
           <strong>Cảnh báo realtime!</strong> 
           {latestAlert.message || `${latestAlert.locationName || 'Khu vực'} đang có chất lượng không khí xấu (AQI: ${latestAlert.aqi})`}
@@ -74,7 +72,7 @@ const AlertBanner = ({ stations: stationsProp }) => {
             color: '#666', 
             marginTop: '4px' 
           }}>
-            {new Date(latestAlert.timestamp).toLocaleString('vi-VN')} • 🟢 Realtime
+            {new Date(latestAlert.timestamp).toLocaleString('vi-VN')} • Realtime
           </div>
         </div>
       </div>
@@ -86,7 +84,6 @@ const AlertBanner = ({ stations: stationsProp }) => {
     const dangerousCount = stations.filter(s => s.aqi > 150).length;
     return (
       <div className="alert-banner danger">
-        <span className="alert-icon">🚨</span>
         <div className="alert-content">
           <strong>Cảnh báo nguy hiểm!</strong> 
           {dangerousCount} khu vực có chất lượng không khí ở mức rất xấu (AQI &gt; 150). 
@@ -100,7 +97,6 @@ const AlertBanner = ({ stations: stationsProp }) => {
     const unhealthyCount = stations.filter(s => s.aqi > 100 && s.aqi <= 150).length;
     return (
       <div className="alert-banner warning">
-        <span className="alert-icon">⚠️</span>
         <div className="alert-content">
           <strong>Cảnh báo!</strong> 
           {unhealthyCount} khu vực có chất lượng không khí ở mức xấu (AQI: 100-150). 
@@ -114,7 +110,6 @@ const AlertBanner = ({ stations: stationsProp }) => {
     const moderateCount = stations.filter(s => s.aqi > 50 && s.aqi <= 100).length;
     return (
       <div className="alert-banner moderate">
-        <span className="alert-icon">ℹ️</span>
         <div className="alert-content">
           <strong>Lưu ý!</strong> 
           {moderateCount} khu vực có chất lượng không khí ở mức trung bình (AQI: 50-100). 

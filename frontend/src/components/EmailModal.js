@@ -58,9 +58,10 @@ const EmailModal = ({ isOpen, onClose, recipient, users = [] }) => {
 
   // Generate default AQI message
   useEffect(() => {
-    if (isOpen && latestData && latestData.length > 0) {
-      // Get the first station data (most recent)
-      const station = latestData[0];
+    // latestData is now an object: { 'hanoi-oceanpark': {...}, ... }
+    if (isOpen && latestData && Object.keys(latestData).length > 0) {
+      // Get the first station data
+      const station = Object.values(latestData)[0];
       
       // Get location name from coordinates
       const lat = station.location?.lat || station.latitude;

@@ -1,0 +1,260 @@
+/*
+SmartAir City – IoT Platform for Urban Air Quality Monitoring
+based on NGSI-LD and FiWARE Standards
+
+SPDX-License-Identifier: MIT
+@version   0.1.x
+@author    SmartAir City Team <smartaircity@gmail.com>
+@copyright © 2025 SmartAir City Team. 
+@license   MIT License
+See LICENSE file in root directory for full license text.
+@see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+
+This software is an open-source component of the SmartAir City initiative.
+It provides real-time environmental monitoring, NGSI-LD–compliant data
+models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+open-data services and smart-city applications. 
+*/
+
+/* ========================================
+   STATION CARD - Chat Bubble Tooltip Style
+   Compact card with floating bubble details on hover
+   ======================================== */
+
+.station-card {
+  position: relative;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  width: 180px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  z-index: 1;
+  overflow: visible;
+}
+
+.station-card:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border-color: rgba(0, 0, 0, 0.08);
+  z-index: 10000;
+}
+
+.station-card--no-data {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Compact Header */
+.station-card__header {
+  margin-bottom: 14px;
+}
+
+.station-card__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Compact AQI Badge */
+.station-card__aqi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  border-radius: 12px;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.station-card__aqi::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.1) 100%);
+  pointer-events: none;
+}
+
+.station-card__aqi-value {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.station-card__aqi-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.95;
+  position: relative;
+  z-index: 1;
+}
+
+/* ========================================
+   CHAT BUBBLE TOOLTIP - Details on Hover
+   ======================================== */
+
+.station-card__details {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 10px);
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  color: white;
+  padding: 16px 18px;
+  border-radius: 16px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.25);
+  width: auto;
+  min-width: 280px;
+  max-width: 320px;
+  z-index: 9999;
+}
+
+/* Chat bubble arrow */
+.station-card__details::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -6px;
+  transform: translateY(-50%) rotate(45deg);
+  width: 12px;
+  height: 12px;
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  box-shadow: -3px 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Show bubble on hover */
+.station-card:hover .station-card__details {
+  display: block;
+}
+
+/* 24h Average in Bubble */
+.station-card__avg-24h {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  margin-bottom: 14px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.avg-24h__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.avg-24h__value {
+  font-size: 18px;
+  font-weight: 800;
+  color: white;
+}
+
+/* Pollutants in Bubble */
+.station-card__pollutants {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.pollutant-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+.pollutant-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-left-color: rgba(255, 255, 255, 0.5);
+  transform: translateX(3px);
+}
+
+.pollutant-item__label {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pollutant-item__value {
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Segoe UI', monospace;
+}
+
+/* Timestamp in Bubble */
+.station-card__timestamp {
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  font-style: italic;
+}
+
+/* No data state */
+.station-card__no-data {
+  text-align: center;
+  color: #95a5a6;
+  font-style: italic;
+  padding: 20px;
+  font-size: 13px;
+}
+
+/* Mobile responsive - bubble below card */
+@media (max-width: 768px) {
+  .station-card {
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  .station-card__details {
+    left: 50%;
+    top: calc(100% + 18px);
+    transform: translateX(-50%) scale(0.9);
+  }
+  
+  .station-card__details::before {
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+  }
+  
+  .station-card__aqi-value {
+    font-size: 36px;
+  }
+}

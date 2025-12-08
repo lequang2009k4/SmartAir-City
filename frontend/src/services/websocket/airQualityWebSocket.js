@@ -39,6 +39,52 @@ class AirQualityWebSocket {
   }
 
   /**
+   * Extract station ID from NGSI-LD data
+   * Logic từ test-signalr.html
+   */
+  extractStationId(data) {
+    // 1. Check field "id"
+    if (data.id && typeof data.id === 'string') {
+      const id = data.id.toLowerCase();
+      if (id.includes('oceanpark')) return 'hanoi-oceanpark';
+      if (id.includes('nguyenvancu')) return 'hanoi-nguyenvancu';
+      if (id.includes('congvien') || id.includes('hodh')) return 'hanoi-congvien-hodh';
+      if (id.includes('cmt8')) return 'hcm-cmt8';
+      if (id.includes('carecentre') || id.includes('care-centre')) return 'hcm-carecentre';
+    }
+
+    // 2. Check sensor URN "sosa:madeBySensor"
+    const sensor = data['sosa:madeBySensor']?.object || data['sosa:madeBySensor'] || data.madeBySensor;
+    if (sensor && typeof sensor === 'string') {
+      const sensorLower = sensor.toLowerCase();
+      if (sensorLower.includes('oceanpark')) return 'hanoi-oceanpark';
+      if (sensorLower.includes('nguyenvancu')) return 'hanoi-nguyenvancu';
+      if (sensorLower.includes('congvienhodh') || sensorLower.includes('hodh')) return 'hanoi-congvien-hodh';
+      if (sensorLower.includes('cmt8')) return 'hcm-cmt8';
+      if (sensorLower.includes('carecentre') || sensorLower.includes('care-centre')) return 'hcm-carecentre';
+    }
+
+    // 3. Check coordinates
+    const coords = data.location?.value?.coordinates || data.location?.coordinates;
+    if (coords && Array.isArray(coords) && coords.length === 2) {
+      const [lon, lat] = coords;
+      // Ocean Park: 20.9933, 105.9441
+      if (Math.abs(lat - 20.9933) < 0.01 && Math.abs(lon - 105.9441) < 0.01) return 'hanoi-oceanpark';
+      // Nguyễn Văn Cừ: 21.0491, 105.8831
+      if (Math.abs(lat - 21.0491) < 0.01 && Math.abs(lon - 105.8831) < 0.01) return 'hanoi-nguyenvancu';
+      // Công viên: 21.00309, 105.79469
+      if (Math.abs(lat - 21.00309) < 0.01 && Math.abs(lon - 105.79469) < 0.01) return 'hanoi-congvien-hodh';
+      // TP.HCM - CMT8: 10.78542, 106.67038
+      if (Math.abs(lat - 10.78542) < 0.01 && Math.abs(lon - 106.67038) < 0.01) return 'hcm-cmt8';
+      // TP.HCM - Care Centre: 10.7745, 106.66102
+      if (Math.abs(lat - 10.7745) < 0.01 && Math.abs(lon - 106.66102) < 0.01) return 'hcm-carecentre';
+    }
+
+    console.warn('[AirQualityWS] Could not extract station ID from data:', data);
+    return null;
+  }
+
+  /**
    * Initialize WebSocket connection
    */
   async initialize() {
@@ -92,9 +138,19 @@ class AirQualityWebSocket {
       console.log('✅ [AirQualityWS] ✨✨✨ Received NEW_DATA event!');
       console.log('📦 [AirQualityWS] Raw data:', data);
       
+      // Extract station ID
+      const stationId = this.extractStationId(data);
+      console.log('🏢 [AirQualityWS] Detected stationId:', stationId);
+      
       // Transform data
       const transformedData = airQualityService.transformAirQualityData(data);
-      console.log('📦 [AirQualityWS] Transformed data:', transformedData);
+      
+      // Add stationId to transformed data
+      if (transformedData && stationId) {
+        transformedData.stationId = stationId;
+      }
+      
+      console.log('📦 [AirQualityWS] Transformed data with stationId:', transformedData);
       this.lastData = transformedData;
       
       // Notify listeners
@@ -105,7 +161,16 @@ class AirQualityWebSocket {
     this.wsManager.on(WS_EVENTS.AIR_QUALITY.UPDATE, (data) => {
       console.log('✅ [AirQualityWS] Received UPDATE:', data);
       
+      // Extract station ID
+      const stationId = this.extractStationId(data);
+      
       const transformedData = airQualityService.transformAirQualityData(data);
+      
+      // Add stationId to transformed data
+      if (transformedData && stationId) {
+        transformedData.stationId = stationId;
+      }
+      
       this.lastData = transformedData;
       
       this.notifyListeners('update', transformedData);

@@ -16,12 +16,6 @@
 
 /**
  * Devices API Service
- * Service layer cho Devices endpoints (openapi (1).yaml)
- * 
- * Endpoints:
- * - GET /api/devices          → getAll()
- * - PUT /api/devices/{id}     → update(id, data)
- * - DELETE /api/devices/{id}  → remove(id)
  */
 
 import { coreApiAxios } from './axiosInstance';

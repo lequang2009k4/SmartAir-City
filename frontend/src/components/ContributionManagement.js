@@ -18,6 +18,8 @@ import React, { useState } from 'react';
 import './ContributionManagement.css';
 import ContributionUpload from './ContributionUpload';
 import ContributionList from './ContributionList';
+import MqttSourceManager from './MqttSourceManager';
+import ExternalSourceManager from './ExternalSourceManager';
 
 /**
  * Contribution Management Component
@@ -25,11 +27,11 @@ import ContributionList from './ContributionList';
  * Combines upload and list functionality with tab navigation
  */
 const ContributionManagement = ({ user }) => {
-  const [activeView, setActiveView] = useState('upload'); // 'upload' or 'list'
+  const [contributionTab, setContributionTab] = useState('uploaded-json'); // 'sensor-data' | 'uploaded-json' | 'third-party-api'
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   /**
-   * Handle successful upload - switch to list view and refresh
+   * Handle successful upload - refresh list
    */
   const handleUploadSuccess = (data) => {
     try {
@@ -37,11 +39,6 @@ const ContributionManagement = ({ user }) => {
       
       // Trigger refresh of list
       setRefreshTrigger(prev => prev + 1);
-      
-      // Auto-switch to list view after 2 seconds
-      setTimeout(() => {
-        setActiveView('list');
-      }, 2000);
     } catch (error) {
       console.error('[ContributionManagement] Error in handleUploadSuccess:', error);
     }
@@ -58,28 +55,50 @@ const ContributionManagement = ({ user }) => {
         </p>
       </div>
 
-      {/* View Toggle */}
-      <div className="view-toggle">
+      {/* Contribution Sub-tabs */}
+      <div className="contribution-sub-tabs">
         <button
-          className={`toggle-btn ${activeView === 'upload' ? 'active' : ''}`}
-          onClick={() => setActiveView('upload')}
+          className={`sub-tab-btn ${contributionTab === 'sensor-data' ? 'active' : ''}`}
+          onClick={() => setContributionTab('sensor-data')}
         >
-          Đóng góp mới
+          Dữ liệu từ sensor
         </button>
         <button
-          className={`toggle-btn ${activeView === 'list' ? 'active' : ''}`}
-          onClick={() => setActiveView('list')}
+          className={`sub-tab-btn ${contributionTab === 'uploaded-json' ? 'active' : ''}`}
+          onClick={() => setContributionTab('uploaded-json')}
         >
-          Dữ liệu đã đóng góp
+          Đã tải lên JSON
+        </button>
+        <button
+          className={`sub-tab-btn ${contributionTab === 'third-party-api' ? 'active' : ''}`}
+          onClick={() => setContributionTab('third-party-api')}
+        >
+          API bên thứ 3
         </button>
       </div>
 
-      {/* Content Area */}
-      <div className="content-area">
-        {activeView === 'upload' ? (
-          <ContributionUpload onUploadSuccess={handleUploadSuccess} user={user} />
-        ) : (
-          <ContributionList refreshTrigger={refreshTrigger} />
+      {/* Tab Content Area */}
+      <div className="tab-content-area">
+        {contributionTab === 'sensor-data' && (
+          <div className="content-area">
+            <MqttSourceManager />
+          </div>
+        )}
+
+        {contributionTab === 'uploaded-json' && (
+          <div className="content-area">
+            <ContributionUpload onUploadSuccess={handleUploadSuccess} user={user} />
+            <div style={{ marginTop: '30px' }}>
+              <h2 style={{ marginBottom: '20px', color: '#667eea' }}>Dữ liệu đã đóng góp</h2>
+              <ContributionList user={user} refreshTrigger={refreshTrigger} />
+            </div>
+          </div>
+        )}
+
+        {contributionTab === 'third-party-api' && (
+          <div className="content-area">
+            <ExternalSourceManager />
+          </div>
         )}
       </div>
 
@@ -116,10 +135,10 @@ const ContributionManagement = ({ user }) => {
         <div className="info-card">
           <h3>Gợi ý sử dụng</h3>
           <ul>
-            <li>🔹 Sử dụng <strong>Upload File</strong> nếu bạn có file JSON sẵn</li>
-            <li>🔹 Sử dụng <strong>Paste JSON</strong> để test nhanh hoặc gửi dữ liệu đơn lẻ</li>
-            <li>🔹 Click <strong>"Tải JSON mẫu"</strong> để xem cấu trúc dữ liệu chuẩn</li>
-            <li>🔹 Sử dụng <strong>"Validate"</strong> để kiểm tra JSON trước khi gửi</li>
+            <li>Sử dụng <strong>Upload File</strong> nếu bạn có file JSON sẵn</li>
+            <li>Sử dụng <strong>Paste JSON</strong> để test nhanh hoặc gửi dữ liệu đơn lẻ</li>
+            <li>Click <strong>"Đải JSON mẫu"</strong> để xem cấu trúc dữ liệu chuẩn</li>
+            <li>Sử dụng <strong>"Validate"</strong> để kiểm tra JSON trước khi gửi</li>
           </ul>
         </div>
       </div>

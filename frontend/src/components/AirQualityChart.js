@@ -35,10 +35,19 @@ const CACHE_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
 
 /**
  * Air Quality Chart Component
- * Displays real-time trends of AQI and pollutants
+ * Displays real-time AQI trends for each station
  */
 const AirQualityChart = () => {
   const { latestData, isConnected } = useAirQualityContext();
+  
+  // Station name mapping
+  const stationNames = {
+    'hanoi-oceanpark': 'HN Ocean Park',
+    'hanoi-nguyenvancu': 'HN Nguyễn Văn Cừ',
+    'hanoi-congvien-hodh': 'HN Công viên',
+    'hcm-cmt8': 'HCM CMT8',
+    'hcm-carecentre': 'HCM Care Centre'
+  };
   
   // Load chart data from localStorage on mount (with expiry check)
   const loadChartData = () => {
@@ -81,39 +90,37 @@ const AirQualityChart = () => {
 
   // Update chart data when new data arrives
   useEffect(() => {
-    if (!latestData || latestData.length === 0) {
+    // latestData is now an object: { 'hanoi-oceanpark': {...}, 'hcm-cmt8': {...} }
+    if (!latestData || Object.keys(latestData).length === 0) {
       console.log('📊 [Chart] No latestData available');
       return;
     }
 
-    // Get the most recent station data
-    const station = latestData[0];
-    console.log('📊 [Chart] New data received:', {
-      aqi: station.aqi,
-      timestamp: station.timestamp,
-      dateObserved: station.dateObserved
+    // Get current timestamp
+    const now = Date.now();
+    const timeStr = new Date(now).toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     });
 
+    // Create new data point with AQI from all stations
     const newDataPoint = {
-      time: new Date(
-        station.dateObserved || station.timestamp
-      ).toLocaleTimeString("vi-VN", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      }),
-      timestamp: station.timestamp || new Date(station.dateObserved).getTime(),
-      AQI: Math.round(station.aqi || 0),
-      CO: parseFloat((station.co || 0).toFixed(2)),
-      SO2: parseFloat((station.so2 || 0).toFixed(2)),
-      NO2: parseFloat((station.no2 || 0).toFixed(2)),
-      O3: parseFloat((station.o3 || 0).toFixed(2)),
-      PM10: parseFloat((station.pm10 || 0).toFixed(2)),
-      "PM2.5": parseFloat((station.pm25 || 0).toFixed(2)),
+      time: timeStr,
+      timestamp: now
     };
 
+    // Add AQI for each station
+    Object.entries(latestData).forEach(([stationId, data]) => {
+      if (data && data.aqi != null) {
+        newDataPoint[stationId] = Math.round(data.aqi);
+      }
+    });
+
+    console.log('📊 [Chart] New data point:', newDataPoint);
+
     setChartData((prevData) => {
-      // Check if this data point already exists in the array
+      // Check if this data point already exists
       const isDuplicate = prevData.some(point => point.timestamp === newDataPoint.timestamp);
       
       if (isDuplicate) {
@@ -124,7 +131,6 @@ const AirQualityChart = () => {
       // Add new point and keep only last N points
       const updatedData = [...prevData, newDataPoint].slice(-maxDataPoints);
       console.log('📊 [Chart] ✅ Added new data point! Total:', updatedData.length, 'points');
-      console.log('📊 [Chart] Latest AQI:', newDataPoint.AQI, 'at', newDataPoint.time);
       return updatedData;
     });
   }, [latestData, maxDataPoints]);
@@ -137,8 +143,7 @@ const AirQualityChart = () => {
           <p className="tooltip-time">{payload[0].payload.time}</p>
           {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color }}>
-              {entry.name}: <strong>{entry.value}</strong>
-              {entry.name === "AQI" ? "" : " µg/m³"}
+              {stationNames[entry.dataKey] || entry.dataKey}: <strong>{entry.value}</strong>
             </p>
           ))}
         </div>
@@ -177,9 +182,9 @@ const AirQualityChart = () => {
         </div>
       ) : (
         <>
-          {/* Main Chart - AQI and Pollutants */}
+          {/* Multi-Station AQI Chart */}
           <div className="chart-wrapper">
-            <h4 className="chart-subtitle">AQI và các chất ô nhiễm (µg/m³)</h4>
+            <h4 className="chart-subtitle">AQI Trung Bình Các Trạm (Theo Thời Gian)</h4>
             <ResponsiveContainer width="100%" height={400}>
               <LineChart
                 data={chartData}
@@ -191,92 +196,65 @@ const AirQualityChart = () => {
                   stroke="#6b7280"
                   style={{ fontSize: "12px" }}
                 />
-                <YAxis stroke="#6b7280" style={{ fontSize: "12px" }} />
+                <YAxis 
+                  stroke="#6b7280" 
+                  style={{ fontSize: "12px" }}
+                  label={{ value: 'AQI', angle: -90, position: 'insideLeft' }}
+                />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend wrapperStyle={{ fontSize: "14px" }} iconType="line" />
 
-                {/* AQI - Purple */}
+                {/* HN Ocean Park - Purple */}
                 <Line
                   type="monotone"
-                  dataKey="AQI"
+                  dataKey="hanoi-oceanpark"
+                  name={stationNames['hanoi-oceanpark']}
                   stroke="#8b5cf6"
-                  strokeWidth={3}
+                  strokeWidth={2.5}
                   dot={{ r: 4 }}
                   activeDot={{ r: 6 }}
                 />
 
-                {/* SO2 - Orange */}
+                {/* HN Nguyễn Văn Cừ - Blue */}
                 <Line
                   type="monotone"
-                  dataKey="SO2"
-                  stroke="#f97316"
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                />
-
-                {/* NO2 - Red */}
-                <Line
-                  type="monotone"
-                  dataKey="NO2"
-                  stroke="#ef4444"
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                />
-
-                {/* O3 - Blue */}
-                <Line
-                  type="monotone"
-                  dataKey="O3"
+                  dataKey="hanoi-nguyenvancu"
+                  name={stationNames['hanoi-nguyenvancu']}
                   stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
+                  strokeWidth={2.5}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
                 />
 
-                {/* PM10 - Green */}
+                {/* HN Công viên - Green */}
                 <Line
                   type="monotone"
-                  dataKey="PM10"
+                  dataKey="hanoi-congvien-hodh"
+                  name={stationNames['hanoi-congvien-hodh']}
                   stroke="#10b981"
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
+                  strokeWidth={2.5}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
                 />
 
-                {/* PM2.5 - Teal */}
+                {/* HCM CMT8 - Orange */}
                 <Line
                   type="monotone"
-                  dataKey="PM2.5"
-                  stroke="#14b8a6"
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
+                  dataKey="hcm-cmt8"
+                  name={stationNames['hcm-cmt8']}
+                  stroke="#f97316"
+                  strokeWidth={2.5}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
                 />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
 
-          {/* Separate CO Chart */}
-          <div className="chart-wrapper chart-secondary">
-            <h4 className="chart-subtitle">Carbon Monoxide - CO (ppm)</h4>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart
-                data={chartData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis
-                  dataKey="time"
-                  stroke="#6b7280"
-                  style={{ fontSize: "12px" }}
-                />
-                <YAxis stroke="#6b7280" style={{ fontSize: "12px" }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ fontSize: "14px" }} iconType="line" />
-
-                {/* CO - Brown */}
+                {/* HCM Care Centre - Red */}
                 <Line
                   type="monotone"
-                  dataKey="CO"
-                  stroke="#92400e"
-                  strokeWidth={3}
+                  dataKey="hcm-carecentre"
+                  name={stationNames['hcm-carecentre']}
+                  stroke="#ef4444"
+                  strokeWidth={2.5}
                   dot={{ r: 4 }}
                   activeDot={{ r: 6 }}
                 />
@@ -288,9 +266,9 @@ const AirQualityChart = () => {
 
       <div className="chart-info">
         <p>
-          Biểu đồ hiển thị {maxDataPoints} điểm dữ liệu gần nhất, tự động cập
-          nhật khi có dữ liệu mới
+          Biểu đồ hiển thị {maxDataPoints} điểm dữ liệu gần nhất, tự động cập nhật khi có dữ liệu mới
         </p>
+        <p><strong>5 đường biểu diễn AQI trung bình của 5 trạm</strong></p>
       </div>
     </div>
   );

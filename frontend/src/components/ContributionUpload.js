@@ -16,13 +16,13 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import './ContributionUpload.css';
-import { uploadContributionFile, submitContributionJson, validateJsonStructure } from '../services';
+import { uploadContributionFile, validateJsonStructure } from '../services';
 
 /**
  * Contribution Upload Component
- * Allows users to contribute air quality data via:
- * 1. File Upload (.json)
- * 2. Direct JSON Paste
+ * Allows users to contribute air quality data via File Upload (.json)
+ * 
+ * NOTE: Direct JSON paste feature disabled - POST /api/contributions does not exist in api.yaml
  */
 const ContributionUpload = ({ onUploadSuccess, user }) => {
   const [activeMethod, setActiveMethod] = useState('file'); // 'file' or 'json'
@@ -88,13 +88,13 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
 
     // Validate file type
     if (!file.name.endsWith('.json')) {
-      setError('⚠️ Chỉ chấp nhận file JSON (.json)');
+      setError('Chỉ chấp nhận file JSON (.json)');
       return;
     }
 
     // Validate file size (max 1MB)
     if (file.size > 1048576) {
-      setError('⚠️ File không được vượt quá 1MB');
+      setError('File không được vượt quá 1MB');
       return;
     }
 
@@ -103,7 +103,7 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
 
   const handleFileUpload = async () => {
     if (!selectedFile) {
-      setError('⚠️ Vui lòng chọn file JSON');
+      setError('Vui lòng chọn file JSON');
       return;
     }
 
@@ -139,7 +139,7 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
       } else {
         // Backend trả về {message, errors} trong error response
         const errorMsg = response.details?.message || response.error || 'Upload thất bại';
-        setError(`❌ ${errorMsg}`);
+        setError(errorMsg);
         if (response.details?.errors && Array.isArray(response.details.errors)) {
           setValidationErrors(response.details.errors);
         }
@@ -147,7 +147,7 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
     } catch (err) {
       console.error('[ContributionUpload] Caught error:', err);
       const errorMessage = err?.message || err?.toString() || 'Lỗi không xác định';
-      setError(`❌ Lỗi khi upload: ${errorMessage}`);
+      setError(`Lỗi khi upload: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -169,7 +169,7 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
     setValidationErrors([]);
 
     if (!jsonInput.trim()) {
-      setError('⚠️ Vui lòng nhập JSON');
+      setError('Vui lòng nhập JSON');
       return;
     }
 
@@ -177,18 +177,18 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
 
     if (!validation.isValid) {
       setValidationErrors(validation.errors);
-      setError('❌ JSON không hợp lệ theo chuẩn NGSI-LD');
+      setError('JSON không hợp lệ theo chuẩn NGSI-LD');
     } else {
       setResult({
         type: 'info',
-        message: '✅ JSON hợp lệ! Sẵn sàng gửi.',
+        message: 'JSON hợp lệ! Sẵn sàng gửi.',
       });
     }
   };
 
   const handleJsonSubmit = async () => {
     if (!jsonInput.trim()) {
-      setError('⚠️ Vui lòng nhập JSON');
+      setError('Vui lòng nhập JSON');
       return;
     }
 
@@ -196,7 +196,7 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
     const validation = validateJsonStructure(jsonInput);
     if (!validation.isValid) {
       setValidationErrors(validation.errors);
-      setError('❌ JSON không hợp lệ theo chuẩn NGSI-LD');
+      setError('JSON không hợp lệ theo chuẩn NGSI-LD');
       return;
     }
 
@@ -204,41 +204,10 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
     setError(null);
     setResult(null);
 
-    try {
-      const jsonData = JSON.parse(jsonInput);
-      const response = await submitContributionJson(jsonData);
-      console.log('[ContributionUpload] JSON Submit Response:', response);
-
-      if (response.success) {
-        console.log('[ContributionUpload] JSON Success data:', response.data);
-        setResult({
-          type: 'success',
-          message: response.data.message,
-          count: response.data.count,
-          ids: response.data.ids,
-        });
-        setJsonInput('');
-        
-        // Call parent callback
-        if (onUploadSuccess) {
-          console.log('[ContributionUpload] Calling onUploadSuccess with:', response.data);
-          onUploadSuccess(response.data);
-        }
-      } else {
-        // Backend trả về {message, errors} trong error response
-        const errorMsg = response.details?.message || response.error || 'Gửi dữ liệu thất bại';
-        setError(`❌ ${errorMsg}`);
-        if (response.details?.errors && Array.isArray(response.details.errors)) {
-          setValidationErrors(response.details.errors);
-        }
-      }
-    } catch (err) {
-      console.error('[ContributionUpload] JSON Submit error:', err);
-      const errorMessage = err?.message || err?.toString() || 'Lỗi không xác định';
-      setError(`❌ Lỗi khi gửi dữ liệu: ${errorMessage}`);
-    } finally {
-      setLoading(false);
-    }
+    // NOTE: POST /api/contributions endpoint DOES NOT EXIST in api.yaml
+    // This feature is not available - only file upload is supported
+    setError('Tính năng submit JSON trực tiếp không khả dụng. Vui lòng sử dụng upload file.');
+    setLoading(false);
   };
 
   const handleClearJson = () => {
@@ -312,24 +281,8 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
       <div className="upload-header">
         <h2>Đóng góp dữ liệu chất lượng không khí</h2>
         <p className="upload-description">
-          Bạn có thể đóng góp dữ liệu theo chuẩn NGSI-LD bằng cách upload file JSON hoặc paste JSON trực tiếp
+          Bạn có thể đóng góp dữ liệu theo chuẩn NGSI-LD bằng cách upload file JSON
         </p>
-      </div>
-
-      {/* Method Toggle */}
-      <div className="method-toggle">
-        <button
-          className={`toggle-btn ${activeMethod === 'file' ? 'active' : ''}`}
-          onClick={() => setActiveMethod('file')}
-        >
-          Upload File
-        </button>
-        <button
-          className={`toggle-btn ${activeMethod === 'json' ? 'active' : ''}`}
-          onClick={() => setActiveMethod('json')}
-        >
-          Paste JSON
-        </button>
       </div>
 
       {/* Contributor Metadata */}
@@ -362,9 +315,8 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
 
       {/* Upload Methods */}
       <div className="upload-methods">
-        {activeMethod === 'file' ? (
-          /* FILE UPLOAD */
-          <div className="upload-method file-upload">
+        {/* FILE UPLOAD */}
+        <div className="upload-method file-upload">
             <div
               className={`file-drop-zone ${dragActive ? 'drag-active' : ''} ${selectedFile ? 'has-file' : ''}`}
               onDragEnter={handleDrag}
@@ -398,7 +350,7 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
                     }}
                     disabled={loading}
                   >
-                    ✖️
+                    ×
                   </button>
                 </div>
               ) : (
@@ -415,11 +367,11 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
               onClick={handleFileUpload}
               disabled={!selectedFile || loading}
             >
-              {loading ? '⏳ Đang upload...' : '📤 Upload File'}
+              {loading ? 'Đang upload...' : 'Upload File'}
             </button>
           </div>
-        ) : (
-          /* JSON PASTE */
+        <div style={{ display: 'none' }}>
+          {/* JSON PASTE - DISABLED */}
           <div className="upload-method json-paste">
             <div className="json-editor">
               <div className="json-toolbar">
@@ -429,7 +381,7 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
                   disabled={loading}
                   title="Load JSON mẫu"
                 >
-                  📋 Tải JSON mẫu
+                  Tải JSON mẫu
                 </button>
                 <button
                   className="btn-tool"
@@ -437,7 +389,7 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
                   disabled={!jsonInput.trim() || loading}
                   title="Kiểm tra JSON"
                 >
-                  ✅ Validate
+                  Validate
                 </button>
                 <button
                   className="btn-tool"
@@ -445,7 +397,7 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
                   disabled={!jsonInput.trim() || loading}
                   title="Xóa JSON"
                 >
-                  🗑️ Xóa
+                  Xóa
                 </button>
               </div>
 
@@ -460,7 +412,7 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
 
               {validationErrors.length > 0 && (
                 <div className="validation-errors">
-                  <strong>⚠️ Lỗi validation:</strong>
+                  <strong>Lỗi validation:</strong>
                   <ul>
                     {validationErrors.map((err, idx) => (
                       <li key={idx}>{err}</li>
@@ -475,10 +427,10 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
               onClick={handleJsonSubmit}
               disabled={!jsonInput.trim() || loading}
             >
-              {loading ? '⏳ Đang gửi...' : '📤 Gửi JSON'}
+              {loading ? 'Đang gửi...' : 'Gửi JSON'}
             </button>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Result/Error Messages */}
@@ -490,14 +442,14 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
 
       {validationErrors.length > 0 && (
         <div className="message-box error">
-          <h4>🚫 Lỗi validation NGSI-LD:</h4>
+          <h4>Lỗi validation NGSI-LD:</h4>
           <ul className="validation-errors">
             {validationErrors.map((err, idx) => (
               <li key={idx}>{err}</li>
             ))}
           </ul>
           <p className="help-text">
-            <strong>Gợi ý:</strong> Vui lòng kiểm tra lại cấu trúc JSON theo chuẩn NGSI-LD 👇
+            <strong>Gợi ý:</strong> Vui lòng kiểm tra lại cấu trúc JSON theo chuẩn NGSI-LD
           </p>
         </div>
       )}
@@ -507,17 +459,16 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
           {result.type === 'success' && (
             <div className="success-content">
               <div className="success-header">
-                <span className="success-icon">✅</span>
                 <h3>{result.message || 'Đóng góp thành công!'}</h3>
               </div>
               {result.count && (
                 <p className="success-stats">
-                  📄 Đã lưu thành công <strong>{result.count} bản ghi</strong> vào hệ thống
+                  Đã lưu thành công <strong>{result.count} bản ghi</strong> vào hệ thống
                 </p>
               )}
               {result.ids && result.ids.length > 0 && (
                 <details className="success-details">
-                  <summary>🎯 Xem danh sách IDs ({result.ids.length})</summary>
+                  <summary>Xem danh sách IDs ({result.ids.length})</summary>
                   <ul className="id-list">
                     {result.ids.map((id, idx) => (
                       <li key={idx}><code>{id}</code></li>
@@ -526,7 +477,7 @@ const ContributionUpload = ({ onUploadSuccess, user }) => {
                 </details>
               )}
               <p className="success-footer">
-                👉 Bạn có thể chuyển sang tab <strong>"Dữ liệu đã đóng góp"</strong> để xem dữ liệu vừa upload
+                Bạn có thể chuyển sang tab <strong>"Dữ liệu đã đóng góp"</strong> để xem dữ liệu vừa upload
               </p>
             </div>
           )}

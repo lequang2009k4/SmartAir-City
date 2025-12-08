@@ -33,6 +33,9 @@ export {
   DEVICES_ENDPOINTS,
   USERS_ENDPOINTS,
   CONTRIBUTIONS_ENDPOINTS,
+  STATIONS_ENDPOINTS,
+  EXTERNAL_SOURCES_ENDPOINTS,
+  EXTERNAL_MQTT_ENDPOINTS,
   API_CONFIG,
   buildUrl,
   logApiRequest,
@@ -82,6 +85,8 @@ export {
   getLatest as getAirQualityLatest,
   getHistory as getAirQualityHistory,
   postIotData,
+  downloadAirQuality,
+  downloadHistory as downloadAirQualityHistory,
   transformAirQualityData,
   transformAirQualityArray,
   getAQIColor,
@@ -141,13 +146,75 @@ export { default as contributionsService } from './api/contributionsService';
 
 export {
   uploadFile as uploadContributionFile,
-  submitJson as submitContributionJson,
-  getAll as getContributionsAll,
-  getStations as getContributionStations,
-  getByStation as getContributionsByStation,
   validateJsonStructure,
   formatContribution,
+  getPublicStats as getContributionsPublicStats,
+  getContributionList,
+  getLatestByContributionId,
+  downloadContribution,
 } from './api/contributionsService';
+
+// ============================================
+// STATIONS SERVICE (NEW)
+// ============================================
+export { default as stationsService } from './api/stationsService';
+
+export {
+  getAll as getStationsAll,
+  getForMap as getStationsForMap,
+  getStationData,
+  transformStation,
+  transformStations,
+  getActiveStations,
+  filterByType as filterStationsByType,
+  findStationById,
+  groupByType as groupStationsByType,
+} from './api/stationsService';
+
+// ============================================
+// EXTERNAL HTTP SOURCES SERVICE (NEW)
+// ============================================
+export { default as externalSourcesService } from './api/externalSourcesService';
+
+export {
+  getAll as getExternalSourcesAll,
+  create as createExternalSource,
+  deleteSource as deleteExternalSource,
+  reactivate as reactivateExternalSource,
+  testUrl as testExternalUrl,
+  transformSource,
+  transformSources,
+  transformSourceToBackend,
+  validateSourceData,
+  getActiveSources as getActiveExternalSources,
+  getSourcesWithErrors,
+  findSourceById as findExternalSourceById,
+} from './api/externalSourcesService';
+
+// ============================================
+// EXTERNAL MQTT SOURCES SERVICE (NEW)
+// ============================================
+export { default as externalMqttService } from './api/externalMqttService';
+
+export {
+  getAll as getExternalMqttAll,
+  getById as getExternalMqttById,
+  create as createExternalMqtt,
+  update as updateExternalMqtt,
+  deleteSource as deleteExternalMqtt,
+  updateOpenAQLocation,
+  activate as activateExternalMqtt,
+  deactivate as deactivateExternalMqtt,
+  testConnection as testMqttConnection,
+  transformMqttSource,
+  transformMqttSources,
+  transformMqttToBackend,
+  validateMqttData,
+  getActiveSources as getActiveMqttSources,
+  getTlsSources,
+  findSourceById as findMqttSourceById,
+  groupByStatus as groupMqttByStatus,
+} from './api/externalMqttService';
 
 // ============================================
 // WEBSOCKET SERVICES (Phase 5)

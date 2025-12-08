@@ -16,14 +16,7 @@
 
 /**
  * Users API Service
- * Service layer cho Users endpoints (openapi (1).yaml)
- * 
- * Endpoints:
- * - GET /api/users                    → getAll()
- * - POST /api/users/signup            → signup(userData)
- * - POST /api/users/login             → login(credentials)
- * - POST /api/users/verify-email      → verifyEmail(token)
- * - DELETE /api/users/{id}            → remove(id)
+ * Service layer cho Users endpoints
  */
 
 import { coreApiAxios } from './axiosInstance';
