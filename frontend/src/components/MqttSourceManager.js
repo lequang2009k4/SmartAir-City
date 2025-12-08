@@ -18,6 +18,7 @@ import React, { useState, useEffect } from 'react';
 import { externalMqttService } from '../services';
 import { getAll } from '../services/api/airQualityService';
 import LoadingSpinner from './LoadingSpinner';
+import MqttSourceInfoModal from './MqttSourceInfoModal';
 import './MqttSourceManager.css';
 
 /**
@@ -44,6 +45,8 @@ const MqttSourceManager = () => {
   const [testLoading, setTestLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [pendingTest, setPendingTest] = useState(false);
 
   // Load sources on mount
   useEffect(() => {
@@ -63,10 +66,10 @@ const MqttSourceManager = () => {
       const sourcesWithCount = await Promise.all(
         (data || []).map(async (source) => {
           try {
-            // Get ALL records for this stationId to count them (no limit)
+            // Get ALL records for this stationId to count them (pass null for no limit)
             const records = await getAll(null, source.stationId, true);
             const recordCount = Array.isArray(records) ? records.length : 0;
-            console.log(`📊 [${source.stationId}] Record count:`, recordCount);
+            console.log(`📊 [${source.stationId}] Total record count:`, recordCount);
             return { ...source, recordCount };
           } catch (err) {
             console.warn(`⚠️ Failed to fetch record count for ${source.stationId}:`, err);
@@ -96,13 +99,24 @@ const MqttSourceManager = () => {
   };
 
   /**
-   * Test MQTT connection
+   * Test MQTT connection - Show modal first
    */
-  const handleTestConnection = async () => {
+  const handleTestConnection = () => {
+    // Show modal for confirmation
+    setPendingTest(true);
+    setShowInfoModal(true);
+  };
+
+  /**
+   * Execute actual test after user confirms
+   */
+  const executeTest = async () => {
     try {
       setTestLoading(true);
       setError(null);
       setSuccess(null);
+      setShowInfoModal(false);
+      setPendingTest(false);
 
       const testData = {
         brokerHost: formData.brokerHost,
@@ -248,6 +262,32 @@ const MqttSourceManager = () => {
           <button className="alert-close" onClick={() => setSuccess(null)}>×</button>
         </div>
       )}
+
+      {/* Info Modal */}
+      <MqttSourceInfoModal 
+        isOpen={showInfoModal} 
+        onClose={() => {
+          setShowInfoModal(false);
+          setPendingTest(false);
+        }}
+        onConfirm={pendingTest ? executeTest : undefined}
+        showConfirmButton={pendingTest}
+        confirmText="✓ Tôi đồng ý và tiếp tục test"
+      />
+
+      {/* Info Button */}
+      <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <button 
+          className="btn btn-primary"
+          onClick={() => setShowInfoModal(true)}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        >
+          📌 Hướng dẫn đóng góp từ Sensor
+        </button>
+        <span style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+          Vui lòng đọc kỹ trước khi đăng ký MQTT broker
+        </span>
+      </div>
 
       {/* Registration Form */}
       <form onSubmit={handleCreateSource} className="mqtt-form">

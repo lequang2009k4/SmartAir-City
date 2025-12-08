@@ -18,6 +18,7 @@ import React, { useState, useEffect } from 'react';
 import { externalSourcesService } from '../services';
 import { getAll } from '../services/api/airQualityService';
 import LoadingSpinner from './LoadingSpinner';
+import ExternalSourceInfoModal from './ExternalSourceInfoModal';
 import './ExternalSourceManager.css';
 
 /**
@@ -40,19 +41,15 @@ const ExternalSourceManager = () => {
   // Form state
   const [formData, setFormData] = useState({
     name: '',
-    url: '',
-    apiKey: '',
     latitude: '',
     longitude: '',
-    fetchIntervalMinutes: 15
+    intervalMinutes: 60
   });
 
-  // Mapping state
-  const [isNGSILD, setIsNGSILD] = useState(false);
+  // Test state
+  const [testUrlInput, setTestUrlInput] = useState('');
+  const [testApiKeyInput, setTestApiKeyInput] = useState('');
   const [jsonData, setJsonData] = useState(null);
-  const [fieldMapping, setFieldMapping] = useState({});
-  const [timestampPath, setTimestampPath] = useState('');
-  const [selectedPath, setSelectedPath] = useState(null);
 
   // UI state
   const [sources, setSources] = useState([]);
@@ -60,10 +57,9 @@ const ExternalSourceManager = () => {
   const [testLoading, setTestLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [showMappingSection, setShowMappingSection] = useState(false);
-  const [testUrlInput, setTestUrlInput] = useState('');
-  const [testApiKeyInput, setTestApiKeyInput] = useState('');
-  const [currentStep, setCurrentStep] = useState(1); // Thêm state để theo dõi bước hiện tại
+  const [showSaveSection, setShowSaveSection] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [pendingTest, setPendingTest] = useState(false);
 
   // Load sources on mount
   useEffect(() => {
@@ -84,10 +80,10 @@ const ExternalSourceManager = () => {
       const sourcesWithRecords = await Promise.all(
         sourcesArray.map(async (source) => {
           try {
-            // Get ALL records for this stationId to count them (no limit)
+            // Get ALL records for this stationId to count them (pass null for no limit)
             const records = await getAll(null, source.stationId, true);
             const recordCount = Array.isArray(records) ? records.length : 0;
-            console.log(`📊 [${source.stationId}] Record count:`, recordCount);
+            console.log(`📊 [${source.stationId}] Total record count:`, recordCount);
             return { ...source, recordCount };
           } catch (err) {
             console.warn(`⚠️ Failed to fetch record count for ${source.stationId}:`, err);
@@ -107,22 +103,39 @@ const ExternalSourceManager = () => {
   };
 
   /**
-   * Test API URL
+   * Test API URL - Show confirmation modal first
    */
-  const handleTestUrl = async () => {
+  const handleTestUrl = () => {
     if (!testUrlInput) {
       setError('Vui lòng nhập URL');
       return;
     }
 
+    // Show modal for confirmation
+    setPendingTest(true);
+    setShowInfoModal(true);
+  };
+
+  /**
+   * Execute actual test after user confirms
+   */
+  const executeTest = async () => {
     try {
       setTestLoading(true);
       setError(null);
       setSuccess(null);
+      setShowInfoModal(false);
+      setPendingTest(false);
+
+      // Build headers object
+      const headers = {};
+      if (testApiKeyInput) {
+        headers['X-API-Key'] = testApiKeyInput;
+      }
 
       const testData = {
         url: testUrlInput,
-        apiKey: testApiKeyInput || null
+        headers: Object.keys(headers).length > 0 ? headers : undefined
       };
 
       const result = await externalSourcesService.testUrl(testData);
@@ -130,49 +143,42 @@ const ExternalSourceManager = () => {
       // Extract actual data from service response wrapper
       const actualData = result.data || result;
       setJsonData(actualData);
-      setSuccess('✅ Kết nối thành công!');
 
       // Auto-detect NGSI-LD format
       const detected = detectNGSILD(actualData);
-      setIsNGSILD(detected);
       
       if (detected) {
-        // NGSI-LD detected: skip mapping, go to Step 3
-        setShowMappingSection(false);
-        setCurrentStep(3); // Bỏ qua bước 2, chuyển thẳng sang bước 3
-        setSuccess('✅ Phát hiện dữ liệu chuẩn NGSI-LD! Có thể bỏ qua mapping.');
+        setSuccess('✅ Phát hiện dữ liệu chuẩn NGSI-LD! Bạn có thể tiếp tục lưu cấu hình.');
+        setShowSaveSection(true);
       } else {
-        // Custom JSON: show mapping section
-        setShowMappingSection(true);
-        setCurrentStep(2); // Chuyển sang bước 2 để mapping
-        setFieldMapping({});
-        setTimestampPath('');
+        setError('❌ API phải trả về chuẩn NGSI-LD! Expected: id (URN), type (AirQualityObserved), Properties structure.');
+        setShowSaveSection(false);
       }
     } catch (err) {
       setError('❌ Test thất bại: ' + (err.message || 'Không thể kết nối'));
       setJsonData(null);
-      setShowMappingSection(false);
-      setCurrentStep(1); // Quay lại bước 1 nếu test thất bại
+      setShowSaveSection(false);
     } finally {
       setTestLoading(false);
     }
   };
 
   /**
-   * Detect if JSON is NGSI-LD format
+   * Detect if JSON is NGSI-LD format (allows both PascalCase and camelCase)
    */
   const detectNGSILD = (data) => {
     if (!data || typeof data !== 'object') return false;
 
     // Check for NGSI-LD structure
-    if (data.id && typeof data.id === 'string' && data.id.startsWith('urn:ngsi-ld:')) {
-      if (data.type === 'AirQualityObserved') {
-        // Check for at least one Property with type and value
-        for (const key in data) {
-          const value = data[key];
-          if (value && typeof value === 'object' && value.type === 'Property' && value.value !== undefined) {
-            return true;
-          }
+    const hasValidId = data.id && typeof data.id === 'string' && data.id.startsWith('urn:ngsi-ld:');
+    const hasValidType = data.type === 'AirQualityObserved' || data.type === 'airQualityObserved';
+    
+    if (hasValidId && hasValidType) {
+      // Check for at least one Property with type and value
+      for (const key in data) {
+        const value = data[key];
+        if (value && typeof value === 'object' && value.type === 'Property' && value.value !== undefined) {
+          return true;
         }
       }
     }
@@ -188,30 +194,6 @@ const ExternalSourceManager = () => {
       ...prev,
       [name]: value
     }));
-  };
-
-  /**
-   * Add field to mapping
-   */
-  const handleAddField = (fieldName) => {
-    if (!selectedPath || !fieldName.trim()) return;
-
-    setFieldMapping(prev => ({
-      ...prev,
-      [fieldName.trim()]: selectedPath
-    }));
-    setSelectedPath(null);
-  };
-
-  /**
-   * Remove field from mapping
-   */
-  const handleRemoveField = (fieldName) => {
-    setFieldMapping(prev => {
-      const newMapping = { ...prev };
-      delete newMapping[fieldName];
-      return newMapping;
-    });
   };
 
   /**
@@ -237,11 +219,6 @@ const ExternalSourceManager = () => {
     
     if (isNaN(lon) || lon < -180 || lon > 180) {
       setError('❌ Longitude phải là số trong khoảng -180 đến 180 (VD: 105.804817 cho Hà Nội)');
-      return;
-    }
-
-    if (!isNGSILD && Object.keys(fieldMapping).length === 0) {
-      setError('Vui lòng cấu hình mapping cho dữ liệu (hoặc test URL để tự động phát hiện NGSI-LD)');
       return;
     }
 
@@ -272,19 +249,21 @@ const ExternalSourceManager = () => {
         console.log('⚠️ URL parse failed, auto-generated stationId:', stationId);
       }
 
+      // Build headers object
+      const headers = {};
+      if (testApiKeyInput) {
+        headers['X-API-Key'] = testApiKeyInput;
+      }
+
       const sourceData = {
         name: formData.name,
         stationId: stationId,
-        url: testUrlInput, // Use URL from Step 1
-        apiKey: testApiKeyInput || null, // Use API Key from Step 1
+        url: testUrlInput,
+        headers: Object.keys(headers).length > 0 ? headers : undefined,
         latitude: parseFloat(formData.latitude),
         longitude: parseFloat(formData.longitude),
-        fetchIntervalMinutes: parseInt(formData.fetchIntervalMinutes),
-        isNGSILD: isNGSILD,
-        fieldMapping: isNGSILD ? null : {
-          fields: fieldMapping,
-          timestampPath: timestampPath || null
-        }
+        intervalMinutes: parseInt(formData.intervalMinutes),
+        isNGSILD: true // Always true for new API
       };
 
       console.log('📤 [Create Source] Sending data:', sourceData);
@@ -298,7 +277,7 @@ const ExternalSourceManager = () => {
         throw new Error(result?.error || 'Tạo source thất bại - không có response');
       }
       
-      const intervalMinutes = parseInt(formData.fetchIntervalMinutes);
+      const intervalMinutes = parseInt(formData.intervalMinutes);
       setSuccess(`✅ Tạo External Source "${formData.name}" thành công!
 
 ⏳ Backend đang chờ fetch dữ liệu lần đầu (interval: ${intervalMinutes} phút).
@@ -310,20 +289,14 @@ const ExternalSourceManager = () => {
       // Reset form
       setFormData({
         name: '',
-        url: '',
-        apiKey: '',
         latitude: '',
         longitude: '',
-        fetchIntervalMinutes: 15
+        intervalMinutes: 60
       });
-      setFieldMapping({});
-      setTimestampPath('');
       setJsonData(null);
-      setShowMappingSection(false);
+      setShowSaveSection(false);
       setTestUrlInput('');
       setTestApiKeyInput('');
-      setIsNGSILD(false);
-      setCurrentStep(1); // Reset về bước 1
 
       // Reload sources immediately
       await loadSources();
@@ -381,87 +354,22 @@ const ExternalSourceManager = () => {
   };
 
   /**
-   * Render JSON viewer with clickable values (matches HTML demo logic)
+   * Render simple JSON preview (read-only)
    */
-  const renderJsonViewer = (data, path = '$') => {
+  const renderJsonPreview = (data) => {
     if (!data) return null;
-
-    const elements = [];
-
-    if (Array.isArray(data)) {
-      elements.push(<div key={`${path}-open`}>{'['}</div>);
-      data.forEach((item, index) => {
-        const itemPath = `${path}[${index}]`;
-        elements.push(
-          <div key={itemPath} style={{ marginLeft: '1.25rem' }}>
-            {renderJsonViewer(item, itemPath)}
-          </div>
-        );
-      });
-      elements.push(<div key={`${path}-close`}>{'],'}</div>);
-    } else if (typeof data === 'object' && data !== null) {
-      elements.push(<div key={`${path}-open`}>{'{'}</div>);
-      Object.entries(data).forEach(([key, value]) => {
-        const keyPath = path === '$' ? `$.${key}` : `${path}.${key}`;
-        
-        if (typeof value === 'object' && value !== null) {
-          elements.push(
-            <div key={keyPath} style={{ marginLeft: '1.25rem' }}>
-              <span className="json-key">"{key}"</span>: {Array.isArray(value) ? '[' : '{'}
-              {renderJsonViewer(value, keyPath)}
-              <div>{Array.isArray(value) ? '],' : '},'}</div>
-            </div>
-          );
-        } else {
-          const valueClass = typeof value === 'number' ? 'json-number' : 
-                           typeof value === 'string' ? 'json-string' : 'json-value';
-          const displayValue = typeof value === 'string' ? `"${value}"` : String(value);
-          
-          elements.push(
-            <div key={keyPath} style={{ marginLeft: '1.25rem', marginBottom: '0.25rem' }}>
-              <span className="json-key">"{key}"</span>:{' '}
-              <span
-                className={`json-value ${valueClass} ${selectedPath === keyPath ? 'selected' : ''}`}
-                onClick={() => {
-                  setSelectedPath(keyPath);
-                  const fieldName = window.prompt('Nhập tên trường (VD: PM2.5, CO2, Temperature):');
-                  if (fieldName && fieldName.trim()) {
-                    handleAddField(fieldName.trim());
-                  }
-                }}
-                style={{ cursor: 'pointer' }}
-              >
-                {displayValue}
-              </span>,
-            </div>
-          );
-        }
-      });
-      elements.push(<div key={`${path}-close`}>{'},'}</div>);
-    } else {
-      const valueClass = typeof data === 'number' ? 'json-number' : 
-                       typeof data === 'string' ? 'json-string' : 'json-value';
-      const displayValue = typeof data === 'string' ? `"${data}"` : String(data);
-      
-      elements.push(
-        <span
-          key={path}
-          className={`json-value ${valueClass} ${selectedPath === path ? 'selected' : ''}`}
-          onClick={() => {
-            setSelectedPath(path);
-            const fieldName = window.prompt('Nhập tên trường (VD: PM2.5, CO2, Temperature):');
-            if (fieldName && fieldName.trim()) {
-              handleAddField(fieldName.trim());
-            }
-          }}
-          style={{ cursor: 'pointer' }}
-        >
-          {displayValue}
-        </span>
-      );
-    }
-
-    return <>{elements}</>;
+    return (
+      <pre style={{ 
+        background: '#f5f5f5', 
+        padding: '1rem', 
+        borderRadius: '8px', 
+        overflow: 'auto',
+        maxHeight: '400px',
+        fontSize: '0.875rem'
+      }}>
+        {JSON.stringify(data, null, 2)}
+      </pre>
+    );
   };
 
   return (
@@ -487,11 +395,36 @@ const ExternalSourceManager = () => {
         </div>
       )}
 
+      {/* Info Modal */}
+      <ExternalSourceInfoModal 
+        isOpen={showInfoModal} 
+        onClose={() => {
+          setShowInfoModal(false);
+          setPendingTest(false);
+        }}
+        onConfirm={pendingTest ? executeTest : undefined}
+        showConfirmButton={pendingTest}
+        confirmText="✓ Tôi đồng ý và tiếp tục test"
+      />
+
+      {/* Info Button */}
+      <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <button 
+          className="btn btn-primary"
+          onClick={() => setShowInfoModal(true)}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        >
+          📌 Hướng dẫn đóng góp dữ liệu
+        </button>
+        <span style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+          Vui lòng đọc kỹ trước khi thêm nguồn dữ liệu
+        </span>
+      </div>
+
       {/* Step 1: Test URL */}
-      {currentStep === 1 && (
+      {!showSaveSection && (
         <div className="form-section">
-          <div className="section-badge">Bước 1/3</div>
-          <h3>Kiểm tra kết nối API</h3>
+          <h3>🧪 Test API Endpoint</h3>
           
           <div className="form-group">
             <label>URL Endpoint <span className="required">*</span></label>
@@ -499,7 +432,7 @@ const ExternalSourceManager = () => {
               type="text"
               value={testUrlInput}
               onChange={(e) => setTestUrlInput(e.target.value)}
-              placeholder="https://api.openaq.org/v3/locations/4946811/latest"
+              placeholder="https://api.example.com/ngsi-ld/airquality"
             />
           </div>
 
@@ -509,7 +442,7 @@ const ExternalSourceManager = () => {
               type="text"
               value={testApiKeyInput}
               onChange={(e) => setTestApiKeyInput(e.target.value)}
-              placeholder="Nhập API key nếu cần"
+              placeholder="Enter API key if required"
             />
           </div>
 
@@ -518,86 +451,21 @@ const ExternalSourceManager = () => {
             onClick={handleTestUrl}
             disabled={testLoading || !testUrlInput}
           >
-            {testLoading ? 'Đang test...' : 'Test kết nối và tiếp tục'}
+            {testLoading ? '🔍 Testing...' : '🔍 Test Connection'}
           </button>
-        </div>
-      )}
 
-      {/* Step 2: Mapping (only for non-NGSI-LD) */}
-      {currentStep === 2 && showMappingSection && (
-        <div className="form-section">
-          <div className="section-badge">Bước 2/3</div>
-          <h3>Định dạng dữ liệu</h3>
-          
-          {isNGSILD ? (
-            <div className="alert alert-info">
-              Tự động phát hiện: API này trả về chuẩn NGSI-LD. Không cần mapping thủ công.
+          {jsonData && (
+            <div style={{ marginTop: '1.5rem' }}>
+              <h4>API Response Preview:</h4>
+              {renderJsonPreview(jsonData)}
             </div>
-          ) : (
-            <>
-              <div className="alert alert-info">
-                Hướng dẫn: Click vào giá trị trong JSON bên dưới để chọn trường dữ liệu. Nhập tên trường đo (PM2.5, CO2, Temperature...) và trường sẽ được thêm vào mapping.
-              </div>
-
-              <div className="mapping-grid">
-                <div className="json-viewer-container">
-                  <h4>JSON Response</h4>
-                  <div className="json-viewer">
-                    {renderJsonViewer(jsonData)}
-                  </div>
-                </div>
-
-                <div className="mapping-panel">
-                  <h4>Field Mapping</h4>
-                  {Object.keys(fieldMapping).length === 0 ? (
-                    <p className="empty-mapping">Chưa có trường nào. Click vào JSON để thêm.</p>
-                  ) : (
-                    <div className="field-list">
-                      {Object.entries(fieldMapping).map(([fieldName, path]) => (
-                        <div key={fieldName} className="field-item">
-                          <span className="field-name">{fieldName}</span>
-                          <span className="field-path">{path}</span>
-                          <button
-                            className="btn-remove"
-                            onClick={() => handleRemoveField(fieldName)}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
           )}
-
-          <div className="form-actions" style={{ marginTop: '1rem' }}>
-            <button
-              className="btn btn-secondary"
-              onClick={() => {
-                setCurrentStep(1);
-                setShowMappingSection(false);
-              }}
-            >
-              Quay lại
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => setCurrentStep(3)}
-              disabled={!isNGSILD && Object.keys(fieldMapping).length === 0}
-            >
-              Tiếp tục
-            </button>
-          </div>
         </div>
       )}
-
-      {/* Step 3: Source Configuration */}
-      {currentStep === 3 && (
+      {/* Step 2: Save Configuration */}
+      {showSaveSection && (
         <form onSubmit={handleCreateSource} className="form-section">
-          <div className="section-badge">Bước 3/3</div>
-          <h3>Thông tin nguồn dữ liệu</h3>
+          <h3>💾 Save Configuration</h3>
           
           <div className="form-group">
             <label>
@@ -608,7 +476,7 @@ const ExternalSourceManager = () => {
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              placeholder="VD: OpenAQ Hanoi Central Station"
+              placeholder="Example: OpenAQ Hanoi Station"
               required
             />
           </div>
@@ -624,7 +492,7 @@ const ExternalSourceManager = () => {
                 name="latitude"
                 value={formData.latitude}
                 onChange={handleInputChange}
-                placeholder="21.028511"
+                placeholder="21.0491"
                 required
               />
             </div>
@@ -639,7 +507,7 @@ const ExternalSourceManager = () => {
                 name="longitude"
                 value={formData.longitude}
                 onChange={handleInputChange}
-                placeholder="105.804817"
+                placeholder="105.8831"
                 required
               />
             </div>
@@ -647,15 +515,15 @@ const ExternalSourceManager = () => {
 
           <div className="form-group">
             <label>
-              Chu kỳ lấy dữ liệu (phút) <span className="required">*</span>
+              Interval (minutes) <span className="required">*</span>
             </label>
             <input
               type="number"
-              name="fetchIntervalMinutes"
-              value={formData.fetchIntervalMinutes}
+              name="intervalMinutes"
+              value={formData.intervalMinutes}
               onChange={handleInputChange}
               min="1"
-              placeholder="15"
+              placeholder="60"
               required
             />
             <small>Khuyến nghị: 15-60 phút để tránh quá tải API</small>
@@ -666,11 +534,7 @@ const ExternalSourceManager = () => {
               type="button"
               className="btn btn-secondary"
               onClick={() => {
-                if (isNGSILD) {
-                  setCurrentStep(1);
-                } else {
-                  setCurrentStep(2);
-                }
+                setShowSaveSection(false);
               }}
             >
               Quay lại
@@ -680,7 +544,7 @@ const ExternalSourceManager = () => {
               className="btn btn-success"
               disabled={loading}
             >
-              {loading ? 'Đang tạo...' : 'Lưu cấu hình'}
+              {loading ? 'Đang tạo...' : '💾 Save Source'}
             </button>
           </div>
         </form>
