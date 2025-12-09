@@ -61,7 +61,7 @@ const ContributionManagement = ({ user }) => {
           className={`sub-tab-btn ${contributionTab === 'sensor-data' ? 'active' : ''}`}
           onClick={() => setContributionTab('sensor-data')}
         >
-          Dữ liệu từ sensor
+          Dữ liệu từ sensor (MQTT)
         </button>
         <button
           className={`sub-tab-btn ${contributionTab === 'uploaded-json' ? 'active' : ''}`}

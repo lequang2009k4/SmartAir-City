@@ -788,6 +788,7 @@ open-data services and smart-city applications.
   color: #90cdf4;
 }
 
+
 .dark-mode .info-card p,
 .dark-mode .info-card li {
   color: #cbd5e0;
@@ -800,3 +801,100 @@ open-data services and smart-city applications.
 .dark-mode .stat-value {
   color: #e2e8f0;
 }
+
+/* ============================================
+   ADMIN NOTICE & ACCESS CONTROL
+   ============================================ */
+.admin-notice {
+  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  border: 2px solid #667eea;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.admin-notice p {
+  margin: 0;
+  color: #667eea;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.access-denied {
+  text-align: center;
+  padding: 60px 20px;
+  background: linear-gradient(135deg, #ff758c15 0%, #ff7eb315 100%);
+  border: 2px dashed #ff758c;
+  border-radius: 16px;
+  margin: 40px auto;
+  max-width: 600px;
+}
+
+.access-denied h3 {
+  color: #ff758c;
+  font-size: 2rem;
+  margin-bottom: 16px;
+}
+
+.access-denied p {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 12px 0;
+  line-height: 1.6;
+}
+
+.access-denied .btn {
+  margin-top: 24px;
+  padding: 12px 32px;
+  font-size: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.access-denied .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* Dark mode support for admin elements */
+.dark-mode .admin-notice {
+  background: linear-gradient(135deg, #667eea25 0%, #764ba225 100%);
+  border-color: #8b9eea;
+}
+
+.dark-mode .admin-notice p {
+  color: #a5b4fc;
+}
+
+.dark-mode .access-denied {
+  background: linear-gradient(135deg, #ff758c25 0%, #ff7eb325 100%);
+  border-color: #ff8fa3;
+}
+
+.dark-mode .access-denied h3 {
+  color: #ff8fa3;
+}
+
+.dark-mode .access-denied p {
+  color: #cbd5e0;
+}
+

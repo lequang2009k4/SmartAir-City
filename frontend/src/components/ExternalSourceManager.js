@@ -19,6 +19,8 @@ import { externalSourcesService } from '../services';
 import { getAll } from '../services/api/airQualityService';
 import LoadingSpinner from './LoadingSpinner';
 import ExternalSourceInfoModal from './ExternalSourceInfoModal';
+import LocationPicker from './LocationPicker';
+import useAuth from '../hooks/useAuth';
 import './ExternalSourceManager.css';
 
 /**
@@ -38,6 +40,8 @@ const generateSlug = (text) => {
  * Manages external HTTP API data sources for third-party air quality data
  */
 const ExternalSourceManager = () => {
+  const { isAdmin } = useAuth();
+  
   // Form state
   const [formData, setFormData] = useState({
     name: '',
@@ -407,7 +411,7 @@ const ExternalSourceManager = () => {
         confirmText="✓ Tôi đồng ý và tiếp tục test"
       />
 
-      {/* Info Button */}
+      {/* Info Button - All users */}
       <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
         <button 
           className="btn btn-primary"
@@ -421,7 +425,7 @@ const ExternalSourceManager = () => {
         </span>
       </div>
 
-      {/* Step 1: Test URL */}
+      {/* Step 1: Test URL - All users */}
       {!showSaveSection && (
         <div className="form-section">
           <h3>🧪 Test API Endpoint</h3>
@@ -462,6 +466,7 @@ const ExternalSourceManager = () => {
           )}
         </div>
       )}
+      
       {/* Step 2: Save Configuration */}
       {showSaveSection && (
         <form onSubmit={handleCreateSource} className="form-section">
@@ -494,6 +499,7 @@ const ExternalSourceManager = () => {
                 onChange={handleInputChange}
                 placeholder="21.0491"
                 required
+                readOnly
               />
             </div>
 
@@ -509,9 +515,22 @@ const ExternalSourceManager = () => {
                 onChange={handleInputChange}
                 placeholder="105.8831"
                 required
+                readOnly
               />
             </div>
           </div>
+
+          <LocationPicker
+            latitude={parseFloat(formData.latitude) || 21.0285}
+            longitude={parseFloat(formData.longitude) || 105.8542}
+            onChange={(lat, lng) => {
+              setFormData(prev => ({
+                ...prev,
+                latitude: lat.toFixed(6),
+                longitude: lng.toFixed(6)
+              }));
+            }}
+          />
 
           <div className="form-group">
             <label>
@@ -549,78 +568,6 @@ const ExternalSourceManager = () => {
           </div>
         </form>
       )}
-
-      {/* Sources List */}
-      <div className="sources-section">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h3 style={{ margin: 0 }}>Danh sách External Sources</h3>
-          <button
-            className="btn btn-secondary btn-sm"
-            onClick={loadSources}
-            disabled={loading}
-          >
-            Refresh
-          </button>
-        </div>
-        
-        {loading && <LoadingSpinner />}
-        
-        {!loading && sources.length === 0 && (
-          <div className="empty-state">
-            <p>Chưa có external source nào</p>
-          </div>
-        )}
-
-        {!loading && sources.length > 0 && (
-          <div className="sources-grid">
-            {sources.map(source => (
-              <div key={source.id} className={`source-card ${source.isActive ? 'active' : 'inactive'}`}>
-                <div className="source-header">
-                  <h4>
-                    {source.name}
-                    <span className={`status-badge ${source.isActive ? 'active' : 'inactive'}`}>
-                      {source.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </h4>
-                  <span className="format-badge">
-                    {source.isNGSILD ? 'NGSI-LD' : 'Custom JSON'}
-                  </span>
-                </div>
-                
-                <div className="source-info">
-                  <p><strong>Vị trí:</strong> {source.latitude}, {source.longitude}</p>
-                  <p><strong>Chu kỳ lấy dữ liệu:</strong> {source.intervalMinutes} phút</p>
-                  <p><strong>Bản ghi:</strong> {source.recordCount !== undefined ? source.recordCount : '...'}</p>
-                  <p><strong>Lần lấy cuối:</strong> {source.lastFetchedAt ? new Date(source.lastFetchedAt).toLocaleString('vi-VN') : 'Chưa có'}</p>
-                  {source.lastError && (
-                    <p className="error-text"><strong>Error:</strong> {source.lastError}</p>
-                  )}
-                </div>
-
-                <div className="source-actions">
-                  {!source.isActive && (
-                    <button
-                      className="btn btn-success btn-sm"
-                      onClick={() => handleReactivate(source.id)}
-                      disabled={loading}
-                    >
-                      Reactivate
-                    </button>
-                  )}
-                  
-                  <button
-                    className="btn btn-danger btn-sm"
-                    onClick={() => handleDelete(source.id, source.name)}
-                    disabled={loading}
-                  >
-                    Xóa
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 };

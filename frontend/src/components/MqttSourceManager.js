@@ -19,6 +19,8 @@ import { externalMqttService } from '../services';
 import { getAll } from '../services/api/airQualityService';
 import LoadingSpinner from './LoadingSpinner';
 import MqttSourceInfoModal from './MqttSourceInfoModal';
+import LocationPicker from './LocationPicker';
+import useAuth from '../hooks/useAuth';
 import './MqttSourceManager.css';
 
 /**
@@ -26,6 +28,8 @@ import './MqttSourceManager.css';
  * Manages external MQTT broker connections for sensor data contribution
  */
 const MqttSourceManager = () => {
+  const { isAdmin } = useAuth();
+  
   // Form state
   const [formData, setFormData] = useState({
     name: '',
@@ -275,7 +279,7 @@ const MqttSourceManager = () => {
         confirmText="✓ Tôi đồng ý và tiếp tục test"
       />
 
-      {/* Info Button */}
+      {/* Info Button - All users */}
       <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
         <button 
           className="btn btn-primary"
@@ -289,7 +293,7 @@ const MqttSourceManager = () => {
         </span>
       </div>
 
-      {/* Registration Form */}
+      {/* Registration Form - All users can create */}
       <form onSubmit={handleCreateSource} className="mqtt-form">
         <div className="form-section">
           <h3>Thông tin MQTT Broker</h3>
@@ -393,7 +397,19 @@ const MqttSourceManager = () => {
         <div className="form-section">
           <h3>Vị trí cảm biến</h3>
           
-          <div className="form-row">
+          <LocationPicker
+            latitude={parseFloat(formData.latitude) || 21.0285}
+            longitude={parseFloat(formData.longitude) || 105.8542}
+            onChange={(lat, lng) => {
+              setFormData(prev => ({
+                ...prev,
+                latitude: lat.toFixed(6),
+                longitude: lng.toFixed(6)
+              }));
+            }}
+          />
+          
+          <div className="form-row" style={{ marginTop: '12px' }}>
             <div className="form-group">
               <label>
                 Latitude (vĩ độ) <span className="required">*</span>
@@ -406,6 +422,7 @@ const MqttSourceManager = () => {
                 onChange={handleInputChange}
                 placeholder="VD: 21.028511"
                 required
+                readOnly
               />
             </div>
 
@@ -421,6 +438,7 @@ const MqttSourceManager = () => {
                 onChange={handleInputChange}
                 placeholder="VD: 105.804817"
                 required
+                readOnly
               />
             </div>
           </div>
@@ -454,73 +472,6 @@ const MqttSourceManager = () => {
           </button>
         </div>
       </form>
-
-      {/* Sources List */}
-      <div className="sources-section">
-        <h3>Danh sách MQTT Sources</h3>
-        
-        {loading && <LoadingSpinner />}
-        
-        {!loading && sources.length === 0 && (
-          <div className="empty-state">
-            <p>Chưa có MQTT source nào</p>
-          </div>
-        )}
-
-        {!loading && sources.length > 0 && (
-          <div className="sources-grid">
-            {sources.map(source => (
-              <div key={source.id} className={`source-card ${source.isActive ? 'active' : 'inactive'}`}>
-                <div className="source-header">
-                  <h4>
-                    {source.name}
-                    <span className={`status-badge ${source.isActive ? 'active' : 'inactive'}`}>
-                      {source.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </h4>
-                </div>
-                
-                <div className="source-info">
-                  <p><strong>Vị trí:</strong> {source.latitude}, {source.longitude}</p>
-                  <p><strong>Bản ghi:</strong> {source.recordCount !== undefined ? source.recordCount : (source.messageCount || 0)}</p>
-                  <p><strong>Lần tin nhắn cuối:</strong> {source.lastMessageAt ? new Date(source.lastMessageAt).toLocaleString('vi-VN') : 'Chưa có'}</p>
-                  {source.lastError && (
-                    <p className="error-text"><strong>Error:</strong> {source.lastError}</p>
-                  )}
-                </div>
-
-                <div className="source-actions">
-                  {source.isActive ? (
-                    <button
-                      className="btn btn-warning btn-sm"
-                      onClick={() => handleDeactivate(source.id)}
-                      disabled={loading}
-                    >
-                      Tạm dừng
-                    </button>
-                  ) : (
-                    <button
-                      className="btn btn-success btn-sm"
-                      onClick={() => handleActivate(source.id)}
-                      disabled={loading}
-                    >
-                      Kích hoạt
-                    </button>
-                  )}
-                  
-                  <button
-                    className="btn btn-danger btn-sm"
-                    onClick={() => handleDelete(source.id, source.name)}
-                    disabled={loading}
-                  >
-                    Xóa
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 };

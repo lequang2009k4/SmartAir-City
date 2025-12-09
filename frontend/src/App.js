@@ -31,6 +31,7 @@ import DeviceManagement from './components/DeviceManagement';
 import { useAirQualityContext } from './contexts/AirQualityContext';
 import UserManagement from './components/UserManagement';
 import ContributionManagement from './components/ContributionManagement';
+import AdminSourcesManager from './components/AdminSourcesManager';
 import { getUser, removeToken } from './services/api/usersService';
 import { AirQualityProvider } from './contexts/AirQualityContext';
 // import SearchFilter from './components/SearchFilter'; // TODO: Update to use hooks
@@ -267,6 +268,31 @@ function App() {
           );
         }
         return <ContributionManagement user={user} />;
+      
+      case 'admin-sources':
+        // Only show if user is admin
+        if (!user || user.role !== 'admin') {
+          return (
+            <div className="access-denied">
+              <h2>🔒 Truy cập bị từ chối</h2>
+              <p>Bạn cần đăng nhập với quyền Admin để truy cập trang này.</p>
+              <button className="btn-back" onClick={() => setActiveTab('home')}>
+                ← Quay lại trang chủ
+              </button>
+            </div>
+          );
+        }
+        return (
+          <div className="page-container">
+            <div className="page-header">
+              <h1>🔒 Quản lý dữ liệu bên thứ 3</h1>
+              <p className="page-description">
+                Quản lý tất cả nguồn dữ liệu MQTT và External API đã được đăng ký trong hệ thống
+              </p>
+            </div>
+            <AdminSourcesManager />
+          </div>
+        );
       
       default:
         return (
