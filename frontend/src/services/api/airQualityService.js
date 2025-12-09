@@ -16,13 +16,6 @@
 
 /**
  * Air Quality API Service
- * Service layer cho Air Quality endpoints (openapi.yaml)
- * 
- * Endpoints:
- * - GET /api/airquality          → getAll(limit)
- * - GET /api/airquality/latest   → getLatest()
- * - GET /api/airquality/history  → getHistory(from, to)
- * - POST /api/iot-data           → postIotData(data)
  */
 
 import { airQualityAxios } from './axiosInstance';
