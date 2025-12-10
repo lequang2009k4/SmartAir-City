@@ -22,9 +22,9 @@ import './SwaggerViewer.css';
  * Embeds Swagger UI from backend API
  */
 const SwaggerViewer = () => {
-  const swaggerUrl = process.env.REACT_APP_API_BASE_URL 
-    ? `${process.env.REACT_APP_API_BASE_URL}/swagger/index.html`
-    : 'http://localhost:5000/swagger/index.html';
+  const swaggerUrl = process.env.REACT_APP_AIR_API_URL 
+    ? `${process.env.REACT_APP_AIR_API_URL}/swagger/index.html`
+    : 'http://localhost:51872/swagger/index.html';
 
   return (
     <div className="swagger-viewer">
