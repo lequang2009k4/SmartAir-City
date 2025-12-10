@@ -17,6 +17,7 @@
 
 import React, { useMemo, useState } from "react";
 import "./StationCard.css";
+import { getStationDisplayName } from '../utils/stationUtils';
 
 /**
  * Station Card Component
@@ -160,27 +161,18 @@ const StationCard = ({ stationId, data }) => {
     return "Nguy hại";
   };
 
-  // Station display name
-  const getStationName = () => {
-    const nameMap = {
-      "hanoi-oceanpark": "Hà Nội - Ocean Park",
-      "hanoi-nguyenvancu": "Hà Nội - Nguyễn Văn Cừ",
-      "hanoi-congvien-hodh": "Hà Nội - Công viên Hồ Định Hương",
-      "hcm-cmt8": "TP.HCM - CMT8",
-      "hcm-carecentre": "TP.HCM - Care Centre",
-    };
-    return nameMap[stationId] || stationId;
-  };
+  // Station display name (using centralized utility)
+  const stationName = getStationDisplayName(stationId);
 
   if (!data) {
     return (
       <div className="station-card station-card--no-data">
         <div className="station-card__header">
-          <h3 className="station-card__title">{getStationName()}</h3>
+          <h3 className="station-card__title">{stationName}</h3>
           <span className="station-card__id">{stationId}</span>
         </div>
         <div className="station-card__body">
-          <p className="station-card__no-data">Chưa có dữ liệu</p>
+          <p className="station-card__no-data">⏳ Đang chờ dữ liệu từ trạm...</p>
         </div>
       </div>
     );
@@ -198,7 +190,7 @@ const StationCard = ({ stationId, data }) => {
     >
       {/* Always visible: Station Name + AQI */}
       <div className="station-card__header">
-        <h3 className="station-card__title">{getStationName()}</h3>
+        <h3 className="station-card__title">{stationName}</h3>
       </div>
 
       {/* AQI Display - Always visible */}
@@ -247,8 +239,17 @@ const StationCard = ({ stationId, data }) => {
 
         {/* Timestamp */}
         <div className="station-card__timestamp">
-          {data.timestamp
-            ? new Date(data.timestamp).toLocaleString("vi-VN")
+          {data.dateObserved || data.timestamp
+            ? (() => {
+                const date = new Date(data.dateObserved || data.timestamp);
+                const hours = String(date.getUTCHours()).padStart(2, '0');
+                const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+                const day = String(date.getUTCDate()).padStart(2, '0');
+                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                const year = date.getUTCFullYear();
+                return `${hours}:${minutes}:${seconds} ${day}/${month}/${year} (UTC)`;
+              })()
             : "--"}
         </div>
       </div>

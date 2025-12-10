@@ -188,9 +188,9 @@ export const transformAirQualityData = (ngsiData) => {
     observedProperty: ngsiData['sosa:observedProperty'],
     featureOfInterest: ngsiData['sosa:hasFeatureOfInterest'],
     
-    // Get PM2.5 value (support both uppercase and lowercase)
-    pm25: ngsiData.PM25?.value || ngsiData.pm25?.value || 0,
-    pm10: ngsiData.PM10?.value || ngsiData.pm10?.value || 0,
+    // Get PM2.5 value (support both uppercase, lowercase, and underscore formats)
+    pm25: ngsiData.PM25?.value || ngsiData.pm25?.value || ngsiData.pm2_5?.value || 0,
+    pm10: ngsiData.PM10?.value || ngsiData.pm10?.value || ngsiData.pm10_?.value || 0,
     
     // Air Quality Index - Calculate from PM2.5 if not provided
     aqi: (() => {
@@ -199,7 +199,7 @@ export const transformAirQualityData = (ngsiData) => {
         return providedAQI;
       }
       // Calculate AQI from PM2.5 for MQTT/External sources
-      const pm25Value = ngsiData.PM25?.value || ngsiData.pm25?.value;
+      const pm25Value = ngsiData.PM25?.value || ngsiData.pm25?.value || ngsiData.pm2_5?.value;
       if (pm25Value) {
         const calculatedAQI = calculateAQIFromPM25(pm25Value);
         if (process.env.NODE_ENV === 'development') {
@@ -225,9 +225,9 @@ export const transformAirQualityData = (ngsiData) => {
     // Pollutants metadata
     pollutants: {
       pm25: {
-        value: ngsiData.PM25?.value || ngsiData.pm25?.value || 0,
-        unit: ngsiData.PM25?.unitCode || ngsiData.pm25?.unitCode || 'GQ',
-        observedAt: ngsiData.PM25?.observedAt || ngsiData.pm25?.observedAt,
+        value: ngsiData.PM25?.value || ngsiData.pm25?.value || ngsiData.pm2_5?.value || 0,
+        unit: ngsiData.PM25?.unitCode || ngsiData.pm25?.unitCode || ngsiData.pm2_5?.unitCode || 'GQ',
+        observedAt: ngsiData.PM25?.observedAt || ngsiData.pm25?.observedAt || ngsiData.pm2_5?.observedAt,
       },
       pm10: {
         value: ngsiData.PM10?.value || ngsiData.pm10?.value || 0,
@@ -283,12 +283,19 @@ export const transformAirQualityArray = (ngsiArray) => {
  * @returns {Promise<array>} Array of air quality records
  */
 export const getAll = async (limit = 50, stationId = null, transform = true) => {
-  const params = { limit };
+  const params = {};
+  
+  // Only add limit if it's a valid number (not null/undefined)
+  if (limit !== null && limit !== undefined) {
+    params.limit = limit;
+  }
+  
   if (stationId) {
     params.stationId = stationId;
     console.log(`🔍 [airQualityService] Filtering by stationId: ${stationId}`);
   }
   
+  console.log(`📊 [airQualityService] Query params:`, params);
   const data = await airQualityAxios.get(AIR_QUALITY_ENDPOINTS.GET_ALL, { params });
   
   console.log('📦 [airQualityService] getAll raw data:', data?.length, 'items, transform:', transform);
@@ -317,7 +324,13 @@ export const getLatest = async (stationId = null, transform = true) => {
   
   const data = await airQualityAxios.get(AIR_QUALITY_ENDPOINTS.GET_LATEST, { params });
   
-  return transform ? transformAirQualityData(data) : data;
+  console.log(`📦 [airQualityService] Raw data for ${stationId}:`, data);
+  
+  const transformed = transform ? transformAirQualityData(data) : data;
+  
+  console.log(`✅ [airQualityService] Transformed data for ${stationId}:`, transformed);
+  
+  return transformed;
 };
 
 /**

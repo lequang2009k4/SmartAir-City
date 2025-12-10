@@ -38,11 +38,6 @@ async function enableMocking() {
     
     return worker.start({
       onUnhandledRequest: 'bypass', // Don't warn for unhandled requests
-    }).then(() => {
-      console.log('🎭 MSW Enabled - Using mock APIs');
-      console.log('   - Air Quality API: http://localhost:5182');
-      console.log('   - Core API (Devices/Users): http://localhost:5183');
-      console.log('   - To disable: Set REACT_APP_USE_MOCK=false in .env');
     });
   }
 }

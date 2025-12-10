@@ -111,7 +111,7 @@ const OpenDataViewer = () => {
       const sourcesWithCount = await Promise.all(
         sources.map(async (source) => {
           try {
-            // Get ALL records for this stationId to count them (no limit)
+            // Get ALL records for this stationId to count them (pass null for no limit)
             const records = await getAll(null, source.stationId, true);
             return {
               ...source,
@@ -149,7 +149,7 @@ const OpenDataViewer = () => {
       const sourcesWithCount = await Promise.all(
         sources.map(async (source) => {
           try {
-            // Get ALL records for this stationId to count them (no limit)
+            // Get ALL records for this stationId to count them (pass null for no limit)
             const records = await getAll(null, source.stationId, true);
             return {
               ...source,

@@ -134,6 +134,15 @@ const Header = ({ activeTab, setActiveTab, user, onLoginClick, onLogout }) => {
                           >
                             Quản lý người dùng
                           </button>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => {
+                              setActiveTab('admin-sources');
+                              setShowAdminMenu(false);
+                            }}
+                          >
+                            🔒 Quản lý dữ liệu bên thứ 3
+                          </button>
                         </>
                       )}
                       

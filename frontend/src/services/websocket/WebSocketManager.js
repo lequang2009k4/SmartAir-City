@@ -79,11 +79,7 @@ class WebSocketManager {
           return this.reconnectDelay;
         }
       })
-      .configureLogging(
-        process.env.NODE_ENV === 'development' 
-          ? signalR.LogLevel.Information 
-          : signalR.LogLevel.Warning
-      )
+      .configureLogging(signalR.LogLevel.None)
       .build();
 
     // Setup connection event handlers (only for real SignalR)
@@ -134,14 +130,10 @@ class WebSocketManager {
    */
   async start() {
     try {
-      console.log('[WebSocket] Starting connection to:', this.hubUrl);
-      
       await this.connection.start();
       this.isConnected = true;
       this.reconnectAttempts = 0;
       this.notifyStateChange('connected');
-      
-      console.log('[WebSocket] Connected successfully. Connection ID:', this.connection.connectionId);
       
       return true;
     } catch (error) {

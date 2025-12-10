@@ -37,13 +37,14 @@ const RealtimeDashboard = () => {
     'hcm-carecentre'
   ];
 
-  if (isLoading) {
+  // Show loading only on initial load WITHOUT WebSocket data
+  if (isLoading && Object.keys(latestData).length === 0) {
     return <LoadingSpinner />;
   }
 
-  if (error) {
-    return <ErrorMessage message={error} />;
-  }
+  // Don't block UI with error - WebSocket can still provide data
+  // Just show a warning banner instead
+  const showErrorBanner = error && Object.keys(latestData).length === 0;
 
   return (
     <div className="realtime-dashboard">
@@ -58,6 +59,20 @@ const RealtimeDashboard = () => {
           </span>
         </div>
       </div>
+
+      {/* Error banner (non-blocking) */}
+      {showErrorBanner && (
+        <div style={{ 
+          padding: '12px 20px', 
+          margin: '10px 0', 
+          background: '#fff3cd', 
+          border: '1px solid #ffc107',
+          borderRadius: '8px',
+          color: '#856404'
+        }}>
+          ⚠️ Không thể tải dữ liệu ban đầu, nhưng WebSocket đang hoạt động và sẽ cập nhật realtime.
+        </div>
+      )}
 
       {/* Station Grid */}
       <div className="realtime-dashboard__grid">

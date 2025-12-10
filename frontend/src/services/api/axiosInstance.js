@@ -52,10 +52,6 @@ export const coreApiAxios = axios.create({
   headers: API_CONFIG.DEFAULT_HEADERS,
 });
 
-// Debug logging
-console.log('🔧 [Axios Config] Core API Base URL:', coreApiAxios.defaults.baseURL);
-console.log('🔧 [Env] REACT_APP_CORE_API_URL:', process.env.REACT_APP_CORE_API_URL);
-
 // ============================================
 // REQUEST INTERCEPTOR
 // ============================================
@@ -71,9 +67,6 @@ const requestInterceptor = (config) => {
   const token = localStorage.getItem('smartair_auth_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-    console.log('✅ [Auth] Token added to request:', config.url);
-  } else {
-    console.warn('⚠️ [Auth] No token found in localStorage for request:', config.url);
   }
 
   return config;

@@ -201,7 +201,6 @@ export const buildUrl = (baseUrl, params = {}) => {
  */
 export const logApiRequest = (method, url, data = null) => {
   if (API_CONFIG.DEBUG_MODE) {
-    console.log(`[API ${method}]`, url);
     if (data) console.log('[Data]', data);
   }
 };
@@ -213,7 +212,6 @@ export const logApiRequest = (method, url, data = null) => {
  */
 export const logApiResponse = (url, response) => {
   if (API_CONFIG.DEBUG_MODE) {
-    console.log(`[API Response]`, url);
     console.log('[Data]', response);
   }
 };
