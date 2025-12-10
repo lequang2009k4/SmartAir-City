@@ -139,8 +139,6 @@ export const getWebSocketUrl = (endpointName) => {
   
   const url = endpointMap[endpointName] || WS_ENDPOINTS.AIR_QUALITY_HUB;
   
-  console.log(`[wsConfig] getWebSocketUrl('${endpointName}') => ${url}`);
-  
   return url;
 };
 

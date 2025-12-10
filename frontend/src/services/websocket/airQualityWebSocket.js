@@ -100,9 +100,6 @@ class AirQualityWebSocket {
     try {
       const hubUrl = getWebSocketUrl('airQuality');
       
-      console.log('[AirQualityWS] Connecting to hub:', hubUrl);
-      console.log('[AirQualityWS] Base URL:', process.env.REACT_APP_AIR_WS_URL);
-      
       this.wsManager = new WebSocketManager(hubUrl, {
         maxReconnectAttempts: 5,
         reconnectDelay: 3000,

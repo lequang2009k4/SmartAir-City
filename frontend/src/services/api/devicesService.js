@@ -94,8 +94,6 @@ const transformDeviceToBackend = (device) => {
  * @returns {Promise<array>} Array of devices
  */
 export const getAll = async (transform = true) => {
-  console.log('🔍 [DevicesService] coreApiAxios.defaults.baseURL:', coreApiAxios.defaults.baseURL);
-  console.log('🔍 [DevicesService] Full URL will be:', coreApiAxios.defaults.baseURL + '/api/Devices');
   const data = await coreApiAxios.get('/api/Devices');
   return transform ? transformDeviceArray(data) : data;
 };
