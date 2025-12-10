@@ -1,4 +1,4 @@
-/**
+/*
  *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
  *  based on NGSI-LD and FiWARE Standards
  *
@@ -305,6 +305,7 @@ public class ExternalMqttSubscriberService : BackgroundService
             {
                 Id = ngsiId,
                 Type = "AirQualityObserved",
+                StationId = source.StationId, // FIX: Set stationId from source
                 MadeBySensor = new Relationship
                 {
                     Object = $"urn:ngsi-ld:ExternalMqttSource:{source.Id}"
@@ -345,6 +346,10 @@ public class ExternalMqttSubscriberService : BackgroundService
 
             // Use Upsert to prevent duplicates (same timestamp = same data)
             await airQualityService.UpsertAsync(airQuality);
+            
+            // Auto-create station in Stations collection (only first message creates station)
+            var stationService = scope.ServiceProvider.GetRequiredService<StationService>();
+            await EnsureStationExistsAsync(stationService, source);
 
             // Push to SignalR - Convert BsonDocument to JSON-safe format
             var signalRData = ConvertToSignalRSafe(airQuality);
@@ -462,5 +467,48 @@ public class ExternalMqttSubscriberService : BackgroundService
         }
 
         await base.StopAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Auto-create station in Stations collection if not exists
+    /// </summary>
+    private async Task EnsureStationExistsAsync(StationService stationService, ExternalMqttSource source)
+    {
+        try
+        {
+            // Check if station already exists
+            var existing = await stationService.GetStationByIdAsync(source.StationId);
+            if (existing != null)
+            {
+                return; // Already exists
+            }
+
+            // Create new station from ExternalMqttSource info
+            var newStation = new Station
+            {
+                StationId = source.StationId,
+                Name = source.Name,
+                Latitude = source.Latitude,
+                Longitude = source.Longitude,
+                Type = "external-mqtt",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                Metadata = new Dictionary<string, object?>
+                {
+                    ["brokerHost"] = source.BrokerHost,
+                    ["brokerPort"] = source.BrokerPort,
+                    ["topic"] = source.Topic
+                }
+            };
+
+            await stationService.CreateStationAsync(newStation);
+            _logger.LogInformation("Auto-created station from external MQTT: {StationId} - {Name}", 
+                source.StationId, source.Name);
+        }
+        catch (Exception ex)
+        {
+            // Don't throw - just log warning
+            _logger.LogWarning(ex, "Failed to auto-create station for external MQTT: {StationId}", source.StationId);
+        }
     }
 }

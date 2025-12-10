@@ -1,4 +1,4 @@
-/**
+/*
  *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
  *  based on NGSI-LD and FiWARE Standards
  *
@@ -38,33 +38,103 @@ public class AirQualityService
     // Insert du lieu tu IoT + OpenAQ API
     public async Task InsertAsync(AirQuality data, CancellationToken ct = default)
     {
-        // Doc cau hinh station tu appsettings
-        var stationId = _config["DefaultStation:StationId"] ?? "station-hn01";
-        var sensorUrn = _config["DefaultStation:SensorUrn"] ?? "urn:ngsi-ld:Device:mq135-hn01";
-        var featureOfInterest = _config["DefaultStation:FeatureOfInterest"] ?? "urn:ngsi-ld:Air:urban-hanoi";
-        var observedProperty = _config["DefaultStation:ObservedProperty"] ?? "AirQuality";
-
         // Doc cau hinh NGSI-LD tu appsettings
         var contextUrl = _config["NGSILD:ContextUrl"] ?? "https://smartdatamodels.org/context.jsonld";
         var sosaNamespace = _config["NGSILD:SosaNamespace"] ?? "http://www.w3.org/ns/sosa/";
 
-        // Sinh ID NGSI-LD neu chua co
-        data.Id ??= $"urn:ngsi-ld:AirQualityObserved:{stationId}:{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ssZ}";
+        // Extract stationId tu data.Id (vd: urn:ngsi-ld:AirQualityObserved:station-oceanpark:20251208)
+        string stationId = "station-unknown";
+        if (!string.IsNullOrEmpty(data.Id))
+        {
+            stationId = ExtractStationIdFromEntityId(data.Id);
+        }
+        else
+        {
+            // Neu khong co Id, tao Id moi
+            data.Id = $"urn:ngsi-ld:AirQualityObserved:{stationId}:{DateTime.UtcNow:yyyyMMddHHmmss}";
+        }
 
-        // Thiet lap thuoc tinh chuan NGSI-LD
+        // SET STATIONID - Quan trong de query de dang!
+        data.StationId = stationId;
+
+        // Thiet lap thuoc tinh chuan NGSI-LD (chi set neu chua co)
         data.Type = "AirQualityObserved";
-        data.Context = new object[]
+        data.Context ??= new object[]
         {
             contextUrl,
             new { sosa = sosaNamespace }
         };
-        data.ObservedProperty ??= new Relationship { Object = observedProperty };
-        data.MadeBySensor ??= new Relationship { Object = sensorUrn };
-        data.HasFeatureOfInterest ??= new Relationship { Object = featureOfInterest };
-        data.DateObserved = new DateTimeProperty { Type = "Property", Value = DateTime.UtcNow };
+        data.ObservedProperty ??= new Relationship { Object = "AirQuality" };
+        data.DateObserved ??= new DateTimeProperty { Type = "Property", Value = DateTime.UtcNow };
 
         _logger.LogDebug("Inserting AirQuality data for station: {StationId}", stationId);
         await _db.AirQuality.InsertOneAsync(data, cancellationToken: ct);
+        
+        // Tu dong them station moi vao Stations collection neu chua co
+        await EnsureStationExistsAsync(stationId, data, ct);
+    }
+
+    /// <summary>
+    /// Extract stationId tu entity ID (vd: urn:ngsi-ld:AirQualityObserved:station-oceanpark:20251208...)
+    /// </summary>
+    private string ExtractStationIdFromEntityId(string entityId)
+    {
+        try
+        {
+            // Format: urn:ngsi-ld:AirQualityObserved:station-xxx:timestamp
+            var parts = entityId.Split(':');
+            if (parts.Length >= 4)
+            {
+                return parts[3]; // station-oceanpark, station-nguyenvancu, etc.
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to extract stationId from entityId: {EntityId}", entityId);
+        }
+        return "station-unknown";
+    }
+
+    /// <summary>
+    /// Tu dong them station moi vao Stations collection neu chua co
+    /// </summary>
+    private async Task EnsureStationExistsAsync(string stationId, AirQuality sampleData, CancellationToken ct)
+    {
+        try
+        {
+            // Check xem station da ton tai chua
+            var existingStation = await _db.Stations
+                .Find(s => s.StationId == stationId)
+                .FirstOrDefaultAsync(ct);
+
+            if (existingStation != null)
+            {
+                return; // Da co, khong can them moi
+            }
+
+            // Tao station moi tu thong tin trong AirQuality data
+            var newStation = new Station
+            {
+                StationId = stationId,
+                Name = ExtractStationName(stationId),
+                Latitude = sampleData.Location?.Value?.Coordinates?[1] ?? 0,
+                Longitude = sampleData.Location?.Value?.Coordinates?[0] ?? 0,
+                SensorUrn = sampleData.MadeBySensor?.Object,
+                FeatureOfInterest = sampleData.HasFeatureOfInterest?.Object,
+                Type = "mqtt",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _db.Stations.InsertOneAsync(newStation, cancellationToken: ct);
+            _logger.LogInformation("Auto-created new station: {StationId} - {Name} at ({Lat}, {Lon})",
+                stationId, newStation.Name, newStation.Latitude, newStation.Longitude);
+        }
+        catch (Exception ex)
+        {
+            // Khong throw exception de khong anh huong den viec luu AirQuality data
+            _logger.LogWarning(ex, "Failed to auto-create station: {StationId}", stationId);
+        }
     }
 
     // cac ham truy van
@@ -100,24 +170,35 @@ public class AirQualityService
             .ToListAsync(ct);
     }
 
+    public async Task<List<AirQuality>> GetByTimeRangeAndStationAsync(DateTime from, DateTime to, string stationId, CancellationToken ct = default)
+    {
+        var filter = Builders<AirQuality>.Filter.And(
+            Builders<AirQuality>.Filter.Eq(x => x.StationId, stationId),
+            Builders<AirQuality>.Filter.Gte(x => x.DateObserved.Value, from),
+            Builders<AirQuality>.Filter.Lte(x => x.DateObserved.Value, to)
+        );
+
+        return await _db.AirQuality
+            .Find(filter)
+            .Sort(Builders<AirQuality>.Sort.Ascending(x => x.DateObserved.Value).Ascending("_id"))
+            .ToListAsync(ct);
+    }
+
     /// <summary>
-    /// Lay danh sach tat ca cac tram co du lieu (distinct stationId tu field Id hoac MadeBySensor)
+    /// Lay danh sach tat ca cac tram co du lieu (distinct stationId)
     /// </summary>
     public async Task<List<string>> GetDistinctStationsAsync(CancellationToken ct = default)
     {
-        // Lay tat ca du lieu va extract station ID tu cac field khac nhau
-        var allData = await _db.AirQuality
-            .Find(FilterDefinition<AirQuality>.Empty)
+        // Query distinct tren field StationId
+        // Chi lay cac gia tri khong null va khong empty
+        var filter = Builders<AirQuality>.Filter.Ne(x => x.StationId, null) & 
+                     Builders<AirQuality>.Filter.Ne(x => x.StationId, "");
+                     
+        var stations = await _db.AirQuality
+            .Distinct(x => x.StationId, filter)
             .ToListAsync(ct);
-
-        var stations = allData
-            .Select(x => ExtractStationId(x))
-            .Where(s => !string.IsNullOrEmpty(s))
-            .Distinct()
-            .OrderBy(s => s)
-            .ToList();
-
-        return stations!;
+            
+        return stations.OrderBy(s => s).ToList();
     }
 
     /// <summary>
@@ -125,22 +206,17 @@ public class AirQualityService
     /// </summary>
     public async Task<List<AirQuality>> GetByStationAsync(string stationId, int? limit = null, CancellationToken ct = default)
     {
-        // Lay tat ca du lieu va filter theo stationId
-        var allData = await _db.AirQuality
-            .Find(FilterDefinition<AirQuality>.Empty)
-            .Sort(Builders<AirQuality>.Sort.Descending(x => x.DateObserved.Value).Descending("_id"))
-            .ToListAsync(ct);
-
-        var filteredData = allData
-            .Where(x => ExtractStationId(x)?.Equals(stationId, StringComparison.OrdinalIgnoreCase) == true)
-            .ToList();
+        // Query truc tiep tren field StationId
+        var query = _db.AirQuality
+            .Find(x => x.StationId == stationId)
+            .Sort(Builders<AirQuality>.Sort.Descending(x => x.DateObserved.Value).Descending("_id"));
 
         if (limit.HasValue && limit.Value > 0)
         {
-            filteredData = filteredData.Take(limit.Value).ToList();
+            return await query.Limit(limit.Value).ToListAsync(ct);
         }
 
-        return filteredData;
+        return await query.ToListAsync(ct);
     }
 
     /// <summary>

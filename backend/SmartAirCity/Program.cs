@@ -1,4 +1,4 @@
-/**
+/*
  *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
  *  based on NGSI-LD and FiWARE Standards
  *
@@ -7,6 +7,7 @@
  *  @author    SmartAir City Team <smartaircity@gmail.com>
  *  @copyright © 2025 SmartAir City Team. 
  *  @license   MIT License
+ *  See LICENSE file in root directory for full license text.
  *  @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
  *
  *  This software is an open-source component of the SmartAir City initiative.
@@ -19,16 +20,13 @@
 using SmartAirCity.Data;
 using SmartAirCity.Services;
 using SmartAirCity.Hubs;
-using SmartAirCity.Filters;
+using SmartAirCity.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.OperationFilter<FileUploadOperationFilter>();
-});
+builder.Services.AddSmartAirSwagger();
 
 // MongoDB
 builder.Services.AddSingleton<MongoDbContext>();
@@ -90,12 +88,28 @@ app.UseCors();
 app.UseRouting();
 app.UseAuthorization();
 
-// Static Files (wwwroot)
-app.UseStaticFiles();
+// Static Files (wwwroot) - Removed for API-only backend
+// app.UseStaticFiles();
 
 // Endpoints
 app.MapControllers();
 app.MapHub<AirQualityHub>("/airqualityhub");
+
+// Auto-migrate stations from config to database (chỉ chạy 1 lần khi DB rỗng)
+using (var scope = app.Services.CreateScope())
+{
+    var stationService = scope.ServiceProvider.GetRequiredService<StationService>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        await stationService.MigrateStationsFromConfigAsync();
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error during station migration");
+    }
+}
 
 Console.WriteLine("SmartAir City API Started");
 

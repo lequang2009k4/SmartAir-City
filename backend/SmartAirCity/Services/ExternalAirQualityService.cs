@@ -1,3 +1,21 @@
+/*
+ *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
+ *  based on NGSI-LD and FiWARE Standards
+ *
+ *  SPDX-License-Identifier: MIT
+ *  @version   0.1.x
+ *  @author    SmartAir City Team <smartaircity@gmail.com>
+ *  @copyright © 2025 SmartAir City Team. 
+ *  @license   MIT License
+ *  See LICENSE file in root directory for full license text.
+ *  @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+ *
+ *  This software is an open-source component of the SmartAir City initiative.
+ *  It provides real-time environmental monitoring, NGSI-LD–compliant data
+ *  models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+ *  open-data services and smart-city applications.
+ */
+
 using MongoDB.Driver;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -27,9 +45,8 @@ public class ExternalAirQualityService
 
     public async Task<List<ExternalAirQuality>> GetByStationIdAsync(string stationId)
     {
-        // Query by Id pattern since NGSI-LD Id contains station ID
-        var pattern = $"urn:ngsi-ld:AirQualityObserved:{stationId}:";
-        var list = await _collection.Find(x => x.Id.StartsWith(pattern))
+        // Query directly by StationId field
+        var list = await _collection.Find(x => x.StationId == stationId)
             .SortByDescending(x => x.DateObserved.Value)
             .Limit(100)
             .ToListAsync();
@@ -39,8 +56,8 @@ public class ExternalAirQualityService
 
     public async Task<ExternalAirQuality?> GetLatestByStationIdAsync(string stationId)
     {
-        var pattern = $"urn:ngsi-ld:AirQualityObserved:{stationId}:";
-        var item = await _collection.Find(x => x.Id.StartsWith(pattern))
+        // Query directly by StationId field
+        var item = await _collection.Find(x => x.StationId == stationId)
             .SortByDescending(x => x.DateObserved.Value)
             .FirstOrDefaultAsync();
         if (item != null) NormalizeProperties(item);
@@ -99,6 +116,17 @@ public class ExternalAirQualityService
         return count > 0;
     }
 
+    /// <summary>
+    /// Check if data with same Id AND DateObserved already exists (for history mode)
+    /// </summary>
+    public async Task<bool> ExistsByUniqueKeyAsync(string id, DateTime observedAt)
+    {
+        var count = await _collection.CountDocumentsAsync(x => 
+            x.Id == id && 
+            x.DateObserved.Value == observedAt);
+        return count > 0;
+    }
+
     public async Task InsertAsync(ExternalAirQuality data)
     {
         await _collection.InsertOneAsync(data);
@@ -106,8 +134,8 @@ public class ExternalAirQualityService
 
     public async Task<long> DeleteByStationIdAsync(string stationId)
     {
-        var pattern = $"urn:ngsi-ld:AirQualityObserved:{stationId}:";
-        var result = await _collection.DeleteManyAsync(x => x.Id.StartsWith(pattern));
+        // Delete directly by StationId field
+        var result = await _collection.DeleteManyAsync(x => x.StationId == stationId);
         return result.DeletedCount;
     }
 
@@ -160,13 +188,28 @@ public class ExternalAirQualityService
     }
 
     /// <summary>
+    /// Get data by time range AND stationId
+    /// </summary>
+    public async Task<List<ExternalAirQuality>> GetByTimeRangeAndStationAsync(DateTime from, DateTime to, string stationId)
+    {
+        // Query truc tiep bang StationId va Time Range
+        var list = await _collection.Find(x => 
+            x.StationId == stationId &&
+            x.DateObserved.Value >= from && 
+            x.DateObserved.Value <= to)
+            .SortByDescending(x => x.DateObserved.Value)
+            .ToListAsync();
+        list.ForEach(x => NormalizeProperties(x));
+        return list;
+    }
+
+    /// <summary>
     /// Get data by station ID with limit
     /// </summary>
     public async Task<List<ExternalAirQuality>> GetByStationAsync(string stationId, int? limit = null)
     {
-        // Query by Id pattern since NGSI-LD Id contains station ID
-        var pattern = $"urn:ngsi-ld:AirQualityObserved:{stationId}:";
-        var query = _collection.Find(x => x.Id.StartsWith(pattern))
+        // Query directly by StationId field
+        var query = _collection.Find(x => x.StationId == stationId)
             .SortByDescending(x => x.DateObserved.Value);
         
         List<ExternalAirQuality> list;

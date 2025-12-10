@@ -1,4 +1,4 @@
-/**
+/*
  *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
  *  based on NGSI-LD and FiWARE Standards
  *
@@ -159,36 +159,37 @@ public class MqttSubscriberService : BackgroundService
             var normalization = scope.ServiceProvider.GetRequiredService<DataNormalizationService>();
             var airQualitySvc = scope.ServiceProvider.GetRequiredService<AirQualityService>();
 
-            // Xac dinh tram tu topic
+            // Xac dinh tram tu topic (de lay OpenAQLocationId)
             var topic = e.ApplicationMessage.Topic;
-            var stationId = ExtractStationIdFromTopic(topic);
-            var (lat, lon, locationId, stationName) = GetStationInfo(stationId);
+            var topicStationId = ExtractStationIdFromTopic(topic); // "hanoi-oceanpark"
+            var locationId = GetOpenAQLocationId(topicStationId);
             
-            _logger.LogInformation("Processing message from station: {StationName} (ID: {StationId}), Topic: {Topic}", 
-                stationName, stationId, topic);
+            _logger.LogInformation("Processing message from topic: {Topic} (TopicStationId: {TopicStationId}, OpenAQLocationId: {LocationId})", 
+                topic, topicStationId, locationId);
 
             // doc json tu iot
             var payload = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
-            _logger.LogInformation("MQTT Payload: {Payload}", payload);
+            _logger.LogDebug("MQTT Payload: {Payload}", payload);
 
             var jsonDoc = JsonDocument.Parse(payload);
 
-            // chuan hoa va hop nhat - truyen thong tin tram vao
+            // chuan hoa va hop nhat - truyen locationId de goi OpenAQ API
+            // lat/lon se duoc lay tu MQTT payload (location field)
             var merged = await normalization.NormalizeAndMergeAsync(
                 jsonDoc.RootElement,
-                lat,
-                lon,
-                locationId,
-                stationId  // Truyen stationId de lay sensor mapping rieng
+                null, // lat - lay tu payload
+                null, // lon - lay tu payload  
+                locationId, // OpenAQLocationId tu config
+                topicStationId  // de lay sensor mapping rieng
             );
 
-            // luu vao db
+            // luu vao db - stationId se duoc extract tu data.Id trong payload
             await airQualitySvc.InsertAsync(merged);
 
             // Push len SignalR
             await _signalRHub.Clients.All.SendAsync("NewAirQualityData", merged);
 
-            _logger.LogInformation("Message processed OK for station: {StationName}", stationName);
+            _logger.LogInformation("Message processed OK for topic: {Topic}", topic);
         }
         catch (Exception ex)
         {
@@ -226,34 +227,30 @@ public class MqttSubscriberService : BackgroundService
     }
 
     /// <summary>
-    /// Lay thong tin tram tu config dua vao station ID
+    /// Lay OpenAQLocationId tu config dua vao topic station ID
+    /// Luu y: Key trong config la dang "hanoi-oceanpark" (tu topic), khong phai "station-oceanpark"
     /// </summary>
-    private (double Latitude, double Longitude, int LocationId, string StationName) GetStationInfo(string stationId)
+    private int GetOpenAQLocationId(string topicStationId)
     {
         try
         {
-            var name = _configuration[$"StationMapping:{stationId}:Name"];
-            var lat = _configuration.GetValue<double>($"StationMapping:{stationId}:Latitude");
-            var lon = _configuration.GetValue<double>($"StationMapping:{stationId}:Longitude");
-            var locationId = _configuration.GetValue<int>($"StationMapping:{stationId}:OpenAQLocationId");
+            // topicStationId format: "hanoi-oceanpark" (extracted from topic air/quality/hanoi/oceanpark)
+            var locationId = _configuration.GetValue<int>($"StationMapping:{topicStationId}:OpenAQLocationId");
             
-            if (!string.IsNullOrEmpty(name) && lat != 0 && lon != 0 && locationId != 0)
+            if (locationId != 0)
             {
-                _logger.LogDebug("Found station config: {StationId} -> {Name}, Lat={Lat}, Lon={Lon}, LocationId={LocationId}", 
-                    stationId, name, lat, lon, locationId);
-                return (lat, lon, locationId, name);
+                _logger.LogDebug("Found OpenAQLocationId for {TopicStationId}: {LocationId}", topicStationId, locationId);
+                return locationId;
             }
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Error reading station config for: {StationId}", stationId);
+            _logger.LogWarning(ex, "Error reading OpenAQLocationId for: {TopicStationId}", topicStationId);
         }
         
-        // KHONG FALLBACK: Neu khong tim thay config, tra ve 0 de khong goi OpenAQ
-        // Tranh tinh trang nhieu tram dung chung OpenAQLocationId default
-        _logger.LogWarning("Tram {StationId} khong tim thay trong StationMapping, KHONG goi OpenAQ API (locationId = 0)", stationId);
-        
-        return (0, 0, 0, $"Unknown Station ({stationId})");
+        // Neu khong tim thay trong config, return 0 (khong goi OpenAQ API)
+        _logger.LogDebug("Khong tim thay OpenAQLocationId cho {TopicStationId} trong StationMapping", topicStationId);
+        return 0;
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)

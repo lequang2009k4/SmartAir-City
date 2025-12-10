@@ -1,4 +1,4 @@
-/**
+/*
  *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
  *  based on NGSI-LD and FiWARE Standards
  *
@@ -40,8 +40,13 @@ public class ExternalMqttController : ControllerBase
     }
 
     /// <summary>
-    /// GET /api/mqtt/sources - Lấy danh sách tất cả external MQTT sources
+    /// Get list of all external MQTT sources
     /// </summary>
+    /// <remarks>
+    /// Retrieve all configured external MQTT broker sources. 
+    /// Returns connection details, topics, and status for each registered MQTT source.
+    /// </remarks>
+    /// <response code="200">Returns list of MQTT sources successfully</response>
     [HttpGet("sources")]
     public async Task<IActionResult> GetAll()
     {
@@ -58,8 +63,15 @@ public class ExternalMqttController : ControllerBase
     }
 
     /// <summary>
-    /// GET /api/mqtt/sources/{id} - Lấy thông tin 1 source
+    /// Get information of 1 source
     /// </summary>
+    /// <remarks>
+    /// Retrieve detailed configuration and status for a specific external MQTT source.
+    /// Includes broker connection details, subscribed topics, and current connection status.
+    /// </remarks>
+    /// <param name="id">MQTT source ID</param>
+    /// <response code="200">Returns source details successfully</response>
+    /// <response code="404">Source not found</response>
     [HttpGet("sources/{id}")]
     public async Task<IActionResult> GetById(string id)
     {
@@ -80,8 +92,15 @@ public class ExternalMqttController : ControllerBase
     }
 
     /// <summary>
-    /// POST /api/mqtt/sources - Đăng ký MQTT broker mới
+    /// Register new MQTT broker
     /// </summary>
+    /// <remarks>
+    /// Register a new external MQTT broker as a data source. 
+    /// Configure broker address, port, credentials, and topic subscriptions.
+    /// The system will automatically connect and start receiving data from specified topics.
+    /// </remarks>
+    /// <response code="201">MQTT source created successfully</response>
+    /// <response code="400">Invalid configuration or connection failed</response>
     [HttpPost("sources")]
     public async Task<IActionResult> Create([FromBody] ExternalMqttSource source)
     {
@@ -122,14 +141,15 @@ public class ExternalMqttController : ControllerBase
             if (string.IsNullOrWhiteSpace(source.StationId))
             {
                 // Convert name to lowercase, replace spaces with hyphens, remove special chars
+                // VD: "Thuyloi" -> "station-thuyloi"
+                // VD: "Hanoi Ocean Park" -> "station-hanoi-ocean-park"
                 var baseName = System.Text.RegularExpressions.Regex.Replace(
                     source.Name.ToLowerInvariant().Trim(), 
                     @"[^a-z0-9-]", 
                     "-"
                 ).Replace("--", "-").Trim('-');
                 
-                // Add timestamp to ensure uniqueness
-                source.StationId = $"{baseName}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
+                source.StationId = $"station-{baseName}";
             }
 
             var created = await _service.CreateAsync(source);
@@ -146,8 +166,16 @@ public class ExternalMqttController : ControllerBase
     }
 
     /// <summary>
-    /// PUT /api/mqtt/sources/{id} - Cập nhật source
+    /// Update source
     /// </summary>
+    /// <remarks>
+    /// Update configuration for an existing external MQTT source. 
+    /// Can modify broker connection details, topics, or credentials.
+    /// The connection will be restarted with new configuration.
+    /// </remarks>
+    /// <param name="id">MQTT source ID</param>
+    /// <response code="200">Source updated successfully</response>
+    /// <response code="404">Source not found</response>
     [HttpPut("sources/{id}")]
     public async Task<IActionResult> Update(string id, [FromBody] ExternalMqttSource source)
     {
@@ -178,8 +206,15 @@ public class ExternalMqttController : ControllerBase
     }
 
     /// <summary>
-    /// PATCH /api/mqtt/sources/{id}/openaq - Cập nhật OpenAQ LocationId cho source
+    /// Update OpenAQ LocationId for source
     /// </summary>
+    /// <remarks>
+    /// Associate an OpenAQ location ID with this MQTT source for data enrichment. 
+    /// Allows merging MQTT sensor data with OpenAQ reference data for the same location.
+    /// </remarks>
+    /// <param name="id">MQTT source ID</param>
+    /// <response code="200">OpenAQ LocationId updated successfully</response>
+    /// <response code="404">Source not found</response>
     [HttpPatch("sources/{id}/openaq")]
     public async Task<IActionResult> UpdateOpenAQLocationId(string id, [FromBody] UpdateOpenAQRequest request)
     {
@@ -217,8 +252,16 @@ public class ExternalMqttController : ControllerBase
     }
 
     /// <summary>
-    /// DELETE /api/mqtt/sources/{id} - Xóa source
+    /// Delete source
     /// </summary>
+    /// <remarks>
+    /// Remove an external MQTT source from the system. 
+    /// The connection will be terminated and the source configuration will be deleted.
+    /// Historical data from this source will be preserved.
+    /// </remarks>
+    /// <param name="id">MQTT source ID</param>
+    /// <response code="200">Source deleted successfully</response>
+    /// <response code="404">Source not found</response>
     [HttpDelete("sources/{id}")]
     public async Task<IActionResult> Delete(string id)
     {
@@ -240,8 +283,15 @@ public class ExternalMqttController : ControllerBase
     }
 
     /// <summary>
-    /// POST /api/mqtt/sources/test - Test connection đến MQTT broker
+    /// Test connection to MQTT broker
     /// </summary>
+    /// <remarks>
+    /// Test connectivity to an MQTT broker before registering it as a source. 
+    /// Validates broker address, port, and credentials without saving the configuration.
+    /// Useful for troubleshooting connection issues.
+    /// </remarks>
+    /// <response code="200">Connection test successful</response>
+    /// <response code="400">Connection test failed</response>
     [HttpPost("sources/test")]
     public async Task<IActionResult> TestConnection([FromBody] TestMqttConnectionRequest request)
     {
@@ -322,8 +372,15 @@ public class ExternalMqttController : ControllerBase
     }
 
     /// <summary>
-    /// POST /api/mqtt/sources/{id}/activate - Kích hoạt source
+    /// Activate source
     /// </summary>
+    /// <remarks>
+    /// Activate a previously deactivated MQTT source. 
+    /// The system will reconnect to the broker and resume data collection.
+    /// </remarks>
+    /// <param name="id">MQTT source ID</param>
+    /// <response code="200">Source activated successfully</response>
+    /// <response code="404">Source not found</response>
     [HttpPost("sources/{id}/activate")]
     public async Task<IActionResult> Activate(string id)
     {
@@ -345,8 +402,15 @@ public class ExternalMqttController : ControllerBase
     }
 
     /// <summary>
-    /// POST /api/mqtt/sources/{id}/deactivate - Tắt source
+    /// Deactivate source
     /// </summary>
+    /// <remarks>
+    /// Temporarily deactivate an MQTT source without deleting it. 
+    /// The connection will be terminated but configuration is preserved for later reactivation.
+    /// </remarks>
+    /// <param name="id">MQTT source ID</param>
+    /// <response code="200">Source deactivated successfully</response>
+    /// <response code="404">Source not found</response>
     [HttpPost("sources/{id}/deactivate")]
     public async Task<IActionResult> Deactivate(string id)
     {

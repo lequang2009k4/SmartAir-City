@@ -1,4 +1,4 @@
-/**
+/*
  *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
  *  based on NGSI-LD and FiWARE Standards
  *
@@ -134,6 +134,15 @@ public class AirQuality
     {
         Value = DateTime.UtcNow
     };
+
+    /// <summary>
+    /// Station ID - Thêm field này để dễ query và tạo index
+    /// (e.g., "station-oceanpark", "station-nguyenvancu")
+    /// </summary>
+    [BsonElement("stationId")]
+    [JsonPropertyName("stationId")]
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? StationId { get; set; }
 
     /// <summary>
     /// Dynamic properties for ALL measurements (PM2.5, PM10, O3, NO2, SO2, CO, Temperature, Humidity, VOC, etc.)

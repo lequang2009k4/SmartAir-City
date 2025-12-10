@@ -1,4 +1,4 @@
-/**
+/*
  *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
  *  based on NGSI-LD and FiWARE Standards
  *
@@ -15,7 +15,6 @@
  *  models, MQTT-based data ingestion, and FiWARE Smart Data Models for
  *  open-data services and smart-city applications.
  */
-
 
 using System.Net;
 using System.Text.Json;
@@ -86,10 +85,17 @@ public class UserDirectoryClient
 
             return user;
         }
+        catch (HttpRequestException ex)
+        {
+            // User Directory Service is not available - log warning and return null
+            // This allows the system to continue operating without user directory
+            _logger.LogWarning(ex, "User Directory Service is not available. Cannot fetch user by email: {Email}. Continuing without user info.", email);
+            return null;
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching user by email: {Email}", email);
-            throw;
+            _logger.LogError(ex, "Unexpected error fetching user by email: {Email}", email);
+            return null;
         }
     }
 
@@ -119,10 +125,16 @@ public class UserDirectoryClient
 
             return user;
         }
+        catch (HttpRequestException ex)
+        {
+            // User Directory Service is not available - log warning and return null
+            _logger.LogWarning(ex, "User Directory Service is not available. Cannot fetch user by userId: {UserId}. Continuing without user info.", userId);
+            return null;
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching user by userId: {UserId}", userId);
-            throw;
+            _logger.LogError(ex, "Unexpected error fetching user by userId: {UserId}", userId);
+            return null;
         }
     }
 }

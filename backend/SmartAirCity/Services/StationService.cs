@@ -1,4 +1,4 @@
-/**
+/*
  *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
  *  based on NGSI-LD and FiWARE Standards
  *
@@ -22,12 +22,7 @@ using MongoDB.Driver;
 namespace SmartAirCity.Services;
 
 /// <summary>
-/// Service để lấy danh sách Station từ 3 nguồn:
-/// 1. Official: StationMapping trong appsettings.json
-/// 2. External HTTP: ExternalSources collection
-/// 3. External MQTT: ExternalMqttSources collection
-/// 
-/// KHÔNG query từ AirQuality data → Nhanh, hiệu quả!
+/// Service để quản lý Stations từ MongoDB
 /// </summary>
 public class StationService
 {
@@ -43,182 +38,296 @@ public class StationService
     }
 
     /// <summary>
-    /// Lấy tất cả stations từ 3 nguồn
+    /// Lấy tất cả stations từ database
     /// </summary>
-    public async Task<List<StationInfo>> GetAllStationsAsync(CancellationToken ct = default)
+    public async Task<List<Station>> GetAllStationsAsync(CancellationToken ct = default)
     {
-        var stations = new List<StationInfo>();
-
-        // 1. Official stations từ appsettings.json
-        var officialStations = GetOfficialStations();
-        stations.AddRange(officialStations);
-
-        // 2. External HTTP sources từ MongoDB
-        var httpStations = await GetExternalHttpStationsAsync(ct);
-        stations.AddRange(httpStations);
-
-        // 3. External MQTT sources từ MongoDB
-        var mqttStations = await GetExternalMqttStationsAsync(ct);
-        stations.AddRange(mqttStations);
-
-        _logger.LogInformation("Retrieved {Total} stations: {Official} official, {Http} external-http, {Mqtt} external-mqtt",
-            stations.Count, officialStations.Count, httpStations.Count, mqttStations.Count);
-
+        var stations = await _db.Stations.Find(_ => true).ToListAsync(ct);
+        _logger.LogInformation("Retrieved {Count} stations from database", stations.Count);
         return stations;
     }
 
     /// <summary>
     /// Lấy stations theo type
     /// </summary>
-    public async Task<List<StationInfo>> GetStationsByTypeAsync(string type, CancellationToken ct = default)
+    public async Task<List<Station>> GetStationsByTypeAsync(string type, CancellationToken ct = default)
     {
-        return type.ToLower() switch
+        var filter = Builders<Station>.Filter.Eq(s => s.Type, type.ToLower());
+        var stations = await _db.Stations.Find(filter).ToListAsync(ct);
+        return stations;
+    }
+
+    /// <summary>
+    /// Lấy station theo StationId
+    /// </summary>
+    public async Task<Station?> GetStationByIdAsync(string stationId, CancellationToken ct = default)
+    {
+        var filter = Builders<Station>.Filter.Eq(s => s.StationId, stationId);
+        return await _db.Stations.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
+    /// <summary>
+    /// Get station by mapping key (e.g., "hanoi-oceanpark"), or create if not exists
+    /// Priority: 1. Database, 2. Config, 3. Auto-create
+    /// </summary>
+    public async Task<Station> GetOrCreateStationAsync(string mappingKey, CancellationToken ct = default)
+    {
+        // Extract parts from mapping key
+        var parts = mappingKey.Split('-');
+        var city = parts.Length > 0 ? parts[0] : "unknown";
+        var location = parts.Length > 1 ? string.Join("-", parts.Skip(1)) : mappingKey;
+        var stationId = $"station-{location}";
+        
+        // 1. Check database first
+        var existing = await GetStationByIdAsync(stationId, ct);
+        if (existing != null)
         {
-            "official" => GetOfficialStations(),
-            "external-http" => await GetExternalHttpStationsAsync(ct),
-            "external-mqtt" => await GetExternalMqttStationsAsync(ct),
-            _ => await GetAllStationsAsync(ct)
+            _logger.LogDebug("Found existing station in DB: {StationId}", stationId);
+            return existing;
+        }
+        
+        // 2. Check config (fallback)
+        var configStation = TryGetStationFromConfig(mappingKey);
+        if (configStation != null)
+        {
+            // Create from config and save to DB
+            try
+            {
+                await CreateStationAsync(configStation, ct);
+                _logger.LogInformation("Created station from config: {StationId} (mappingKey: {MappingKey})", 
+                    stationId, mappingKey);
+                return configStation;
+            }
+            catch (InvalidOperationException)
+            {
+                // Already exists (race condition), return existing
+                return (await GetStationByIdAsync(stationId, ct))!;
+            }
+        }
+        
+        // 3. Auto-create with minimal info
+        var autoStation = new Station
+        {
+            StationId = stationId,
+            Name = $"{CapitalizeFirst(city)} - {CapitalizeFirst(location)}",
+            Latitude = 0,  // Can be updated later via API
+            Longitude = 0,
+            Type = "iot",
+            IsActive = true,
+            Metadata = new Dictionary<string, object?>
+            {
+                ["autoCreated"] = true,
+                ["mappingKey"] = mappingKey,
+                ["createdFrom"] = "mqtt-topic"
+            }
         };
+        
+        try
+        {
+            await CreateStationAsync(autoStation, ct);
+            _logger.LogWarning("Auto-created station from MQTT topic: {StationId} (mappingKey: {MappingKey}). Please update coordinates via API!", 
+                stationId, mappingKey);
+        }
+        catch (InvalidOperationException)
+        {
+            // Already exists (race condition), return existing
+            return (await GetStationByIdAsync(stationId, ct))!;
+        }
+        
+        return autoStation;
     }
 
     /// <summary>
-    /// Lấy official stations từ StationMapping trong appsettings.json
+    /// Try to get station configuration from appsettings.json
     /// </summary>
-    private List<StationInfo> GetOfficialStations()
+    private Station? TryGetStationFromConfig(string mappingKey)
     {
-        var stations = new List<StationInfo>();
-
         try
         {
-            var stationMapping = _config.GetSection("StationMapping");
-            foreach (var station in stationMapping.GetChildren())
+            var stationConfig = _config.GetSection($"StationMapping:{mappingKey}");
+            if (!stationConfig.Exists()) return null;
+            
+            var name = stationConfig["Name"];
+            if (string.IsNullOrEmpty(name)) return null;
+            
+            // Extract location from mappingKey (e.g., "hanoi-oceanpark" -> "oceanpark")
+            var parts = mappingKey.Split('-');
+            _logger.LogDebug("TryGetStationFromConfig: mappingKey={MappingKey}, parts={Parts}", 
+                mappingKey, string.Join(", ", parts));
+            
+            var location = parts.Length > 1 ? string.Join("-", parts.Skip(1)) : mappingKey;
+            var extractedStationId = $"station-{location}";
+            
+            _logger.LogDebug("TryGetStationFromConfig: extracted location={Location}, extractedStationId={ExtractedStationId}", 
+                location, extractedStationId);
+            
+            // Use StationId from config if provided, otherwise use extracted
+            var configStationId = stationConfig["StationId"];
+            var stationId = configStationId ?? extractedStationId;
+            
+            _logger.LogInformation("TryGetStationFromConfig: mappingKey={MappingKey}, configStationId={ConfigStationId}, extractedStationId={ExtractedStationId}, FINAL stationId={StationId}", 
+                mappingKey, configStationId ?? "NULL", extractedStationId, stationId);
+            
+            return new Station
             {
-                var stationKey = station.Key; // e.g., "hanoi-oceanpark"
-                var name = station["Name"];
-                var lat = station.GetValue<double>("Latitude");
-                var lon = station.GetValue<double>("Longitude");
-                var stationId = station["StationId"] ?? $"station-{stationKey}";
-                var openAqLocationId = station.GetValue<int?>("OpenAQLocationId");
-
-                if (!string.IsNullOrEmpty(name) && lat != 0 && lon != 0)
+                StationId = stationId,
+                Name = name,
+                Latitude = stationConfig.GetValue<double>("Latitude"),
+                Longitude = stationConfig.GetValue<double>("Longitude"),
+                Type = "official",
+                OpenAQLocationId = stationConfig.GetValue<int?>("OpenAQLocationId"),
+                SensorUrn = stationConfig["SensorUrn"],
+                FeatureOfInterest = stationConfig["FeatureOfInterest"],
+                IsActive = true,
+                Metadata = new Dictionary<string, object?>
                 {
-                    stations.Add(new StationInfo
-                    {
-                        StationId = stationId,
-                        Name = name,
-                        Latitude = lat,
-                        Longitude = lon,
-                        Type = "official",
-                        IsActive = true,
-                        Metadata = new Dictionary<string, object?>
-                        {
-                            ["openAqLocationId"] = openAqLocationId,
-                            ["configKey"] = stationKey
-                        }
-                    });
+                    ["configKey"] = mappingKey,
+                    ["createdFrom"] = "config"
                 }
-            }
-
-            _logger.LogDebug("Loaded {Count} official stations from config", stations.Count);
+            };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading official stations from config");
+            _logger.LogDebug(ex, "Error reading station config for: {MappingKey}", mappingKey);
+            return null;
         }
-
-        return stations;
     }
 
     /// <summary>
-    /// Lấy external HTTP stations từ ExternalSources collection
+    /// Capitalize first letter of a string
     /// </summary>
-    private async Task<List<StationInfo>> GetExternalHttpStationsAsync(CancellationToken ct)
+    private string CapitalizeFirst(string text)
     {
-        var stations = new List<StationInfo>();
-
-        try
-        {
-            var sources = await _db.ExternalSources.Find(_ => true).ToListAsync(ct);
-
-            foreach (var source in sources)
-            {
-                stations.Add(new StationInfo
-                {
-                    StationId = source.StationId,
-                    Name = source.Name,
-                    Latitude = source.Latitude ?? 0,
-                    Longitude = source.Longitude ?? 0,
-                    Type = "external-http",
-                    IsActive = source.IsActive,
-                    Metadata = new Dictionary<string, object?>
-                    {
-                        ["sourceId"] = source.Id,
-                        ["url"] = source.Url,
-                        ["intervalMinutes"] = source.IntervalMinutes,
-                        ["lastFetchedAt"] = source.LastFetchedAt,
-                        ["failureCount"] = source.FailureCount,
-                        ["isNgsiLd"] = source.IsNGSILD
-                    }
-                });
-            }
-
-            _logger.LogDebug("Loaded {Count} external HTTP stations from DB", stations.Count);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error loading external HTTP stations");
-        }
-
-        return stations;
+        if (string.IsNullOrEmpty(text)) return text;
+        return char.ToUpper(text[0]) + text.Substring(1);
     }
 
     /// <summary>
-    /// Lấy external MQTT stations từ ExternalMqttSources collection
+    /// Tạo station mới
     /// </summary>
-    private async Task<List<StationInfo>> GetExternalMqttStationsAsync(CancellationToken ct)
+    public async Task<Station> CreateStationAsync(Station station, CancellationToken ct = default)
     {
-        var stations = new List<StationInfo>();
+        // Check if stationId already exists
+        var existing = await GetStationByIdAsync(station.StationId, ct);
+        if (existing != null)
+        {
+            throw new InvalidOperationException($"Station with ID '{station.StationId}' already exists");
+        }
 
+        station.CreatedAt = DateTime.UtcNow;
+        await _db.Stations.InsertOneAsync(station, cancellationToken: ct);
+        _logger.LogInformation("Created new station: {StationId}", station.StationId);
+        return station;
+    }
+
+    /// <summary>
+    /// Cập nhật station
+    /// </summary>
+    public async Task<bool> UpdateStationAsync(string stationId, Station station, CancellationToken ct = default)
+    {
+        var filter = Builders<Station>.Filter.Eq(s => s.StationId, stationId);
+        station.UpdatedAt = DateTime.UtcNow;
+        
+        var result = await _db.Stations.ReplaceOneAsync(filter, station, cancellationToken: ct);
+        
+        if (result.ModifiedCount > 0)
+        {
+            _logger.LogInformation("Updated station: {StationId}", stationId);
+            return true;
+        }
+        
+        return false;
+    }
+
+    /// <summary>
+    /// Xóa station
+    /// </summary>
+    public async Task<bool> DeleteStationAsync(string stationId, CancellationToken ct = default)
+    {
+        var filter = Builders<Station>.Filter.Eq(s => s.StationId, stationId);
+        var result = await _db.Stations.DeleteOneAsync(filter, ct);
+        
+        if (result.DeletedCount > 0)
+        {
+            _logger.LogInformation("Deleted station: {StationId}", stationId);
+            return true;
+        }
+        
+        return false;
+    }
+
+    /// <summary>
+    /// Migrate stations từ appsettings.json sang MongoDB
+    /// Chỉ chạy 1 lần khi database rỗng
+    /// </summary>
+    public async Task MigrateStationsFromConfigAsync(CancellationToken ct = default)
+    {
         try
         {
-            var sources = await _db.ExternalMqttSources.Find(_ => true).ToListAsync(ct);
-
-            foreach (var source in sources)
+            // Check if Stations collection is empty
+            var count = await _db.Stations.CountDocumentsAsync(FilterDefinition<Station>.Empty, cancellationToken: ct);
+            if (count > 0)
             {
-                stations.Add(new StationInfo
-                {
-                    StationId = source.StationId,
-                    Name = source.Name,
-                    Latitude = source.Latitude,
-                    Longitude = source.Longitude,
-                    Type = "external-mqtt",
-                    IsActive = source.IsActive,
-                    Metadata = new Dictionary<string, object?>
-                    {
-                        ["sourceId"] = source.Id,
-                        ["brokerHost"] = source.BrokerHost,
-                        ["brokerPort"] = source.BrokerPort,
-                        ["topic"] = source.Topic,
-                        ["lastConnectedAt"] = source.LastConnectedAt,
-                        ["lastMessageAt"] = source.LastMessageAt,
-                        ["messageCount"] = source.MessageCount
-                    }
-                });
+                _logger.LogInformation("Stations collection already has {Count} records, skipping migration", count);
+                return;
             }
 
-            _logger.LogDebug("Loaded {Count} external MQTT stations from DB", stations.Count);
+            _logger.LogInformation("Starting migration of stations from config to database...");
+
+            var stationMapping = _config.GetSection("StationMapping");
+            var migratedCount = 0;
+
+            foreach (var stationConfig in stationMapping.GetChildren())
+            {
+                var stationKey = stationConfig.Key; // e.g., "hanoi-oceanpark"
+                var name = stationConfig["Name"];
+                var lat = stationConfig.GetValue<double>("Latitude");
+                var lon = stationConfig.GetValue<double>("Longitude");
+                var stationId = stationConfig["StationId"] ?? $"station-{stationKey}";
+
+                if (string.IsNullOrEmpty(name) || lat == 0 || lon == 0)
+                {
+                    _logger.LogWarning("Skipping invalid station config: {Key}", stationKey);
+                    continue;
+                }
+
+                var station = new Station
+                {
+                    StationId = stationId,
+                    Name = name,
+                    Latitude = lat,
+                    Longitude = lon,
+                    Type = "official",
+                    IsActive = true,
+                    OpenAQLocationId = stationConfig.GetValue<int?>("OpenAQLocationId"),
+                    SensorUrn = stationConfig["SensorUrn"],
+                    FeatureOfInterest = stationConfig["FeatureOfInterest"],
+                    Metadata = new Dictionary<string, object?>
+                    {
+                        ["configKey"] = stationKey,
+                        ["migratedFrom"] = "appsettings.json"
+                    },
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _db.Stations.InsertOneAsync(station, cancellationToken: ct);
+                migratedCount++;
+                _logger.LogDebug("Migrated station: {StationId} from config key: {ConfigKey}", stationId, stationKey);
+            }
+
+            _logger.LogInformation("Migration completed! Migrated {Count} stations from config to database", migratedCount);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading external MQTT stations");
+            _logger.LogError(ex, "Error during station migration from config");
+            throw;
         }
-
-        return stations;
     }
 }
 
 /// <summary>
 /// DTO cho thông tin Station (dùng chung cho tất cả loại)
+/// Giữ lại để backward compatibility với code cũ
 /// </summary>
 public class StationInfo
 {

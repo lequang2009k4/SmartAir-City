@@ -1,3 +1,20 @@
+/*
+ *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
+ *  based on NGSI-LD and FiWARE Standards
+ *
+ *  SPDX-License-Identifier: MIT
+ *  @version   0.1.x
+ *  @author    SmartAir City Team <smartaircity@gmail.com>
+ *  @copyright © 2025 SmartAir City Team. 
+ *  @license   MIT License
+ *  See LICENSE file in root directory for full license text.
+ *  @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
+ *
+ *  This software is an open-source component of the SmartAir City initiative.
+ *  It provides real-time environmental monitoring, NGSI-LD–compliant data
+ *  models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+ *  open-data services and smart-city applications.
+ */
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
@@ -134,212 +151,14 @@ public class ExternalDataPullService : BackgroundService
 
         var jsonContent = await response.Content.ReadAsStringAsync(stoppingToken);
         
-        // Check if source returns NGSI-LD format
-        if (source.IsNGSILD)
-        {
-            await ProcessNGSILDData(source, jsonContent, stoppingToken);
-            return;
-        }
-        
-        // Use JObject/JToken from Newtonsoft.Json for powerful JSONPath querying
-        JToken root;
-        try 
-        {
-            if (jsonContent.TrimStart().StartsWith("["))
-            {
-                root = JArray.Parse(jsonContent);
-            }
-            else
-            {
-                root = JObject.Parse(jsonContent);
-            }
-        }
-        catch (Exception ex)
-        {
-             _logger.LogError(ex, "Failed to parse JSON from {SourceName}", source.Name);
-             return;
-        }
-
-        // Use user-defined StationId from source
-        var stationIdValue = source.StationId;
-        if (string.IsNullOrEmpty(stationIdValue))
-        {
-            _logger.LogWarning("Source {SourceName} has no StationId defined", source.Name);
-            return;
-        }
-
-        // Validate mapping exists for non-NGSI-LD sources
-        if (source.Mapping == null || source.Mapping.FieldMappings == null || source.Mapping.FieldMappings.Count == 0)
-        {
-            _logger.LogWarning("Source {SourceName} has no mapping fields defined", source.Name);
-            return;
-        }
-
-        // Extract Timestamp (optional - use current time if not provided)
-        string? timestampValue = null;
-        if (!string.IsNullOrEmpty(source.Mapping.TimestampPath))
-        {
-            timestampValue = GetJsonValue(root, source.Mapping.TimestampPath);
-        }
-        
-        // If no timestamp in mapping or extraction failed, use current UTC time
-        if (string.IsNullOrEmpty(timestampValue))
-        {
-            timestampValue = DateTime.UtcNow.ToString("o"); // ISO 8601 format
-            _logger.LogDebug("No timestamp found in source {SourceName}, using current time: {Timestamp}", 
-                source.Name, timestampValue);
-        }
-
-        // Create payload for Normalization Service
-        var measurements = new Dictionary<string, object>();
-        
-        // Extract all dynamic fields from mapping
-        foreach (var field in source.Mapping.FieldMappings)
-        {
-            var fieldName = field.Key.ToLower(); // Normalize to lowercase
-            var jsonPath = field.Value;
-            var value = GetJsonValue(root, jsonPath);
-            
-            AddMeasurement(measurements, fieldName, value);
-        }
-
-
-        // Parse timestamp
-        DateTime observedTime;
-        if (!DateTime.TryParse(timestampValue, out observedTime))
-        {
-            observedTime = DateTime.UtcNow;
-        }
-
-        // Create NGSI-LD ID
-        var ngsiId = $"urn:ngsi-ld:AirQualityObserved:{stationIdValue}:{observedTime:yyyyMMddHHmmss}";
-
-        // Convert measurements to NGSI-LD properties (will be stored at root level via BsonExtraElements)
-        var properties = new Dictionary<string, object>();
-        foreach (var measurement in measurements)
-        {
-            var numericProp = new NumericProperty
-            {
-                Value = Convert.ToDouble(measurement.Value),
-                UnitCode = GetUnitCode(measurement.Key), // Dynamic UnitCode based on field name
-                ObservedAt = observedTime
-            };
-            
-            // Convert to BsonDocument to avoid serialization exception
-            properties[measurement.Key] = numericProp.ToBsonDocument();
-        }
-
-        _logger.LogDebug("Extracted {Count} measurements from {SourceName}: {Keys}", 
-            measurements.Count, source.Name, string.Join(", ", measurements.Keys));
-
-        // Create NGSI-LD compliant ExternalAirQuality object
-        var externalData = new ExternalAirQuality
-        {
-            Id = ngsiId,
-            Type = "AirQualityObserved",
-            MadeBySensor = new Relationship
-            {
-                Object = $"urn:ngsi-ld:ExternalSource:{source.Id}"
-            },
-            ObservedProperty = new Relationship
-            {
-                Object = "AirQuality"
-            },
-            HasFeatureOfInterest = new Relationship
-            {
-                Object = $"urn:ngsi-ld:Air:external-{stationIdValue}"
-            },
-            Location = source.Latitude.HasValue && source.Longitude.HasValue 
-                ? new LocationProperty
-                {
-                    Value = new GeoValue
-                    {
-                        Coordinates = new[] { source.Longitude.Value, source.Latitude.Value }
-                    }
-                }
-                : null,
-            DateObserved = new DateTimeProperty
-            {
-                Value = observedTime
-            },
-            Properties = properties, // Measurements will be serialized at root level
-            ExternalMetadata = new ExternalMetadata
-            {
-                SourceName = source.Name,
-                SourceUrl = source.Url,
-                FetchedAt = DateTime.UtcNow
-            }
-        };
-
-        using (var scope = _serviceProvider.CreateScope())
-        {
-            var externalAirQualityService = scope.ServiceProvider.GetRequiredService<ExternalAirQualityService>();
-            var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<SmartAirCity.Hubs.AirQualityHub>>();
-
-            // Use Upsert to prevent duplicates (same timestamp = same data)
-            await externalAirQualityService.UpsertAsync(externalData);
-            await hubContext.Clients.All.SendAsync("NewExternalAirQualityData", externalData);
-            
-            _logger.LogInformation("Successfully saved external data from {SourceName}. Station: {StationId}, Measurements: {Count}", 
-                source.Name, stationIdValue, measurements.Count);
-        }
-    }
-
-    /// <summary>
-    /// Get appropriate UnitCode based on measurement field name
-    /// </summary>
-    private string GetUnitCode(string fieldName)
-    {
-        var lowerName = fieldName.ToLower();
-        
-        // Temperature
-        if (lowerName.Contains("temp")) return "CEL"; // Celsius
-        
-        // Humidity
-        if (lowerName.Contains("humid") || lowerName == "rh") return "P1"; // Percentage
-        
-        // Pressure
-        if (lowerName.Contains("press") || lowerName == "hpa") return "A97"; // hPa
-        
-        // Wind speed
-        if (lowerName.Contains("wind") && lowerName.Contains("speed")) return "MTS"; // m/s
-        
-        // AQI (no unit)
-        if (lowerName == "aqi") return "C62"; // Dimensionless
-        
-        // Default: µg/m³ for air quality measurements (PM2.5, PM10, CO, NO2, SO2, O3, etc.)
-        return "GQ"; // µg/m³
-    }
-
-    private void AddMeasurement(Dictionary<string, object> dict, string key, string? value)
-    {
-        if (!string.IsNullOrEmpty(value) && double.TryParse(value, out var doubleVal))
-        {
-            dict[key] = doubleVal;
-        }
-    }
-
-    private string? GetJsonValue(JToken root, string path)
-    {
-        if (string.IsNullOrEmpty(path)) return null;
-
-        try
-        {
-            // SelectToken supports full JSONPath syntax
-            var token = root.SelectToken(path);
-            return token?.ToString();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning("JSONPath error for path '{Path}': {Message}", path, ex.Message);
-            return null;
-        }
+        // All external sources must return NGSI-LD format
+        await ProcessNGSILDData(source, jsonContent, stoppingToken);
     }
 
     /// <summary>
     /// Process NGSI-LD format data (no mapping needed)
     /// Handles both single object and array of objects
-    /// Saves to ExternalAirQuality collection (same as non-NGSI-LD external data and External MQTT)
+    /// Saves to ExternalAirQuality collection
     /// </summary>
     private async Task ProcessNGSILDData(ExternalSource source, string jsonContent, CancellationToken stoppingToken)
     {
@@ -384,18 +203,25 @@ public class ExternalDataPullService : BackgroundService
                         continue;
                     }
 
-                    if (ngsiData.Type != "AirQualityObserved")
+                    // Relax validation: allow both PascalCase and camelCase
+                    if (!string.Equals(ngsiData.Type, "AirQualityObserved", StringComparison.OrdinalIgnoreCase))
                     {
                         _logger.LogWarning("Skipping NGSI-LD item from {SourceName}: expected 'AirQualityObserved', got '{Type}'", 
                             source.Name, ngsiData.Type);
                         continue;
                     }
+                    
+                    // Normalize to PascalCase for consistency
+                    ngsiData.Type = "AirQualityObserved";
 
                     // Fix Context field - convert JsonElement to actual objects for MongoDB serialization
                     ngsiData.Context = ConvertContextToMongoSafe(ngsiData.Context);
 
                     // Fix Properties field - convert JsonElement to actual objects for MongoDB serialization
                     ngsiData.Properties = ConvertPropertiesToMongoSafe(ngsiData.Properties);
+
+                    // SET STATIONID from ExternalSource for consistency with Stations collection
+                    ngsiData.StationId = source.StationId;
 
                     // Set external metadata
                     ngsiData.ExternalMetadata = new ExternalMetadata
@@ -405,10 +231,27 @@ public class ExternalDataPullService : BackgroundService
                         FetchedAt = DateTime.UtcNow
                     };
 
-                    // Use Upsert to prevent duplicates - saves to ExternalAirQuality collection
-                    await externalAirQualityService.UpsertAsync(ngsiData);
+                    // Check for duplicate data (Id + Timestamp) to enable history mode
+                    var exists = await externalAirQualityService.ExistsByUniqueKeyAsync(ngsiData.Id, ngsiData.DateObserved.Value);
+                    if (exists)
+                    {
+                        _logger.LogDebug("Skipping duplicate data for {Id} at {Time}", 
+                            ngsiData.Id, ngsiData.DateObserved.Value.ToString("yyyy-MM-dd HH:mm:ss"));
+                        continue;
+                    }
+
+                    // Insert as NEW record to keep history (instead of Upsert)
+                    ngsiData.MongoId = null;
+                    await externalAirQualityService.InsertAsync(ngsiData);
+                    
                     await hubContext.Clients.All.SendAsync("NewExternalData", ngsiData);
                     savedCount++;
+                    
+                    // Auto-create station in Stations collection (only on first record)
+                    if (savedCount == 1)
+                    {
+                        await EnsureStationExistsAsync(source, ngsiData);
+                    }
                 }
 
                 _logger.LogInformation("Successfully saved {Count} NGSI-LD records to ExternalAirQuality from {SourceName}. Station: {StationId}", 
@@ -515,6 +358,50 @@ public class ExternalDataPullService : BackgroundService
                 return list;
             default:
                 return element.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Auto-create station in Stations collection if not exists
+    /// </summary>
+    private async Task EnsureStationExistsAsync(ExternalSource source, ExternalAirQuality sampleData)
+    {
+        try
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var stationService = scope.ServiceProvider.GetRequiredService<StationService>();
+            
+            // Check if station already exists
+            var existing = await stationService.GetStationByIdAsync(source.StationId);
+            if (existing != null)
+            {
+                return; // Already exists
+            }
+
+            // Create new station from ExternalSource info
+            var newStation = new Station
+            {
+                StationId = source.StationId,
+                Name = source.Name,
+                Latitude = source.Latitude ?? sampleData.Location?.Value?.Coordinates?[1] ?? 0,
+                Longitude = source.Longitude ?? sampleData.Location?.Value?.Coordinates?[0] ?? 0,
+                Type = "external-http",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                Metadata = new Dictionary<string, object?>
+                {
+                    ["sourceUrl"] = source.Url
+                }
+            };
+
+            await stationService.CreateStationAsync(newStation);
+            _logger.LogInformation("Auto-created station from external source: {StationId} - {Name}", 
+                source.StationId, source.Name);
+        }
+        catch (Exception ex)
+        {
+            // Don't throw - just log warning
+            _logger.LogWarning(ex, "Failed to auto-create station for external source: {StationId}", source.StationId);
         }
     }
 }

@@ -5,6 +5,29 @@ All notable changes to SmartAir City will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2025-12-08
+
+### Added
+- Enhanced OpenAQ API integration with `OpenAQLiveClient` for improved real-time data retrieval
+- Comprehensive About page redesign with project information, goals, and technology stack
+- CONTRIBUTING.md with detailed contribution guidelines, PR process, and development setup
+- SPDX license headers across all source files for clear licensing compliance
+- Community data contribution framework establishing open data repository principles
+- API key authentication support for OpenAQ API v3
+- Feature cards in UI showcasing platform capabilities (Real-time Monitoring, Data Analysis, Smart Alerts, Open Standards)
+
+### Changed
+- Improved OpenAQLiveClient with robust error handling and data validation
+- Enhanced About component with modern card-based layout and improved visual hierarchy
+- Updated Footer and Header components with better navigation structure
+- Refined APIDataViewer for professional NGSI-LD format presentation
+- Optimized HTTP client factory usage for external API requests
+
+### Fixed
+- Corrected OpenAQ API endpoint URL formatting and response parsing
+- Resolved UI styling inconsistencies across components
+- Improved error handling for failed API requests with better logging
+
 ## [0.1.1] - 2025-11-22
 
 ### Added

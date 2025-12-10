@@ -1,4 +1,4 @@
-/**
+/*
  *  SmartAir City – IoT Platform for Urban Air Quality Monitoring
  *  based on NGSI-LD and FiWARE Standards
  *
@@ -121,5 +121,25 @@ public class ExternalSourceService
             .Set(x => x.FailureCount, 0)
             .Set(x => x.LastError, null);
         await _collection.UpdateOneAsync(x => x.Id == id, update);
+    }
+    
+    /// <summary>
+    /// Update interval minutes for external source (Admin only)
+    /// </summary>
+    public async Task<ExternalSource?> UpdateIntervalAsync(string id, int intervalMinutes)
+    {
+        var update = Builders<ExternalSource>.Update
+            .Set(x => x.IntervalMinutes, intervalMinutes);
+        
+        var result = await _collection.FindOneAndUpdateAsync<ExternalSource>(
+            x => x.Id == id,
+            update,
+            new FindOneAndUpdateOptions<ExternalSource>
+            {
+                ReturnDocument = ReturnDocument.After
+            }
+        );
+        
+        return result;
     }
 }
