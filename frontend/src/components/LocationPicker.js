@@ -9,6 +9,11 @@
 // See LICENSE file in root directory for full license text.
 // @see       https://github.com/lequang2009k4/SmartAir-City   SmartAir City Open Source Project
 
+// This software is an open-source component of the SmartAir City initiative.
+// It provides real-time environmental monitoring, NGSI-LD–compliant data
+// models, MQTT-based data ingestion, and FiWARE Smart Data Models for
+// open-data services and smart-city applications. tAir City Open Source Project
+
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
