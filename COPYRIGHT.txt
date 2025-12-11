@@ -35,8 +35,6 @@ react-chartjs-2                     5.3.1          MIT                  React wr
 react-dom                           19.2.0         MIT                  React package for working with the DOM                           https://react.dev
 react-scripts                       5.0.1          MIT                  Configuration and scripts for Create React App                   https://create-react-app.dev
 recharts                            3.4.1          MIT                  Composable charting library built on React and D3                https://recharts.org
-web-vitals                          2.1.4          Apache-2.0           Library for measuring web vitals performance metrics             https://github.com/GoogleChrome/web-vitals
-
 
 BACKEND LIBRARIES (.NET/NuGet):
 Name                                                    Version        License              Description                                                      Url
